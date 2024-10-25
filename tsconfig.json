@@ -1,16 +1,28 @@
 {
   "compilerOptions": {
+    "baseUrl": "./src",
     "rootDirs": ["src"],
-    "outDir": "dist",
+    "outDir": "./dist",
     "lib": ["es2021"],
     "target": "ES2021",
-    "module": "esnext",
+    "module": "ESNext",
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "types": ["node"]
+    "skipLibCheck": true,
+    "types": ["node"],
+    "paths": {
+      "@domain/*": ["./domain/*"],
+      "@application/*": ["./application/*"],
+      "@infrastructure/*": ["infrastructure/*"],
+      "@config/*": ["./config/*"],
+      "@shared/*": ["./shared/*"],
+      "@interfaces/*": ["interfaces/*"]
+    },
+    "preserveSymlinks": true
   },
   "ts-node": {
-    "esm": true,
-    "experimentalSpecifierResolution": "node"
-  }
+    "esm": true
+  },
+  "include": ["src/**/*.ts", "node_modules/@prisma/client/**/*.d.ts"],
+  "exclude": ["node_modules"]
 }

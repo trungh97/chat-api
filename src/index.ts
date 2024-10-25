@@ -1,29 +1,33 @@
-import express from "express";
-import cors from "cors";
-import http from "http";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import cors from "cors";
+import express from "express";
+import http from "http";
+import dotenv from "dotenv";
 
-const typeDefs = `#graphql
-  type Query {
-    greeting: String
-  }
-`;
+import { FindPostByIDUseCase } from "@application/usecases/post";
+import { IFindPostByIDUseCase } from "@domain/usecases/post";
+import { prismaClient } from "@infrastructure/persistence/databases/mysql/connection";
+import { PostRepositoryPrisma } from "@infrastructure/persistence/repositories/post/PostRepositoryPrisma";
+import { resolvers as postResolvers } from "@interfaces/graphql/resolvers/PostResolver";
+import { typeDefs } from "@interfaces/graphql/schema";
 
-const resolvers = {
-  Query: {
-    greeting: () => "Hello GraphQL world! I'm Trung👋",
-  },
-};
+interface ApolloContext {
+  findPostByIdUseCase: IFindPostByIDUseCase;
+}
 
+dotenv.config();
 const app = express();
 const httpServer = http.createServer(app);
 const port = 9000;
 
-const server = new ApolloServer({
+const postRepository = new PostRepositoryPrisma(prismaClient);
+const findPostByIdUseCase = new FindPostByIDUseCase(postRepository);
+
+const server = new ApolloServer<ApolloContext>({
   typeDefs,
-  resolvers,
+  resolvers: [postResolvers],
   plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
 });
 await server.start();
@@ -33,7 +37,7 @@ app.use(
   cors<cors.CorsRequest>(),
   express.json(),
   expressMiddleware(server, {
-    context: async ({ req }) => ({ req }),
+    context: async ({}) => ({ findPostByIdUseCase }),
   })
 );
 
