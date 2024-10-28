@@ -1,8 +1,7 @@
-import { PostMapper } from "@application/mappers";
 import { Post } from "@domain/entities";
 import { Result } from "@domain/repositories";
 import { IPostRepository } from "@domain/repositories/PostRepository";
-import { PrismaClient } from "@prisma/client";
+import { Post as PostPrismaModel, PrismaClient } from "@prisma/client";
 
 export class PostRepositoryPrisma implements IPostRepository {
   /**
@@ -12,6 +11,16 @@ export class PostRepositoryPrisma implements IPostRepository {
    * @param {PrismaClient} prisma - The Prisma client instance.
    */
   constructor(private prisma: PrismaClient) {}
+
+  /**
+   * Maps a Post entity retrieved from the persistence layer to a Post entity.
+   *
+   * @param {Post} post - The Post entity retrieved from the persistence layer.
+   * @returns {Post} - The mapped Post entity.
+   */
+  private toDomainFromPersistence(post: PostPrismaModel): Post {
+    return new Post(post.id, post.title, post.content);
+  }
 
   /**
    * Find all posts with given params
@@ -27,9 +36,7 @@ export class PostRepositoryPrisma implements IPostRepository {
       },
     });
 
-    const response = posts.map((post) =>
-      PostMapper.toDomainFromPersistence(post)
-    );
+    const response = posts.map((post) => this.toDomainFromPersistence(post));
 
     return response;
   }
@@ -51,7 +58,7 @@ export class PostRepositoryPrisma implements IPostRepository {
         };
       }
 
-      const response = PostMapper.toDomainFromPersistence(post);
+      const response = this.toDomainFromPersistence(post);
 
       return { success: true, value: response };
     } catch (error) {
@@ -66,7 +73,7 @@ export class PostRepositoryPrisma implements IPostRepository {
   async create(post: Post): Promise<Post> {
     const newPost = await this.prisma.post.create({ data: post });
 
-    const response = PostMapper.toDomainFromPersistence(newPost);
+    const response = this.toDomainFromPersistence(newPost);
 
     return response;
   }
@@ -77,7 +84,7 @@ export class PostRepositoryPrisma implements IPostRepository {
       data: post,
     });
 
-    const response = PostMapper.toDomainFromPersistence(updatedPost);
+    const response = this.toDomainFromPersistence(updatedPost);
 
     return response;
   }

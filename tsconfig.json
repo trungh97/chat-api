@@ -18,10 +18,9 @@
       "@shared/*": ["./shared/*"],
       "@interfaces/*": ["interfaces/*"]
     },
-    "preserveSymlinks": true
-  },
-  "ts-node": {
-    "esm": true
+    "preserveSymlinks": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
   },
   "include": ["src/**/*.ts", "node_modules/@prisma/client/**/*.d.ts"],
   "exclude": ["node_modules"]

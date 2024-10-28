@@ -1,4 +1,4 @@
-import { PostDTO } from "@shared/dtos";
+import { Post } from "@domain/entities";
 import { UseCaseResponse } from "@shared/responses";
 
 export interface IFindPostByIDUseCase {
@@ -7,7 +7,7 @@ export interface IFindPostByIDUseCase {
    *
    * @async
    * @param {string} id - The post id
-   * @returns {Promise<Result<PostDTO, Error>>} The response data
+   * @returns {Promise<Result<Post, Error>>} The response data
    */
-  execute(id: string): Promise<UseCaseResponse<PostDTO>>;
+  execute(id: string): Promise<UseCaseResponse<Post>>;
 }

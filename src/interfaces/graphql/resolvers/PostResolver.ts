@@ -1,19 +1,22 @@
 import { IFindPostByIDUseCase } from "@domain/usecases/post";
+import { Arg, Ctx, ID, Query, Resolver } from "type-graphql";
+import { PostDTO } from "../DTOs";
+import { PostMapper } from "../mappers";
 
-export const resolvers = {
-  Query: {
-    findPostById: async (
-      _: any,
-      { id }: { id: string },
-      { findPostByIdUseCase }: { findPostByIdUseCase: IFindPostByIDUseCase }
-    ) => {
-      const result = await findPostByIdUseCase.execute(id);
+@Resolver()
+export class PostResolver {
+  @Query(() => PostDTO)
+  async findPostById(
+    @Arg("id", () => ID) id: string,
+    @Ctx()
+    { findPostByIdUseCase }: { findPostByIdUseCase: IFindPostByIDUseCase }
+  ): Promise<PostDTO | null> {
+    const result = await findPostByIdUseCase.execute(id);
+    console.log(result);
+    if (result.error) {
+      return null;
+    }
 
-      if (result.error) {
-        throw new Error(result.error);
-      }
-
-      return result.data;
-    },
-  },
-};
+    return PostMapper.toDTO(result.data);
+  }
+}
