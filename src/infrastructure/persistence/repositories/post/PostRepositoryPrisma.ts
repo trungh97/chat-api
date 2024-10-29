@@ -2,6 +2,7 @@ import { Post } from "@domain/entities";
 import { Result } from "@domain/repositories";
 import { IPostRepository } from "@domain/repositories/PostRepository";
 import { TYPES } from "@infrastructure/persistence/di/inversify";
+import { ILogger } from "@infrastructure/persistence/logger";
 import { Post as PostPrismaModel, PrismaClient } from "@prisma/client";
 import { inject, injectable } from "inversify";
 
@@ -13,7 +14,10 @@ export class PostRepositoryPrisma implements IPostRepository {
    * @constructor
    * @param {PrismaClient} prisma - The Prisma client instance.
    */
-  constructor(@inject(TYPES.PrismaClient) private prisma: PrismaClient) {}
+  constructor(
+    @inject(TYPES.PrismaClient) private prisma: PrismaClient,
+    @inject(TYPES.WinstonLogger) private logger: ILogger
+  ) {}
 
   /**
    * Maps a Post entity retrieved from the persistence layer to a Post entity.
@@ -51,9 +55,11 @@ export class PostRepositoryPrisma implements IPostRepository {
 
   async findById<_, E = Error>(id: string): Promise<Result<Post | null, E>> {
     try {
+      this.logger.info("PostRepositoryPrisma", `Finding post by id ${id}...`);
       const post = await this.prisma.post.findUnique({ where: { id } });
 
       if (!post) {
+        this.logger.error("PostRepositoryPrisma", `Post not found`);
         return {
           success: false,
           value: null,
@@ -65,6 +71,10 @@ export class PostRepositoryPrisma implements IPostRepository {
 
       return { success: true, value: response };
     } catch (error) {
+      this.logger.error(
+        "PostRepositoryPrisma",
+        `Error finding post by id ${id}`
+      );
       return {
         success: false,
         value: null,

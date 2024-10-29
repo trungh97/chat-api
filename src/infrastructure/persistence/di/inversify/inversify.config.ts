@@ -8,11 +8,15 @@ import { IPostRepository } from "@domain/repositories";
 import { IFindPostByIDUseCase } from "@domain/usecases/post";
 import { PostRepositoryPrisma } from "@infrastructure/persistence/repositories/post/PostRepositoryPrisma";
 import { prismaClient } from "@infrastructure/persistence/databases/mysql/connection";
+import { ILogger, WinstonLogger } from "@infrastructure/persistence/logger";
 
 const container = new Container();
 
 // Binding prisma client
 container.bind<PrismaClient>(TYPES.PrismaClient).toConstantValue(prismaClient);
+
+// Bind logger
+container.bind<ILogger>(TYPES.WinstonLogger).to(WinstonLogger);
 
 // Binding repositories
 container

@@ -4,11 +4,13 @@ import { IPostRepository } from "@domain/repositories";
 import { IFindPostByIDUseCase } from "@domain/usecases/post";
 import { UseCaseResponse } from "@shared/responses";
 import { TYPES } from "@infrastructure/persistence/di/inversify";
+import { ILogger } from "@infrastructure/persistence/logger";
 
 @injectable()
 export class FindPostByIDUseCase implements IFindPostByIDUseCase {
   constructor(
-    @inject(TYPES.PostRepositoryPrisma) private postRepository: IPostRepository
+    @inject(TYPES.PostRepositoryPrisma) private postRepository: IPostRepository,
+    @inject(TYPES.WinstonLogger) private logger: ILogger
   ) {}
 
   /**
@@ -19,6 +21,10 @@ export class FindPostByIDUseCase implements IFindPostByIDUseCase {
    * @returns {Promise<UseCaseResponse<Post>>} The response data
    */
   async execute(id: string): Promise<UseCaseResponse<Post>> {
+    this.logger.info(
+      "FindPostByIDUseCase",
+      `Executing FindPostByIDUseCase with id ${id}...`
+    );
     const result = await this.postRepository.findById<Post, Error>(id);
 
     if (!result.success) {

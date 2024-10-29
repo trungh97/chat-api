@@ -8,4 +8,5 @@ export const TYPES = {
 
   // Others
   PrismaClient: Symbol.for("PrismaClient"),
+  WinstonLogger: Symbol.for("WinstonLogger"),
 };
