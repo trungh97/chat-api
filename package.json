@@ -24,6 +24,7 @@
     "graphql": "^16.9.0",
     "graphql-http": "^1.22.1",
     "graphql-scalars": "^1.23.0",
+    "inversify": "^6.0.3",
     "mysql2": "^3.11.3",
     "reflect-metadata": "^0.2.2",
     "type-graphql": "^2.0.0-rc.2",

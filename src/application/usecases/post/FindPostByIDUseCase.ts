@@ -1,10 +1,15 @@
+import { inject, injectable } from "inversify";
 import { Post } from "@domain/entities";
 import { IPostRepository } from "@domain/repositories";
 import { IFindPostByIDUseCase } from "@domain/usecases/post";
 import { UseCaseResponse } from "@shared/responses";
+import { TYPES } from "@infrastructure/persistence/di/inversify";
 
+@injectable()
 export class FindPostByIDUseCase implements IFindPostByIDUseCase {
-  constructor(private postRepository: IPostRepository) {}
+  constructor(
+    @inject(TYPES.PostRepositoryPrisma) private postRepository: IPostRepository
+  ) {}
 
   /**
    * Executes the find post by id use case.

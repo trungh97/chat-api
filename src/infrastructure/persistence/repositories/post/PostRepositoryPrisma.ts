@@ -1,8 +1,11 @@
 import { Post } from "@domain/entities";
 import { Result } from "@domain/repositories";
 import { IPostRepository } from "@domain/repositories/PostRepository";
+import { TYPES } from "@infrastructure/persistence/di/inversify";
 import { Post as PostPrismaModel, PrismaClient } from "@prisma/client";
+import { inject, injectable } from "inversify";
 
+@injectable()
 export class PostRepositoryPrisma implements IPostRepository {
   /**
    * Create an instance of PostRepository
@@ -10,7 +13,7 @@ export class PostRepositoryPrisma implements IPostRepository {
    * @constructor
    * @param {PrismaClient} prisma - The Prisma client instance.
    */
-  constructor(private prisma: PrismaClient) {}
+  constructor(@inject(TYPES.PrismaClient) private prisma: PrismaClient) {}
 
   /**
    * Maps a Post entity retrieved from the persistence layer to a Post entity.
