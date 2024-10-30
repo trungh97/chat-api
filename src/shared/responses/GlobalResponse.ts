@@ -31,7 +31,7 @@ export function GlobalResponse<T>(TClass: new () => T) {
     message?: string;
 
     /**
-     * A boolean indicating the success or failure of the operation.
+     * The data associated with the response (optional).
      */
     @Field(() => TClass, { nullable: true })
     data?: T;
