@@ -1,31 +1,47 @@
-/**
- * Data Transfer Object (DTO) representing a response from the application.
- *
- * @interface
- */
-export interface GlobalResponse<T> {
-  /**
-   * A boolean indicating the success or failure of the operation.
-   */
+import { Field, InterfaceType, ObjectType } from "type-graphql";
+
+@InterfaceType()
+export abstract class IResponse {
+  @Field(() => Boolean)
   success: boolean;
 
-  /**
-   * The data associated with the response.
-   */
-  data: T;
-
-  /**
-   * The HTTP status code (optional).
-   */
+  @Field(() => Number, { nullable: true })
   statusCode?: number;
 
-  /**
-   * A message associated with the response (optional).
-   */
+  @Field(() => String, { nullable: true })
   message?: string;
+}
 
-  /**
-   * The error associated with the response (optional).
-   */
-  error?: string;
+export function GlobalResponse<T>(TClass: new () => T) {
+  @ObjectType({ implements: IResponse })
+  abstract class Response extends IResponse {
+    /**
+     * A boolean indicating the success or failure of the operation.
+     */
+    success: boolean;
+
+    /**
+     * The HTTP status code (optional).
+     */
+    statusCode?: number;
+
+    /**
+     * A message associated with the response (optional).
+     */
+    message?: string;
+
+    /**
+     * A boolean indicating the success or failure of the operation.
+     */
+    @Field(() => TClass, { nullable: true })
+    data?: T;
+
+    /**
+     * The error associated with the response (optional).
+     */
+    @Field(() => String,{ nullable: true })
+    error?: string;
+  }
+
+  return Response;
 }

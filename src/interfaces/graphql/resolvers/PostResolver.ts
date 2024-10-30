@@ -1,8 +1,15 @@
+import { Arg, ID, ObjectType, Query, Resolver } from "type-graphql";
+
 import { IFindPostByIDUseCase } from "@domain/usecases/post";
-import { Arg, Ctx, ID, Query, Resolver } from "type-graphql";
 import { container, TYPES } from "@infrastructure/persistence/di/inversify";
+import { GlobalResponse } from "@shared/responses";
 import { PostDTO } from "../DTOs";
 import { PostMapper } from "../mappers";
+
+const PostResponse = GlobalResponse(PostDTO);
+
+@ObjectType()
+class PostGlobalResponse extends PostResponse {}
 
 @Resolver()
 export class PostResolver {
@@ -14,18 +21,32 @@ export class PostResolver {
     );
   }
 
-  @Query(() => PostDTO)
+  @Query(() => PostGlobalResponse)
   async findPostById(
     @Arg("id", () => ID) id: string
-    // @Ctx()
-    // { findPostByIdUseCase }: { findPostByIdUseCase: IFindPostByIDUseCase }
-  ): Promise<PostDTO | null> {
-    const result = await this.findPostByIdUseCase.execute(id);
-    console.log(result);
-    if (result.error) {
-      return null;
-    }
+  ): Promise<PostGlobalResponse> {
+    try {
+      const result = await this.findPostByIdUseCase.execute(id);
+      if (result.error) {
+        return {
+          success: false,
+          error: result.error,
+          data: null,
+        };
+      }
 
-    return PostMapper.toDTO(result.data);
+      return {
+        success: true,
+        statusCode: 200,
+        data: PostMapper.toDTO(result.data),
+      };
+    } catch (error) {
+      return {
+        success: false,
+        statusCode: 500,
+        error: error.message,
+        data: null,
+      };
+    }
   }
 }
