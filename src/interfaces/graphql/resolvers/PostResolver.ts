@@ -3,6 +3,7 @@ import { Arg, ID, ObjectType, Query, Resolver } from "type-graphql";
 import { IFindPostByIDUseCase } from "@domain/usecases/post";
 import { container, TYPES } from "@infrastructure/persistence/di/inversify";
 import { GlobalResponse } from "@shared/responses";
+
 import { PostDTO } from "../DTOs";
 import { PostMapper } from "../mappers";
 
