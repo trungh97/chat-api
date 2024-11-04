@@ -39,5 +39,8 @@
     "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.10",
     "tsx": "^4.19.1"
+  },
+  "prisma": {
+    "schema": "src/infrastructure/persistence/databases/mysql/prisma/schema.prisma"
   }
 }
