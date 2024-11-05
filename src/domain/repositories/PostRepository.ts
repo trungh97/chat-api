@@ -1,5 +1,5 @@
 import { Post } from "@domain/entities";
-import { Result } from "./common";
+import { RepositoryResponse } from "@shared/responses";
 
 export interface IPostRepository {
   /**
@@ -27,7 +27,9 @@ export interface IPostRepository {
    * @param id - The ID of the post.
    * @returns {Promise<Post>} - The post data.
    */
-  findById<_, E = Error>(id: string): Promise<Result<Post | null, E>>;
+  findById<_, E = Error>(
+    id: string
+  ): Promise<RepositoryResponse<Post | null, E>>;
 
   /**
    * Create new post
