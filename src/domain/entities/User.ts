@@ -1,17 +1,47 @@
-import { UserStatus } from "@domain/enums";
-import { EmailRegex, PhoneRegex } from "@shared/constants";
+import { ICreateUserRequestDTO } from "@domain/dtos/user";
+import { UserRole, UserStatus } from "@domain/enums";
+import { Email } from "@domain/valueObjects";
+import { hashPassword } from "@infrastructure/persistence/utils/jwt";
+import { PhoneRegex } from "@shared/constants";
+import { v4 as uuid } from "uuid";
+
+export interface IUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  role: keyof typeof UserRole;
+  avatar: string;
+  password: string;
+  isActive: boolean;
+  status: keyof typeof UserStatus;
+}
 
 export class User {
-  constructor(
-    private _id: string,
-    private _email: string,
-    private _firstName: string,
-    private _lastName: string,
-    private _phone: string,
-    private _avatar: string,
-    private _isActive: boolean,
-    private _status: UserStatus
-  ) {}
+  private readonly _id: string;
+  private _email: string;
+  private _firstName: string;
+  private _lastName: string;
+  private _phone: string;
+  private _role: keyof typeof UserRole;
+  private _avatar: string;
+  private _password: string;
+  private _isActive: boolean;
+  private _status: keyof typeof UserStatus;
+
+  constructor(props: IUser) {
+    this._id = props.id;
+    this._email = props.email;
+    this._firstName = props.firstName;
+    this._lastName = props.lastName;
+    this._phone = props.phone;
+    this._role = props.role;
+    this._avatar = props.avatar;
+    this._password = props.password;
+    this._isActive = props.isActive;
+    this._status = props.status;
+  }
 
   /**
    * Get the user id
@@ -21,15 +51,6 @@ export class User {
    */
   get id(): string {
     return this._id;
-  }
-
-  /**
-   * Set the user id
-   *
-   * @param {string} id - The user id
-   */
-  set id(id: string) {
-    this._id = id;
   }
 
   /**
@@ -45,16 +66,11 @@ export class User {
   /**
    * Set the user email
    *
-   * @param {string} email - The user email
+   * @param {Email} email - The user email
    *
    * @throws {Error} If the email is invalid
    */
   set email(email: string) {
-    // Email Validation
-    if (!EmailRegex.test(email)) {
-      throw new Error("Invalid email address");
-    }
-
     this._email = email;
   }
 
@@ -134,6 +150,25 @@ export class User {
   }
 
   /**
+   * Get the user's role
+   *
+   * @readonly
+   * @returns {keyof typeof UserRole} The user's role (ADMIN or USER)
+   */
+  get role(): keyof typeof UserRole {
+    return this._role;
+  }
+
+  /**
+   * Set the user's role
+   *
+   * @param {string} role - The user's role (ADMIN or USER)
+   */
+  set role(role: UserRole) {
+    this._role = role;
+  }
+
+  /**
    * Get the user's avatar URL
    *
    * @readonly
@@ -150,6 +185,25 @@ export class User {
    */
   set avatar(avatar: string) {
     this._avatar = avatar;
+  }
+
+  /**
+   * Get the user's password
+   *
+   * @readonly
+   * @returns {string} The user's password
+   */
+  get password(): string {
+    return this._password;
+  }
+
+  /**
+   * Set the user's password
+   *
+   * @param {string} password - The user's password
+   */
+  set password(password: string) {
+    this._password = password;
   }
 
   /**
@@ -175,9 +229,9 @@ export class User {
    * Get the user's current status
    *
    * @readonly
-   * @returns {UserStatus} The user's current status
+   * @returns {keyof typeof UserStatus} The user's current status
    */
-  get status(): UserStatus {
+  get status(): keyof typeof UserStatus {
     return this._status;
   }
 
@@ -188,5 +242,26 @@ export class User {
    */
   set status(status: UserStatus) {
     this._status = status;
+  }
+
+  static async create(request: ICreateUserRequestDTO): Promise<User> {
+    const email = new Email({ address: request.email });
+
+    const hashedPassword = await hashPassword(request.password);
+
+    const newUser = {
+      id: uuid(),
+      email: email.address,
+      firstName: request.firstName,
+      lastName: request.lastName,
+      phone: request.phone,
+      role: UserRole.USER,
+      avatar: request.avatar,
+      password: hashedPassword,
+      isActive: true,
+      status: UserStatus.ONLINE,
+    };
+
+    return new User(newUser);
   }
 }

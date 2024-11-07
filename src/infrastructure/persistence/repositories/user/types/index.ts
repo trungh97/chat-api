@@ -1,0 +1,1 @@
+export { IUserRedisRepository } from "./UserRedisRepository";

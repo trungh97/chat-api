@@ -1,18 +1,19 @@
 import { Post } from "@domain/entities";
-import { Result } from "@domain/repositories";
 import { IPostRepository } from "@domain/repositories/PostRepository";
 import { TYPES } from "@infrastructure/persistence/di/inversify";
 import { ILogger } from "@infrastructure/persistence/logger";
 import { Post as PostPrismaModel, PrismaClient } from "@prisma/client";
+import { RepositoryResponse } from "@shared/responses";
 import { inject, injectable } from "inversify";
 
 @injectable()
-export class PostRepositoryPrisma implements IPostRepository {
+export class PostPrismaRepository implements IPostRepository {
   /**
    * Create an instance of PostRepository
    *
    * @constructor
    * @param {PrismaClient} prisma - The Prisma client instance.
+   * @param {ILogger} logger - The logger instance.
    */
   constructor(
     @inject(TYPES.PrismaClient) private prisma: PrismaClient,
@@ -53,17 +54,17 @@ export class PostRepositoryPrisma implements IPostRepository {
     return count;
   }
 
-  async findById<_, E = Error>(id: string): Promise<Result<Post | null, E>> {
+  async findById(id: string): Promise<RepositoryResponse<Post, Error>> {
     try {
-      this.logger.info("PostRepositoryPrisma", `Finding post by id ${id}...`);
+      this.logger.info(`Finding post by id ${id}...`);
       const post = await this.prisma.post.findUnique({ where: { id } });
 
       if (!post) {
-        this.logger.error("PostRepositoryPrisma", `Post not found`);
+        this.logger.error(`Post not found`);
         return {
           success: false,
           value: null,
-          error: new Error("Post not found") as E,
+          error: new Error("Post not found"),
         };
       }
 
@@ -71,14 +72,11 @@ export class PostRepositoryPrisma implements IPostRepository {
 
       return { success: true, value: response };
     } catch (error) {
-      this.logger.error(
-        "PostRepositoryPrisma",
-        `Error finding post by id ${id}`
-      );
+      this.logger.error(`Error finding post by id ${id}`);
       return {
         success: false,
         value: null,
-        error: new Error(error.message) as E,
+        error: new Error(error.message),
       };
     }
   }

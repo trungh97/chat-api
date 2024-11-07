@@ -1,2 +1,2 @@
 export * from "./PostRepository";
-export * from "./common";
+export * from "./UserRepository";

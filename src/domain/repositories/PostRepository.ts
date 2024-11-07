@@ -27,9 +27,7 @@ export interface IPostRepository {
    * @param id - The ID of the post.
    * @returns {Promise<Post>} - The post data.
    */
-  findById<_, E = Error>(
-    id: string
-  ): Promise<RepositoryResponse<Post | null, E>>;
+  findById(id: string): Promise<RepositoryResponse<Post, Error>>;
 
   /**
    * Create new post

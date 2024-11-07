@@ -3,9 +3,9 @@ import winston from "winston";
 import DailyRotateFile from "winston-daily-rotate-file";
 
 export interface ILogger {
-  info(object: string, message: string): void;
-  warn(object: string, message: string): void;
-  error(object: string, message: string): void;
+  info(message: string): void;
+  warn(message: string): void;
+  error(message: string): void;
 }
 
 @injectable()
@@ -19,10 +19,6 @@ export class WinstonLogger implements ILogger {
     level: "info",
   });
 
-  static formatMessage = (object: string, message: string) => {
-    return `[${object}]: ${message}`;
-  };
-
   private logger = winston.createLogger({
     level: "info",
     format: winston.format.combine(
@@ -35,15 +31,15 @@ export class WinstonLogger implements ILogger {
     ),
     transports: [WinstonLogger.transport],
   });
-  info(object: string, message: string): void {
-    this.logger.info(WinstonLogger.formatMessage(object, message));
+  info(message: string): void {
+    this.logger.info(message);
   }
 
-  warn(object: string, message: string): void {
-    this.logger.warn(WinstonLogger.formatMessage(object, message));
+  warn(message: string): void {
+    this.logger.warn(message);
   }
 
-  error(object: string, message: string): void {
-    this.logger.error(WinstonLogger.formatMessage(object, message));
+  error(message: string): void {
+    this.logger.error(message);
   }
 }

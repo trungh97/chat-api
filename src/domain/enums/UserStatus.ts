@@ -3,3 +3,8 @@ export enum UserStatus {
   OFFLINE = "OFFLINE",
   BUSY = "BUSY",
 }
+
+export enum UserRole {
+  ADMIN = "ADMIN",
+  USER = "USER",
+}

@@ -1,12 +1,23 @@
+import { UserPrismaRepository } from "@infrastructure/persistence/repositories/user/impls/UserPrismaRepository";
+
 // Define types
 export const TYPES = {
-  // Repositories
-  PostRepositoryPrisma: Symbol.for("PostRepositoryPrisma"),
+  // REPOSITORIES
+  PostPrismaRepository: Symbol.for("PostPrismaRepository"),
+  UserPrismaRepository: Symbol.for("UserPrismaRepository"),
 
-  // Use cases
+  /* USE CASES DEFINITION - BEGIN*/
+
+  /* Post */
   FindPostByIDUseCase: Symbol.for("FindPostByIDUseCase"),
 
-  // Others
+  /* User */
+  RegisterUserUseCase: Symbol.for("RegisterUserUseCase"),
+
+  /* USE CASES DEFINITION - END */
+
+  // OTHERS
   PrismaClient: Symbol.for("PrismaClient"),
   WinstonLogger: Symbol.for("WinstonLogger"),
+  RedisClient: Symbol.for("RedisClient"),
 };

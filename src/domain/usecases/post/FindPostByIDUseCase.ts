@@ -7,7 +7,7 @@ export interface IFindPostByIDUseCase {
    *
    * @async
    * @param {string} id - The post id
-   * @returns {Promise<Result<Post, Error>>} The response data
+   * @returns {Promise<UseCaseResponse<Post>>} The response data
    */
   execute(id: string): Promise<UseCaseResponse<Post>>;
 }
