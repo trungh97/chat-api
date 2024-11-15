@@ -2,9 +2,9 @@ import { ICreateUserRequestDTO } from "@domain/dtos/user";
 import { User } from "@domain/entities";
 import { UseCaseResponse } from "@shared/responses";
 
-export interface IRegisterUserUseCase {
+export interface ILoginFederatedCredentialUserUseCase {
   /**
-   * Executes the register user use case.
+   * Executes the login federated credential user use case.
    *
    * @async
    * @param {ICreateUserRequestDTO} request - The request data.

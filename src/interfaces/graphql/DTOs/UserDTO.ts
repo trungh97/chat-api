@@ -1,10 +1,14 @@
-import { UserRole, UserStatus } from "@domain/enums";
+import { UserProvider, UserRole, UserStatus } from "@domain/enums";
 import { Field, ID, ObjectType, registerEnumType } from "type-graphql";
 
 registerEnumType(UserRole, { name: "UserRole", description: "User role" });
 registerEnumType(UserStatus, {
   name: "UserStatus",
   description: "User status",
+});
+registerEnumType(UserProvider, {
+  name: "UserProvider",
+  description: "User provider",
 });
 
 @ObjectType()
@@ -21,14 +25,11 @@ export class UserDTO {
   @Field(() => String)
   lastName: string;
 
-  @Field(() => String)
-  password: string;
-
   @Field(() => UserRole)
   role: keyof typeof UserRole;
 
-  @Field(() => String)
-  phone: string;
+  @Field(() => String, { nullable: true })
+  phone?: string;
 
   @Field(() => String)
   avatar: string;
@@ -38,4 +39,10 @@ export class UserDTO {
 
   @Field(() => UserStatus)
   status: keyof typeof UserStatus;
+
+  @Field(() => UserProvider, { nullable: true })
+  provider?: keyof typeof UserProvider;
+
+  @Field(() => String, { nullable: true })
+  providerUserId?: string;
 }

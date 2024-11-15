@@ -1,7 +1,7 @@
 import { Post } from "@domain/entities";
 import { IPostRepository } from "@domain/repositories/PostRepository";
-import { TYPES } from "@infrastructure/persistence/di/inversify";
-import { ILogger } from "@infrastructure/persistence/logger";
+import { TYPES } from "@infrastructure/external/di/inversify";
+import { ILogger } from "@shared/logger";
 import { Post as PostPrismaModel, PrismaClient } from "@prisma/client";
 import { RepositoryResponse } from "@shared/responses";
 import { inject, injectable } from "inversify";

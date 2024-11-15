@@ -1,7 +1,7 @@
 import { Arg, ID, ObjectType, Query, Resolver } from "type-graphql";
 
 import { IFindPostByIDUseCase } from "@domain/usecases/post";
-import { container, TYPES } from "@infrastructure/persistence/di/inversify";
+import { container, TYPES } from "@infrastructure/external/di/inversify";
 import { GlobalResponse } from "@shared/responses";
 
 import { PostDTO } from "../DTOs";
@@ -30,20 +30,17 @@ export class PostResolver {
       const result = await this.findPostByIdUseCase.execute(id);
       if (result.error) {
         return {
-          success: false,
           error: result.error,
           data: null,
         };
       }
 
       return {
-        success: true,
         statusCode: 200,
         data: PostMapper.toDTO(result.data),
       };
     } catch (error) {
       return {
-        success: false,
         statusCode: 500,
         error: error.message,
         data: null,

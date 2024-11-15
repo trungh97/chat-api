@@ -1,1 +1,1 @@
-export { UserStatus, UserRole } from "./UserStatus";
+export { UserStatus, UserRole, UserProvider } from "./User";

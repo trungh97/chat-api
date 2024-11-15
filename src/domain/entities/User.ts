@@ -1,8 +1,8 @@
 import { ICreateUserRequestDTO } from "@domain/dtos/user";
-import { UserRole, UserStatus } from "@domain/enums";
+import { UserProvider, UserRole, UserStatus } from "@domain/enums";
 import { Email } from "@domain/valueObjects";
-import { hashPassword } from "@infrastructure/persistence/utils/jwt";
 import { PhoneRegex } from "@shared/constants";
+import { hashPassword } from "@shared/utils/jwt";
 import { v4 as uuid } from "uuid";
 
 export interface IUser {
@@ -10,11 +10,13 @@ export interface IUser {
   email: string;
   firstName: string;
   lastName: string;
-  phone: string;
+  phone?: string;
   role: keyof typeof UserRole;
   avatar: string;
-  password: string;
+  password?: string;
   isActive: boolean;
+  provider?: keyof typeof UserProvider;
+  providerUserId?: string;
   status: keyof typeof UserStatus;
 }
 
@@ -23,11 +25,13 @@ export class User {
   private _email: string;
   private _firstName: string;
   private _lastName: string;
-  private _phone: string;
+  private _phone?: string;
   private _role: keyof typeof UserRole;
   private _avatar: string;
-  private _password: string;
+  private _password?: string;
   private _isActive: boolean;
+  private _provider?: keyof typeof UserProvider;
+  private _providerUserId?: string;
   private _status: keyof typeof UserStatus;
 
   constructor(props: IUser) {
@@ -39,6 +43,8 @@ export class User {
     this._role = props.role;
     this._avatar = props.avatar;
     this._password = props.password;
+    this._provider = props.provider;
+    this._providerUserId = props.providerUserId;
     this._isActive = props.isActive;
     this._status = props.status;
   }
@@ -207,6 +213,44 @@ export class User {
   }
 
   /**
+   * Get the user's provider
+   *
+   * @readonly
+   * @returns {keyof typeof UserProvider} The user's provider
+   */
+  get provider(): keyof typeof UserProvider {
+    return this._provider;
+  }
+
+  /**
+   * Set the user's provider
+   *
+   * @param {keyof typeof UserProvider} provider - The user's provider
+   */
+  set provider(provider: keyof typeof UserProvider) {
+    this._provider = provider;
+  }
+
+  /**
+   * Get the user's provider user ID
+   *
+   * @readonly
+   * @returns {string} The user's provider user ID
+   */
+  get providerUserId(): string {
+    return this._providerUserId;
+  }
+
+  /**
+   * Set the user's provider user ID
+   *
+   * @param {string} providerUserId - The user's provider user ID
+   */
+  set providerUserId(providerUserId: string) {
+    this._providerUserId = providerUserId;
+  }
+
+  /**
    * Get the user's status as active or inactive
    *
    * @readonly
@@ -247,7 +291,9 @@ export class User {
   static async create(request: ICreateUserRequestDTO): Promise<User> {
     const email = new Email({ address: request.email });
 
-    const hashedPassword = await hashPassword(request.password);
+    const hashedPassword = request.password
+      ? await hashPassword(request.password)
+      : null;
 
     const newUser = {
       id: uuid(),
@@ -258,6 +304,8 @@ export class User {
       role: UserRole.USER,
       avatar: request.avatar,
       password: hashedPassword,
+      provider: request.provider,
+      providerUserId: request.providerUserId,
       isActive: true,
       status: UserStatus.ONLINE,
     };

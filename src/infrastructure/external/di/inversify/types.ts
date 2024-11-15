@@ -1,5 +1,3 @@
-import { UserPrismaRepository } from "@infrastructure/persistence/repositories/user/impls/UserPrismaRepository";
-
 // Define types
 export const TYPES = {
   // REPOSITORIES
@@ -12,7 +10,8 @@ export const TYPES = {
   FindPostByIDUseCase: Symbol.for("FindPostByIDUseCase"),
 
   /* User */
-  RegisterUserUseCase: Symbol.for("RegisterUserUseCase"),
+  RegisterCredentialBasedUserUseCase: Symbol.for("RegisterUserCredentialBasedUseCase"),
+  GetUserByIdUseCase: Symbol.for("GetUserByIdUseCase"),
 
   /* USE CASES DEFINITION - END */
 

@@ -1,1 +1,1 @@
-export { IRegisterUserUseCase } from "./RegisterUserUsecase";
+export * from "./GetUserByIdUsecase";

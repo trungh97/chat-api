@@ -3,13 +3,15 @@ import { inject, injectable } from "inversify";
 import { ICreateUserRequestDTO } from "@domain/dtos/user";
 import { User } from "@domain/entities";
 import { IUserRepository } from "@domain/repositories";
-import { IRegisterUserUseCase } from "@domain/usecases/user";
-import { TYPES } from "@infrastructure/persistence/di/inversify";
-import { ILogger } from "@infrastructure/persistence/logger";
+import { IRegisterCredentialBasedUserUseCase } from "@domain/usecases/user/credential-based";
+import { TYPES } from "@infrastructure/external/di/inversify";
+import { ILogger } from "@shared/logger";
 import { UseCaseResponse } from "@shared/responses";
 
 @injectable()
-export class RegisterUserUseCase implements IRegisterUserUseCase {
+export class RegisterCredentialBasedUserUseCase
+  implements IRegisterCredentialBasedUserUseCase
+{
   constructor(
     @inject(TYPES.UserPrismaRepository) private userRepository: IUserRepository,
     @inject(TYPES.WinstonLogger) private logger: ILogger
@@ -19,7 +21,7 @@ export class RegisterUserUseCase implements IRegisterUserUseCase {
     request: ICreateUserRequestDTO
   ): Promise<UseCaseResponse<User>> {
     const user = await User.create(request);
-    const result = await this.userRepository.createUser(user);
+    const result = await this.userRepository.createCredentialBasedUser(user);
 
     if (result.error) {
       this.logger.error(result.error.message);

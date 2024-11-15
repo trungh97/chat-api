@@ -3,8 +3,8 @@ import { Post } from "@domain/entities";
 import { IPostRepository } from "@domain/repositories";
 import { IFindPostByIDUseCase } from "@domain/usecases/post";
 import { UseCaseResponse } from "@shared/responses";
-import { TYPES } from "@infrastructure/persistence/di/inversify";
-import { ILogger } from "@infrastructure/persistence/logger";
+import { TYPES } from "@infrastructure/external/di/inversify";
+import { ILogger } from "@shared/logger";
 
 @injectable()
 export class FindPostByIDUseCase implements IFindPostByIDUseCase {
@@ -24,7 +24,7 @@ export class FindPostByIDUseCase implements IFindPostByIDUseCase {
     this.logger.info(`Executing FindPostByIDUseCase with id ${id}...`);
     const result = await this.postRepository.findById(id);
 
-    if (!result.success) {
+    if (result.error) {
       return {
         data: null,
         error: result.error.message,

@@ -37,6 +37,11 @@ enum UserRole {
   USER
 }
 
+enum UserProvider {
+  GOOGLE
+  FACEBOOK
+}
+
 // Models
 model Post {
   id        String   @id @default(uuid())
@@ -51,8 +56,6 @@ model User {
   email     String      @unique @db.VarChar(255)
   firstName String?     @map("first_name") @db.VarChar(255)
   lastName  String?     @map("last_name") @db.VarChar(255)
-  password  String      @db.VarChar(255)
-  phone     String?     @unique
   role      UserRole?
   createdAt DateTime    @default(now()) @map("created_at")
   updatedAt DateTime    @updatedAt @map("updated_at")
@@ -67,6 +70,33 @@ model User {
   deletedConversations DeletedConversation[]
   contactOwners        Contact[]             @relation("ContactOwner")
   contactUsers         Contact[]             @relation("ContactUser")
+
+  federatedCredential FederatedCredential?
+  credentialBased     CredentialBasedAuth?
+}
+
+model FederatedCredential {
+  id             String       @id @default(uuid())
+  userId         String       @unique @map("user_id") @db.VarChar(255)
+  provider       UserProvider @map("provider")
+  providerUserId String       @map("provider_user_id") @db.VarChar(255)
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, provider])
+}
+
+model CredentialBasedAuth {
+  id        String   @id @default(uuid())
+  userId    String   @unique @map("user_id") @db.VarChar(255)
+  password  String   @map("password") @db.VarChar(255)
+  phone     String?  @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 model Message {
