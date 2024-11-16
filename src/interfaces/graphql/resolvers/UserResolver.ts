@@ -1,16 +1,18 @@
-import { ICreateUserRequestDTO } from "@domain/dtos/user";
-import { container, TYPES } from "@infrastructure/external/di/inversify";
-import { ILogger } from "@shared/logger";
-import { GlobalResponse } from "@shared/responses";
 import { StatusCodes } from "http-status-codes";
 import { Arg, Ctx, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 
+import { ICreateUserRequestDTO } from "@domain/dtos/user";
 import { IGetUserByIdUsecase } from "@domain/usecases/user";
+import { IRegisterCredentialBasedUserUseCase } from "@domain/usecases/user/credential-based";
+import { ILoginGoogleUserUseCase } from "@domain/usecases/user/federated-credential";
+import { container, TYPES } from "@infrastructure/external/di/inversify";
+import { ILogger } from "@shared/logger";
+import { GlobalResponse } from "@shared/responses";
+
 import { Context } from "types";
 import { UserDTO } from "../DTOs";
 import { UserMapper } from "../mappers/UserMapper";
 import { UserCreateMutationRequest } from "../types/user";
-import { IRegisterCredentialBasedUserUseCase } from "@domain/usecases/user/credential-based";
 
 const UserResponse = GlobalResponse(UserDTO);
 
@@ -19,15 +21,9 @@ class UserGlobalResponse extends UserResponse {}
 
 @Resolver()
 export class UserResolver {
-  /**
-   * The constructor of the UserResolver class.
-   *
-   * @param {IRegisterCredentialBasedUserUseCase} registerCredentialBasedUserUseCase - The register credential based user use case.
-   * @param {IGetUserByIdUsecase} getUserByIdUseCase - The get user by id use case.
-   * @param {ILogger} logger - The logger.
-   */
   constructor(
     private registerCredentialBasedUserUsecase: IRegisterCredentialBasedUserUseCase,
+    private loginGoogleUserUseCase: ILoginGoogleUserUseCase,
     private getUserByIdUseCase: IGetUserByIdUsecase,
     private logger: ILogger
   ) {
@@ -38,6 +34,10 @@ export class UserResolver {
 
     this.getUserByIdUseCase = container.get<IGetUserByIdUsecase>(
       TYPES.GetUserByIdUseCase
+    );
+
+    this.loginGoogleUserUseCase = container.get<ILoginGoogleUserUseCase>(
+      TYPES.LoginGoogleUserUseCase
     );
 
     this.logger = container.get<ILogger>(TYPES.WinstonLogger);
@@ -105,25 +105,36 @@ export class UserResolver {
     @Ctx() { req }: Context
   ): Promise<UserGlobalResponse> {
     try {
-      // TODO: verify the id token, get the payload and the user id
-      // Then check the user in the database
-      // If the user is not in the database, create it
-      // If the user is in the database: check the federated_credentials table record
-      // If the user is not in the federated_credentials table, create it
-      // Then set the user in the session
+      const result = await this.loginGoogleUserUseCase.execute(idToken);
+
+      if (!result.data) {
+        this.logger.error(result.error);
+        return {
+          error: result.error,
+        };
+      }
+
+      const loggedUser = result.data;
+
+      // Save the login user to session
+      req.session.userId = loggedUser.id;
 
       return {
-        data: null,
+        data: UserMapper.toDTO(result.data),
       };
     } catch (error) {
-      console.log(error);
-      return {};
+      this.logger.error(error.message);
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        error: error.message,
+        data: null,
+      };
     }
   }
 
   @Query(() => UserGlobalResponse)
-  me(@Ctx() { req }: Context): UserGlobalResponse {
-    if (!req.session.user.id) {
+  async me(@Ctx() { req }: Context): Promise<UserGlobalResponse> {
+    if (!req.session.userId) {
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
         message: "User is not authenticated",
@@ -131,9 +142,18 @@ export class UserResolver {
       };
     }
 
+    const result = await this.getUserByIdUseCase.execute(req.session.userId);
+
+    if (result.error) {
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        error: result.error,
+      };
+    }
+
     return {
       statusCode: StatusCodes.OK,
-      data: UserMapper.toDTO(req.session.user),
+      data: UserMapper.toDTO(result.data),
     };
   }
 }

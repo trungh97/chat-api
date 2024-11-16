@@ -21,6 +21,7 @@
     "preserveSymlinks": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": false
   },
   "include": ["src/**/*.ts", "node_modules/@prisma/client/**/*.d.ts"],
   "exclude": ["node_modules"]

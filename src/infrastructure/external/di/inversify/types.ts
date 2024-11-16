@@ -3,6 +3,7 @@ export const TYPES = {
   // REPOSITORIES
   PostPrismaRepository: Symbol.for("PostPrismaRepository"),
   UserPrismaRepository: Symbol.for("UserPrismaRepository"),
+  UserRedisRepository: Symbol.for("UserRedisRepository"),
 
   /* USE CASES DEFINITION - BEGIN*/
 
@@ -10,8 +11,11 @@ export const TYPES = {
   FindPostByIDUseCase: Symbol.for("FindPostByIDUseCase"),
 
   /* User */
-  RegisterCredentialBasedUserUseCase: Symbol.for("RegisterUserCredentialBasedUseCase"),
+  RegisterCredentialBasedUserUseCase: Symbol.for(
+    "RegisterUserCredentialBasedUseCase"
+  ),
   GetUserByIdUseCase: Symbol.for("GetUserByIdUseCase"),
+  LoginGoogleUserUseCase: Symbol.for("LoginGoogleUserUseCase"),
 
   /* USE CASES DEFINITION - END */
 
@@ -19,4 +23,5 @@ export const TYPES = {
   PrismaClient: Symbol.for("PrismaClient"),
   WinstonLogger: Symbol.for("WinstonLogger"),
   RedisClient: Symbol.for("RedisClient"),
+  OAuth2Client: Symbol.for("OAuth2Client"),
 };

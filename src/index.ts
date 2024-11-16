@@ -15,8 +15,10 @@ import "reflect-metadata";
 import { buildSchema } from "type-graphql";
 import { Context } from "types";
 
+import config from "@config/index";
+
 dotenv.config();
-const port = 9000;
+const port = config.app.port;
 const __prod__ = process.env.NODE_ENV === "production";
 
 const main = async () => {
@@ -55,7 +57,7 @@ const main = async () => {
         secure: __prod__,
       },
       saveUninitialized: false,
-      secret: process.env.SESSION_SECRET,
+      secret: config.cache.redis.secret,
       resave: false,
     })
   );
@@ -63,7 +65,7 @@ const main = async () => {
   app.use(
     "/graphql",
     cors<cors.CorsRequest>({
-      origin: process.env.FRONTEND_URI,
+      origin: config.app.frontendUrl,
       credentials: true,
     }),
     express.json(),

@@ -12,6 +12,15 @@ export interface IUserRepository {
   getUserById(id: string): Promise<RepositoryResponse<User, Error>>;
 
   /**
+   * Retrieves the user's information based on the user email.
+   *
+   * @async
+   * @param {string} email - The user email.
+   * @returns {Promise<RepositoryResponse<User, Error>>} The user's information.
+   */
+  findUserByEmail(email: string): Promise<RepositoryResponse<User, Error>>;
+
+  /**
    * Create a new credential based user.
    *
    * @async

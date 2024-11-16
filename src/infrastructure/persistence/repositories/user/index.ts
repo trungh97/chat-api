@@ -1,1 +1,2 @@
-export { UserRedisRepository } from "./impls/UserRedisRepository";
+export * from './UserRedisRepository'
+export * from "./UserPrismaRepository";

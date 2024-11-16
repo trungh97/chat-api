@@ -20,40 +20,66 @@ export class UserPrismaRepository implements IUserRepository {
   ) {}
 
   /**
-   * Converts a user entity from the Prisma model to the domain model for a credential based user.
+   * Maps a user entity retrieved from the persistence layer to a user entity in the domain model.
    *
    * @param {UserPrismaModel} userPrismaModel the user entity from the Prisma model
-   * @param {CredentialBasedAuthPrismaModel} credentialBasedAuthPrismaModel the credential based auth entity from the Prisma model
-   * @returns {User} the user entity in the domain model
+   * @param {FederatedCredentialPrismaModel} federatedCredentialPrismaModel the federated credential entity from the Prisma model
+   * @param {CredentialBasedAuthPrismaModel} credentialBasedPrismaModel the credential based auth entity from the Prisma model
+   * @returns {User} the mapped user entity in the domain model
    */
-  private convertCredentialBasedUserFromPersistenceToDomain(
+  private toDomainFromPersistence(
     userPrismaModel: UserPrismaModel,
-    credentialBasedAuthPrismaModel: CredentialBasedAuthPrismaModel
-  ): User {
+    federatedCredentialPrismaModel?: FederatedCredentialPrismaModel,
+    credentialBasedPrismaModel?: CredentialBasedAuthPrismaModel
+  ) {
     const user = {
       ...userPrismaModel,
-      phone: credentialBasedAuthPrismaModel.phone,
+      ...(credentialBasedPrismaModel && {
+        phone: credentialBasedPrismaModel.phone,
+      }),
+      ...(federatedCredentialPrismaModel && {
+        provider: federatedCredentialPrismaModel.provider,
+        providerUserId: federatedCredentialPrismaModel.providerUserId,
+      }),
     };
     return new User(user);
   }
 
-  /**
-   * Converts a user entity from the Prisma model to the domain model for a federated credential user.
-   *
-   * @param {UserPrismaModel} userPrismaModel the user entity from the Prisma model
-   * @param {FederatedCredentialPrismaModel} federatedCredentialPrismaModel the federated credential entity from the Prisma model
-   * @returns {User} the user entity in the domain model
-   */
-  private convertFederatedCredentialUserFromPersistenceToDomain(
-    userPrismaModel: UserPrismaModel,
-    federatedCredentialPrismaModel: FederatedCredentialPrismaModel
-  ) {
-    const user = {
-      ...userPrismaModel,
-      provider: federatedCredentialPrismaModel.provider,
-      providerUserId: federatedCredentialPrismaModel.providerUserId,
-    };
-    return new User(user);
+  async findUserByEmail(
+    email: string
+  ): Promise<RepositoryResponse<User, Error>> {
+    try {
+      const foundUser = await this.prisma.user.findUnique({
+        where: { email },
+        include: {
+          federatedCredential: true,
+          credentialBased: true,
+        },
+      });
+
+      if (!foundUser) {
+        return {
+          error: new Error("User not found"),
+          value: null,
+        };
+      }
+
+      const { federatedCredential, credentialBased } = foundUser;
+
+      return {
+        value: this.toDomainFromPersistence(
+          foundUser,
+          federatedCredential,
+          credentialBased
+        ),
+      };
+    } catch (error) {
+      this.logger.error(`Error getting user by email ${email}`);
+      return {
+        error: new Error(`Error getting user by email ${email}`),
+        value: null,
+      };
+    }
   }
 
   async getUserById(id: string): Promise<RepositoryResponse<User, Error>> {
@@ -74,32 +100,27 @@ export class UserPrismaRepository implements IUserRepository {
         };
       }
 
-      const { federatedCredential, credentialBased, ...userProps } = foundUser;
+      const { federatedCredential, credentialBased } = foundUser;
 
       // If found, check if the user is federated credential user (login with third-party provider)
       // If not, return the credential based user
       if (!federatedCredential || !federatedCredential.provider) {
-        const credentialBasedUser = new User({
-          ...userProps,
-          phone: credentialBased.phone,
-        });
-
         return {
-          value: credentialBasedUser,
+          value: this.toDomainFromPersistence(foundUser, null, credentialBased),
         };
       }
 
       // Else return the federated credential user
-      const federatedCredentialUser = new User({
-        ...userProps,
-        provider: federatedCredential.provider,
-        providerUserId: federatedCredential.providerUserId,
-      });
-
       return {
-        value: federatedCredentialUser,
+        value: this.toDomainFromPersistence(foundUser, federatedCredential),
       };
-    } catch (error) {}
+    } catch (error) {
+      this.logger.error(`Error getting user by id ${id}`);
+      return {
+        error: new Error(`Error getting user by id ${id}`),
+        value: null,
+      };
+    }
   }
 
   async createCredentialBasedUser(
@@ -158,8 +179,9 @@ export class UserPrismaRepository implements IUserRepository {
         };
       }
 
-      const response = this.convertCredentialBasedUserFromPersistenceToDomain(
+      const response = this.toDomainFromPersistence(
         createdUser,
+        null,
         createdCredentialBasedAuthUser
       );
 
@@ -203,8 +225,9 @@ export class UserPrismaRepository implements IUserRepository {
       }
 
       return {
-        value: this.convertCredentialBasedUserFromPersistenceToDomain(
+        value: this.toDomainFromPersistence(
           user,
+          null,
           credentialBasedAuthUser
         ),
       };
@@ -274,11 +297,10 @@ export class UserPrismaRepository implements IUserRepository {
         };
       }
 
-      const response =
-        this.convertFederatedCredentialUserFromPersistenceToDomain(
-          createdUser,
-          createdFederatedUser
-        );
+      const response = this.toDomainFromPersistence(
+        createdUser,
+        createdFederatedUser
+      );
 
       return {
         value: response,
@@ -320,10 +342,7 @@ export class UserPrismaRepository implements IUserRepository {
       }
 
       return {
-        value: this.convertFederatedCredentialUserFromPersistenceToDomain(
-          user,
-          federatedCredentialUser
-        ),
+        value: this.toDomainFromPersistence(user, federatedCredentialUser),
       };
     } catch (error) {
       this.logger.error(`Error getting federated credential user by id ${id}`);

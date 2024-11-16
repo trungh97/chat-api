@@ -15,11 +15,12 @@ export class UserMapper {
       firstName: user.firstName,
       lastName: user.lastName,
       role: user.role,
-      password: user.password,
       phone: user.phone,
-      avatar: user.avatar || '',
+      avatar: user.avatar || "",
       isActive: user.isActive,
       status: user.status,
+      provider: user.provider,
+      providerUserId: user.providerUserId,
     };
   }
 
