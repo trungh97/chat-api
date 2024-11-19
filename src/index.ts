@@ -1,3 +1,6 @@
+import "reflect-metadata";
+import dotenv from "dotenv";
+dotenv.config();
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
@@ -7,17 +10,14 @@ import { PostResolver } from "@interfaces/graphql/resolvers/PostResolver";
 import RedisStore from "connect-redis";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import dotenv from "dotenv";
 import express from "express";
 import session from "express-session";
 import http from "http";
-import "reflect-metadata";
 import { buildSchema } from "type-graphql";
 import { Context } from "types";
 
-import config from "@config/index";
+import config from "@config/config";
 
-dotenv.config();
 const port = config.app.port;
 const __prod__ = process.env.NODE_ENV === "production";
 

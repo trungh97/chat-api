@@ -20,10 +20,10 @@ export class LoginGoogleUserUseCase implements ILoginGoogleUserUseCase {
     @inject(TYPES.OAuth2Client) private oauth2Client: OAuth2Client
   ) {}
 
-  async execute(idToken: string): Promise<UseCaseResponse<User>> {
+  async execute(code: string): Promise<UseCaseResponse<User>> {
     const tokenPayload = await verifyIdTokenAndGetPayload(
       this.oauth2Client,
-      idToken
+      code
     );
 
     if (!tokenPayload) {

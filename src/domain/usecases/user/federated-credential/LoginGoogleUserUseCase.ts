@@ -6,8 +6,8 @@ export interface ILoginGoogleUserUseCase {
    * Executes the login google user use case.
    *
    * @async
-   * @param {string} idToken - The request google id token.
+   * @param {string} code - The request authorization code.
    * @returns {Promise<UseCaseResponse<User>>} The response data.
    */
-  execute(idToken: string): Promise<UseCaseResponse<User>>;
+  execute(code: string): Promise<UseCaseResponse<User>>;
 }

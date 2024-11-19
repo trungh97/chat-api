@@ -1,4 +1,7 @@
-import { Config } from "./Config";
+import { Config } from "./config";
+import dotenv from 'dotenv'
+
+dotenv.config();
 
 const development: Config = {
   app: {
