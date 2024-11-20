@@ -6,6 +6,7 @@ import { IGetUserByIdUsecase } from "@domain/usecases/user";
 import { IRegisterCredentialBasedUserUseCase } from "@domain/usecases/user/credential-based";
 import { ILoginGoogleUserUseCase } from "@domain/usecases/user/federated-credential";
 import { container, TYPES } from "@infrastructure/external/di/inversify";
+import { COOKIE_NAME } from "@shared/constants";
 import { ILogger } from "@shared/logger";
 import { GlobalResponse } from "@shared/responses";
 
@@ -101,11 +102,11 @@ export class UserResolver {
 
   @Mutation(() => UserGlobalResponse)
   async googleLogin(
-    @Arg("idToken", () => String) idToken: string,
+    @Arg("code", () => String) code: string,
     @Ctx() { req }: Context
   ): Promise<UserGlobalResponse> {
     try {
-      const result = await this.loginGoogleUserUseCase.execute(idToken);
+      const result = await this.loginGoogleUserUseCase.execute(code);
 
       if (!result.data) {
         this.logger.error(result.error);
@@ -155,5 +156,20 @@ export class UserResolver {
       statusCode: StatusCodes.OK,
       data: UserMapper.toDTO(result.data),
     };
+  }
+
+  @Mutation(() => Boolean)
+  logout(@Ctx() { req, res }: Context): Promise<boolean> {
+    return new Promise((resolve, _) => {
+      res.clearCookie(COOKIE_NAME);
+
+      req.session.destroy((error) => {
+        if (error) {
+          this.logger.error("Error destroy session when logging out!");
+          resolve(false);
+        }
+        resolve(true);
+      });
+    });
   }
 }
