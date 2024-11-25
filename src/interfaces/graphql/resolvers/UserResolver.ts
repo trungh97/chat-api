@@ -3,7 +3,11 @@ import { Arg, Ctx, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 
 import { ICreateUserRequestDTO } from "@domain/dtos/user";
 import { IGetUserByIdUsecase } from "@domain/usecases/user";
-import { IRegisterCredentialBasedUserUseCase } from "@domain/usecases/user/credential-based";
+import {
+  ILoginCredentialBasedUserRequestDTO,
+  ILoginCredentialBasedUserUseCase,
+  IRegisterCredentialBasedUserUseCase,
+} from "@domain/usecases/user/credential-based";
 import { ILoginGoogleUserUseCase } from "@domain/usecases/user/federated-credential";
 import { container, TYPES } from "@infrastructure/external/di/inversify";
 import { COOKIE_NAME } from "@shared/constants";
@@ -13,7 +17,7 @@ import { GlobalResponse } from "@shared/responses";
 import { Context } from "types";
 import { UserDTO } from "../DTOs";
 import { UserMapper } from "../mappers/UserMapper";
-import { UserCreateMutationRequest } from "../types/user";
+import { UserCreateMutationRequest, UserLoginInput } from "../types/user";
 
 const UserResponse = GlobalResponse(UserDTO);
 
@@ -25,6 +29,7 @@ export class UserResolver {
   constructor(
     private registerCredentialBasedUserUsecase: IRegisterCredentialBasedUserUseCase,
     private loginGoogleUserUseCase: ILoginGoogleUserUseCase,
+    private loginCredentialBasedUserUseCase: ILoginCredentialBasedUserUseCase,
     private getUserByIdUseCase: IGetUserByIdUsecase,
     private logger: ILogger
   ) {
@@ -40,6 +45,11 @@ export class UserResolver {
     this.loginGoogleUserUseCase = container.get<ILoginGoogleUserUseCase>(
       TYPES.LoginGoogleUserUseCase
     );
+
+    this.loginCredentialBasedUserUseCase =
+      container.get<ILoginCredentialBasedUserUseCase>(
+        TYPES.LoginCredentialBasedUserUseCase
+      );
 
     this.logger = container.get<ILogger>(TYPES.WinstonLogger);
   }
@@ -128,7 +138,41 @@ export class UserResolver {
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         error: error.message,
-        data: null,
+      };
+    }
+  }
+
+  @Mutation(() => UserGlobalResponse)
+  async loginCredentialBasedUser(
+    @Arg("request", () => UserLoginInput)
+    request: ILoginCredentialBasedUserRequestDTO,
+    @Ctx() { req }: Context
+  ): Promise<UserGlobalResponse> {
+    try {
+      const result = await this.loginCredentialBasedUserUseCase.execute(
+        request
+      );
+
+      if (result.error) {
+        this.logger.error(result.error);
+        return {
+          error: result.error,
+        };
+      }
+
+      const loggedUser = result.data;
+
+      // Save the login user to session
+      req.session.userId = loggedUser.id;
+
+      return {
+        data: UserMapper.toDTO(result.data),
+      };
+    } catch (error) {
+      this.logger.error(error.message);
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        error: error.message,
       };
     }
   }

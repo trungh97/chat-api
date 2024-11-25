@@ -30,12 +30,16 @@ export class UserPrismaRepository implements IUserRepository {
   private toDomainFromPersistence(
     userPrismaModel: UserPrismaModel,
     federatedCredentialPrismaModel?: FederatedCredentialPrismaModel,
-    credentialBasedPrismaModel?: CredentialBasedAuthPrismaModel
+    credentialBasedPrismaModel?: CredentialBasedAuthPrismaModel,
+    options?: { includePassword?: boolean }
   ) {
     const user = {
       ...userPrismaModel,
       ...(credentialBasedPrismaModel && {
         phone: credentialBasedPrismaModel.phone,
+        ...(options?.includePassword && {
+          password: credentialBasedPrismaModel.password,
+        }),
       }),
       ...(federatedCredentialPrismaModel && {
         provider: federatedCredentialPrismaModel.provider,
@@ -70,7 +74,8 @@ export class UserPrismaRepository implements IUserRepository {
         value: this.toDomainFromPersistence(
           foundUser,
           federatedCredential,
-          credentialBased
+          credentialBased,
+          { includePassword: true }
         ),
       };
     } catch (error) {
@@ -93,26 +98,31 @@ export class UserPrismaRepository implements IUserRepository {
         },
       });
 
-      if (!foundUser) {
+      if (!foundUser.id) {
         return {
           error: new Error("User not found"),
           value: null,
         };
       }
 
-      const { federatedCredential, credentialBased } = foundUser;
+      const { federatedCredential, credentialBased, ...generalInfo } =
+        foundUser;
 
       // If found, check if the user is federated credential user (login with third-party provider)
       // If not, return the credential based user
       if (!federatedCredential || !federatedCredential.provider) {
         return {
-          value: this.toDomainFromPersistence(foundUser, null, credentialBased),
+          value: this.toDomainFromPersistence(
+            generalInfo,
+            null,
+            credentialBased
+          ),
         };
       }
 
       // Else return the federated credential user
       return {
-        value: this.toDomainFromPersistence(foundUser, federatedCredential),
+        value: this.toDomainFromPersistence(generalInfo, federatedCredential),
       };
     } catch (error) {
       this.logger.error(`Error getting user by id ${id}`);

@@ -16,6 +16,7 @@ export const TYPES = {
   ),
   GetUserByIdUseCase: Symbol.for("GetUserByIdUseCase"),
   LoginGoogleUserUseCase: Symbol.for("LoginGoogleUserUseCase"),
+  LoginCredentialBasedUserUseCase: Symbol.for("LoginUserUseCase"),
 
   /* USE CASES DEFINITION - END */
 
