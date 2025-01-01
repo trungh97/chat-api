@@ -156,6 +156,7 @@ export class UserResolver {
       if (result.error) {
         this.logger.error(result.error);
         return {
+          statusCode: StatusCodes.UNAUTHORIZED,
           error: result.error,
         };
       }
