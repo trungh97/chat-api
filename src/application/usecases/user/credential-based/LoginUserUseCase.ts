@@ -34,7 +34,7 @@ export class LoginCredentialBasedUserUseCase
       if (existingUser.error) {
         return {
           data: null,
-          error: "User not found",
+          error: "Invalid credentials",
         };
       }
 
