@@ -23,7 +23,10 @@ export abstract class IResponse {
  * @param {new () => T} TClass The class of the data associated with the response.
  * @returns {() => Response<T>} A constructor for the response object.
  */
-export function GlobalResponse<T>(TClass: new () => T) {
+export function GlobalResponse<T, IsArray extends boolean = false>(
+  TClass: new () => T,
+  isArray?: IsArray
+) {
   @ObjectType({ implements: IResponse })
   abstract class Response extends IResponse {
     /**
@@ -39,8 +42,8 @@ export function GlobalResponse<T>(TClass: new () => T) {
     /**
      * The data associated with the response (optional).
      */
-    @Field(() => TClass, { nullable: true })
-    data?: T;
+    @Field(() => (isArray ? [TClass] : TClass), { nullable: true })
+    data?: IsArray extends true ? T[] : T;
 
     /**
      * The error associated with the response (optional).

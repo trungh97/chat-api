@@ -2,7 +2,7 @@ import { ICursorBasedPaginationParams } from "@domain/interfaces/pagination/Curs
 import { IGetAllConversationsUsecase } from "@domain/usecases/conversation";
 import { container, TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
-import { GlobalResponse, GlobalResponses } from "@shared/responses";
+import { GlobalResponse } from "@shared/responses";
 import { StatusCodes } from "http-status-codes";
 import { Arg, ObjectType, Query, Resolver } from "type-graphql";
 import { ConversationDTO } from "../DTOs";
@@ -10,7 +10,7 @@ import { ConversationMapper } from "../mappers";
 import { CursorBasedPaginationParams } from "../types/pagination";
 
 const ConversationResponse = GlobalResponse(ConversationDTO);
-const ConversationListResponse = GlobalResponses(ConversationDTO);
+const ConversationListResponse = GlobalResponse(ConversationDTO, true);
 
 @ObjectType()
 class ConversationGlobalResponse extends ConversationResponse {}
