@@ -4,6 +4,7 @@ export const TYPES = {
   PostPrismaRepository: Symbol.for("PostPrismaRepository"),
   UserPrismaRepository: Symbol.for("UserPrismaRepository"),
   UserRedisRepository: Symbol.for("UserRedisRepository"),
+  ConversationPrismaRepository: Symbol.for("ConversationPrismaRepository"),
 
   /* USE CASES DEFINITION - BEGIN*/
 
@@ -17,6 +18,9 @@ export const TYPES = {
   GetUserByIdUseCase: Symbol.for("GetUserByIdUseCase"),
   LoginGoogleUserUseCase: Symbol.for("LoginGoogleUserUseCase"),
   LoginCredentialBasedUserUseCase: Symbol.for("LoginUserUseCase"),
+
+  /* Conversation */
+  GetAllConversationsUseCase: Symbol.for("GetAllConversationsUseCase"),
 
   /* USE CASES DEFINITION - END */
 

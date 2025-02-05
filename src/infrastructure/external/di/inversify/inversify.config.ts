@@ -3,12 +3,18 @@ import { Container } from "inversify";
 import "reflect-metadata";
 import { TYPES } from "./types";
 
+import { GetAllConversationsUseCase } from "@application/usecases/conversation";
 import { FindPostByIDUseCase } from "@application/usecases/post";
 import { GetUserByIdUsecase } from "@application/usecases/user";
 import { RegisterCredentialBasedUserUseCase } from "@application/usecases/user/credential-based";
 import { LoginCredentialBasedUserUseCase } from "@application/usecases/user/credential-based/LoginUserUseCase";
 import { LoginGoogleUserUseCase } from "@application/usecases/user/federated-credential/LoginGoogleUserUseCase";
-import { IPostRepository, IUserRepository } from "@domain/repositories";
+import {
+  IConversationRepository,
+  IPostRepository,
+  IUserRepository,
+} from "@domain/repositories";
+import { IGetAllConversationsUsecase } from "@domain/usecases/conversation";
 import { IFindPostByIDUseCase } from "@domain/usecases/post";
 import { IGetUserByIdUsecase } from "@domain/usecases/user";
 import {
@@ -19,6 +25,7 @@ import { ILoginGoogleUserUseCase } from "@domain/usecases/user/federated-credent
 import { googleOAuth2Client } from "@infrastructure/external/auth/google";
 import { prismaClient } from "@infrastructure/persistence/databases/mysql/connection";
 import { redisClient } from "@infrastructure/persistence/databases/redis/connection";
+import { ConversationPrismaRepository } from "@infrastructure/persistence/repositories/conversation";
 import { PostPrismaRepository } from "@infrastructure/persistence/repositories/post/PostPrismaRepository";
 import { UserPrismaRepository } from "@infrastructure/persistence/repositories/user";
 import {
@@ -48,6 +55,9 @@ container
 container
   .bind<IUserRedisRepository>(TYPES.UserRedisRepository)
   .to(UserRedisRepository);
+container
+  .bind<IConversationRepository>(TYPES.ConversationPrismaRepository)
+  .to(ConversationPrismaRepository);
 
 // Binding use cases
 container
@@ -67,6 +77,9 @@ container
 container
   .bind<ILoginCredentialBasedUserUseCase>(TYPES.LoginCredentialBasedUserUseCase)
   .to(LoginCredentialBasedUserUseCase);
+container
+  .bind<IGetAllConversationsUsecase>(TYPES.GetAllConversationsUseCase)
+  .to(GetAllConversationsUseCase);
 
 export { container };
 

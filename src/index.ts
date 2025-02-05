@@ -3,8 +3,11 @@ import { expressMiddleware } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import config from "@config/config";
 import { redisClient } from "@infrastructure/persistence/databases/redis/connection";
-import { UserResolver } from "@interfaces/graphql/resolvers";
-import { PostResolver } from "@interfaces/graphql/resolvers/PostResolver";
+import {
+  ConversationResolver,
+  UserResolver,
+  PostResolver,
+} from "@interfaces/graphql/resolvers";
 import { COOKIE_NAME } from "@shared/constants";
 import RedisStore from "connect-redis";
 import cookieParser from "cookie-parser";
@@ -28,7 +31,7 @@ const main = async () => {
   app.use(express.urlencoded({ extended: false }));
 
   const schema = await buildSchema({
-    resolvers: [PostResolver, UserResolver],
+    resolvers: [PostResolver, UserResolver, ConversationResolver],
   });
 
   const server = new ApolloServer<Context>({
