@@ -58,7 +58,6 @@ class ConversationPrismaRepository implements IConversationRepository {
         },
       };
     } catch (error) {
-      console.log(error);
       this.logger.error(`Error getting all conversations: ${error.message}`);
       return {
         error: new Error(`Error getting all conversations: ${error.message}`),

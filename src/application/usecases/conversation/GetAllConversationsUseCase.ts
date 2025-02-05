@@ -25,7 +25,6 @@ class GetAllConversationsUseCase implements IGetAllConversationsUsecase {
       const { cursor, limit = PAGE_LIMIT } = params;
       const { value, error } =
         await this.conversationRepository.getAllConversations(cursor, limit);
-        console.log(value, error);
 
       if (error) {
         this.logger.error(error.message);
