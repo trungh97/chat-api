@@ -1,9 +1,10 @@
+import { ICreateConversationRequestDTO } from "@domain/dtos/conversation";
+import { v4 as uuid } from "uuid";
+
 export interface ConversationProps {
   id: string;
   title: string;
   creatorId: string;
-  createdAt: Date;
-  updatedAt: Date;
   isArchived: boolean;
   deletedAt: Date;
 }
@@ -12,8 +13,6 @@ export class Conversation {
   private readonly _id: string;
   private _title: string;
   private _creatorId: string;
-  private _createdAt: Date;
-  private _updatedAt: Date;
   private _isArchived: boolean;
   private _deletedAt: Date;
 
@@ -21,8 +20,6 @@ export class Conversation {
     this._id = props.id;
     this._title = props.title;
     this._creatorId = props.creatorId;
-    this._createdAt = props.createdAt;
-    this._updatedAt = props.updatedAt;
     this._isArchived = props.isArchived;
     this._deletedAt = props.deletedAt;
   }
@@ -36,6 +33,8 @@ export class Conversation {
   }
 
   set title(title: string) {
+    if (title.length < 3)
+      throw new Error("Title must be at least 3 characters");
     this._title = title;
   }
 
@@ -45,22 +44,6 @@ export class Conversation {
 
   set creatorId(creatorId: string) {
     this._creatorId = creatorId;
-  }
-
-  get createdAt(): Date {
-    return this._createdAt;
-  }
-
-  set createdAt(createdAt: Date) {
-    this._createdAt = createdAt;
-  }
-
-  get updatedAt(): Date {
-    return this._updatedAt;
-  }
-
-  set updatedAt(updatedAt: Date) {
-    this._updatedAt = updatedAt;
   }
 
   get isArchived(): boolean {
@@ -77,5 +60,19 @@ export class Conversation {
 
   set deletedAt(deletedAt: Date) {
     this._deletedAt = deletedAt;
+  }
+
+  static async create(
+    request: ICreateConversationRequestDTO
+  ): Promise<Conversation> {
+    const newConversation = {
+      id: uuid(),
+      title: request.title,
+      creatorId: request.creatorId,
+      isArchived: false,
+      deletedAt: null,
+    };
+
+    return new Conversation(newConversation);
   }
 }

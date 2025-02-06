@@ -5,12 +5,12 @@ import {
 import { inject, injectable } from "inversify";
 
 import { Conversation } from "@domain/entities";
+import { ICursorBasedPaginationResponse } from "@domain/interfaces/pagination/CursorBasedPagination";
 import { IConversationRepository } from "@domain/repositories";
 import { TYPES } from "@infrastructure/external/di/inversify";
+import { PAGE_LIMIT } from "@shared/constants";
 import { ILogger } from "@shared/logger";
 import { RepositoryResponse } from "@shared/responses";
-import { ICursorBasedPaginationResponse } from "@domain/interfaces/pagination/CursorBasedPagination";
-import { PAGE_LIMIT } from "@shared/constants";
 
 @injectable()
 class ConversationPrismaRepository implements IConversationRepository {
@@ -26,8 +26,6 @@ class ConversationPrismaRepository implements IConversationRepository {
       id: conversationPrismaModel.id,
       title: conversationPrismaModel.title,
       creatorId: conversationPrismaModel.creatorId,
-      createdAt: conversationPrismaModel.createdAt,
-      updatedAt: conversationPrismaModel.updatedAt,
       isArchived: conversationPrismaModel.isArchived,
       deletedAt: conversationPrismaModel.deletedAt,
     });

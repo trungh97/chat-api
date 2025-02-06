@@ -3,7 +3,10 @@ import { Container } from "inversify";
 import "reflect-metadata";
 import { TYPES } from "./types";
 
-import { GetAllConversationsUseCase } from "@application/usecases/conversation";
+import {
+  CreateConversationUseCase,
+  GetAllConversationsUseCase,
+} from "@application/usecases/conversation";
 import { FindPostByIDUseCase } from "@application/usecases/post";
 import { GetUserByIdUsecase } from "@application/usecases/user";
 import { RegisterCredentialBasedUserUseCase } from "@application/usecases/user/credential-based";
@@ -14,7 +17,10 @@ import {
   IPostRepository,
   IUserRepository,
 } from "@domain/repositories";
-import { IGetAllConversationsUsecase } from "@domain/usecases/conversation";
+import {
+  ICreateConversationUsecase,
+  IGetAllConversationsUsecase,
+} from "@domain/usecases/conversation";
 import { IFindPostByIDUseCase } from "@domain/usecases/post";
 import { IGetUserByIdUsecase } from "@domain/usecases/user";
 import {
@@ -80,6 +86,9 @@ container
 container
   .bind<IGetAllConversationsUsecase>(TYPES.GetAllConversationsUseCase)
   .to(GetAllConversationsUseCase);
+container
+  .bind<ICreateConversationUsecase>(TYPES.CreateConversationUseCase)
+  .to(CreateConversationUseCase);
 
 export { container };
 
