@@ -14,8 +14,6 @@ export class ConversationMapper {
       creatorId: conversation.creatorId,
       deletedAt: conversation.deletedAt,
       isArchived: conversation.isArchived,
-      createdAt: conversation.createdAt,
-      updatedAt: conversation.updatedAt,
     };
   }
 

@@ -1,4 +1,4 @@
 export interface ICreateConversationRequestDTO {
-  title: string;
-  creatorId: string;
+  title?: string;
+  participants: string[];
 }

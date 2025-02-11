@@ -63,4 +63,21 @@ export interface IUserRepository {
   getFederatedCredentialUserById(
     id: string
   ): Promise<RepositoryResponse<User, Error>>;
+
+  /**
+   * Retrieves the user names with the given IDs.
+   *
+   * @param {string[]} userIds - An array of unique identifiers of the users.
+   * @returns {Promise<RepositoryResponse<string[], Error>>} A promise resolving to an array of names of the users.
+   */
+  getUserNamesByIds(userIds: string[]): Promise<
+    RepositoryResponse<
+      {
+        id: string;
+        firstName: string;
+        lastName: string;
+      }[],
+      Error
+    >
+  >;
 }

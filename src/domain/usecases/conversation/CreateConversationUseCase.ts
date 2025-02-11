@@ -15,6 +15,8 @@ export interface ICreateConversationUsecase {
    * @returns {Promise<UseCaseResponse<Conversation>>} The response data.
    */
   execute(
+    userId: string,
+    participants: string[],
     conversation: ICreateConversationRequestDTO
   ): Promise<UseCaseResponse<Conversation>>;
 }

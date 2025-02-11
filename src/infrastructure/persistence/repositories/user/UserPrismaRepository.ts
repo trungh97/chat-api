@@ -362,4 +362,45 @@ export class UserPrismaRepository implements IUserRepository {
       };
     }
   }
+
+  async getUserNamesByIds(
+    userIds: string[]
+  ): Promise<
+    RepositoryResponse<
+      { id: string; firstName: string; lastName: string }[],
+      Error
+    >
+  > {
+    try {
+      const users = await this.prisma.user.findMany({
+        where: {
+          id: {
+            in: userIds,
+          },
+        },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+        },
+      });
+
+      if (!users) {
+        return {
+          value: null,
+          error: new Error("Users not found"),
+        };
+      }
+
+      return {
+        value: users,
+      };
+    } catch (error) {
+      this.logger.error(`Error getting user names by ids ${userIds}`);
+      return {
+        error: new Error(error.message),
+        value: null,
+      };
+    }
+  }
 }

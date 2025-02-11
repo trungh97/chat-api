@@ -63,12 +63,13 @@ export class Conversation {
   }
 
   static async create(
+    userId: string,
     request: ICreateConversationRequestDTO
   ): Promise<Conversation> {
     const newConversation = {
       id: uuid(),
-      title: request.title,
-      creatorId: request.creatorId,
+      title: request.title || null,
+      creatorId: userId,
       isArchived: false,
       deletedAt: null,
     };

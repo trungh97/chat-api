@@ -30,7 +30,8 @@ export interface IConversationRepository {
    * @returns A promise resolving to the created conversation.
    */
   createConversation(
-    conversation: Conversation
+    conversation: Conversation,
+    participants: string[]
   ): Promise<RepositoryResponse<Conversation, Error>>;
 
   /**

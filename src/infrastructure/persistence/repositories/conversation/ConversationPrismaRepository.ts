@@ -97,9 +97,30 @@ class ConversationPrismaRepository implements IConversationRepository {
   }
 
   async createConversation(
-    conversation: Conversation
+    conversation: Conversation,
+    participants: string[]
   ): Promise<RepositoryResponse<Conversation, Error>> {
     try {
+      if (participants.length === 2) {
+        const existingConversation = await this.prisma.conversation.findFirst({
+          where: {
+            conversationParticipants: {
+              every: {
+                userId: {
+                  in: participants,
+                },
+              },
+            },
+          },
+        });
+
+        if (existingConversation) {
+          return {
+            value: this.toDomainFromPersistence(existingConversation),
+          };
+        }
+      }
+
       const newConversation = await this.prisma.conversation.create({
         data: {
           id: conversation.id,
@@ -107,6 +128,14 @@ class ConversationPrismaRepository implements IConversationRepository {
           creatorId: conversation.creatorId,
           isArchived: conversation.isArchived,
           deletedAt: conversation.deletedAt,
+          conversationParticipants: {
+            create: participants.map((participantId) => ({
+              userId: participantId,
+            })),
+          },
+        },
+        include: {
+          conversationParticipants: true,
         },
       });
 

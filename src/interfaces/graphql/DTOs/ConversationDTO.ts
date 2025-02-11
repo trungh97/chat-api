@@ -14,12 +14,6 @@ export class ConversationDTO {
   @Field(() => Boolean)
   isArchived: boolean;
 
-  @Field(() => Date)
+  @Field(() => Date, { nullable: true })
   deletedAt: Date;
-
-  @Field(() => Date)
-  createdAt: Date;
-
-  @Field(() => Date)
-  updatedAt: Date;
 }
