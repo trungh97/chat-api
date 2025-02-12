@@ -22,6 +22,8 @@ export const TYPES = {
   /* Conversation */
   GetAllConversationsUseCase: Symbol.for("GetAllConversationsUseCase"),
   CreateConversationUseCase: Symbol.for("CreateConversationUseCase"),
+  DeleteConversationUseCase: Symbol.for("DeleteConversationUseCase"),
+  FindConversationByIdUseCase: Symbol.for("FindConversationByIdUseCase"),
 
   /* USE CASES DEFINITION - END */
 

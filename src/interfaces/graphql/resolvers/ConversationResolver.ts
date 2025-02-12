@@ -2,6 +2,8 @@ import { ICreateConversationRequestDTO } from "@domain/dtos/conversation";
 import { ICursorBasedPaginationParams } from "@domain/interfaces/pagination/CursorBasedPagination";
 import {
   ICreateConversationUsecase,
+  IDeleteConversationUsecase,
+  IFindConversationByIdUseCase,
   IGetAllConversationsUsecase,
 } from "@domain/usecases/conversation";
 import { container, TYPES } from "@infrastructure/external/di/inversify";
@@ -17,6 +19,7 @@ import { CursorBasedPaginationParams } from "../types/pagination";
 
 const ConversationResponse = GlobalResponse(ConversationDTO);
 const ConversationListResponse = GlobalResponse(ConversationDTO, true);
+const ConversationDeleteResponse = GlobalResponse(Boolean);
 
 @ObjectType()
 class ConversationGlobalResponse extends ConversationResponse {}
@@ -24,11 +27,16 @@ class ConversationGlobalResponse extends ConversationResponse {}
 @ObjectType()
 class ConversationListGlobalResponse extends ConversationListResponse {}
 
+@ObjectType()
+class ConversationDeleteGlobalResponse extends ConversationDeleteResponse {}
+
 @Resolver()
 export class ConversationResolver {
   constructor(
     private getAllConversationsUseCase: IGetAllConversationsUsecase,
     private createConversationUseCase: ICreateConversationUsecase,
+    private deleteConverationUseCase: IDeleteConversationUsecase,
+    private findConversationByIdUseCase: IFindConversationByIdUseCase,
     private logger: ILogger
   ) {
     this.getAllConversationsUseCase =
@@ -38,6 +46,13 @@ export class ConversationResolver {
     this.createConversationUseCase = container.get<ICreateConversationUsecase>(
       TYPES.CreateConversationUseCase
     );
+    this.deleteConverationUseCase = container.get<IDeleteConversationUsecase>(
+      TYPES.DeleteConversationUseCase
+    );
+    this.findConversationByIdUseCase =
+      container.get<IFindConversationByIdUseCase>(
+        TYPES.FindConversationByIdUseCase
+      );
     this.logger = container.get<ILogger>(TYPES.WinstonLogger);
   }
 
@@ -115,6 +130,62 @@ export class ConversationResolver {
       };
     } catch (error) {
       this.logger.error(`Error creating conversation: ${error.message}`);
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      };
+    }
+  }
+
+  @Mutation(() => ConversationDeleteGlobalResponse)
+  async deleteConversation(
+    @Arg("conversationId", () => String) conversationId: string,
+    @Ctx() { req }: Context
+  ): Promise<ConversationDeleteGlobalResponse> {
+    try {
+      if (!req.session.userId) {
+        return {
+          statusCode: StatusCodes.UNAUTHORIZED,
+          error: "User is not authenticated",
+        };
+      }
+
+      // Check if the conversation exists
+      const { data: conversation, error } =
+        await this.findConversationByIdUseCase.execute(conversationId);
+
+      if (!conversation || error) {
+        return {
+          statusCode: StatusCodes.NOT_FOUND,
+          error: "Conversation not found",
+        };
+      }
+
+      if (conversation.creatorId !== req.session.userId) {
+        return {
+          statusCode: StatusCodes.FORBIDDEN,
+          error: "You are not allowed to delete this conversation",
+        };
+      }
+
+      const result = await this.deleteConverationUseCase.execute(
+        conversationId
+      );
+
+      if (result.error) {
+        this.logger.error(result.error);
+        return {
+          error: result.error,
+          statusCode: StatusCodes.BAD_REQUEST,
+        };
+      }
+
+      return {
+        statusCode: StatusCodes.OK,
+        message: "Conversation deleted successfully!",
+      };
+    } catch (error) {
+      this.logger.error(`Error deleting conversation: ${error.message}`);
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         error: error.message,

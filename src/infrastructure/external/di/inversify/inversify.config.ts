@@ -5,6 +5,8 @@ import { TYPES } from "./types";
 
 import {
   CreateConversationUseCase,
+  DeleteConversationUseCase,
+  FindConversationByIdUseCase,
   GetAllConversationsUseCase,
 } from "@application/usecases/conversation";
 import { FindPostByIDUseCase } from "@application/usecases/post";
@@ -19,6 +21,8 @@ import {
 } from "@domain/repositories";
 import {
   ICreateConversationUsecase,
+  IDeleteConversationUsecase,
+  IFindConversationByIdUseCase,
   IGetAllConversationsUsecase,
 } from "@domain/usecases/conversation";
 import { IFindPostByIDUseCase } from "@domain/usecases/post";
@@ -89,6 +93,12 @@ container
 container
   .bind<ICreateConversationUsecase>(TYPES.CreateConversationUseCase)
   .to(CreateConversationUseCase);
+container
+  .bind<IDeleteConversationUsecase>(TYPES.DeleteConversationUseCase)
+  .to(DeleteConversationUseCase);
+container
+  .bind<IFindConversationByIdUseCase>(TYPES.FindConversationByIdUseCase)
+  .to(FindConversationByIdUseCase);
 
 export { container };
 

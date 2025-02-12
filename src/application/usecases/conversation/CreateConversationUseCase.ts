@@ -23,7 +23,6 @@ class CreateConversationUseCase implements ICreateConversationUsecase {
     conversation: ICreateConversationRequestDTO
   ): Promise<UseCaseResponse<Conversation>> {
     try {
-      // TODO: Check existence
       if (participants.length < 2) {
         return {
           data: null,
@@ -77,4 +76,3 @@ class CreateConversationUseCase implements ICreateConversationUsecase {
 }
 
 export { CreateConversationUseCase };
-
