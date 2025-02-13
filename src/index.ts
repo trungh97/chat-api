@@ -5,8 +5,8 @@ import config from "@config/config";
 import { redisClient } from "@infrastructure/persistence/databases/redis/connection";
 import {
   ConversationResolver,
-  UserResolver,
   PostResolver,
+  UserResolver,
 } from "@interfaces/graphql/resolvers";
 import { COOKIE_NAME } from "@shared/constants";
 import RedisStore from "connect-redis";
@@ -15,10 +15,12 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import session from "express-session";
+import { useServer } from "graphql-ws/use/ws";
 import http from "http";
 import "reflect-metadata";
 import { buildSchema } from "type-graphql";
 import { Context } from "types";
+import { WebSocketServer } from "ws";
 dotenv.config();
 
 const port = config.app.port;
@@ -34,9 +36,27 @@ const main = async () => {
     resolvers: [PostResolver, UserResolver, ConversationResolver],
   });
 
+  const webSocketServer = new WebSocketServer({
+    server: httpServer,
+    path: "/graphql",
+  });
+
+  const serverCleanUp = useServer({ schema }, webSocketServer);
+
   const server = new ApolloServer<Context>({
     schema,
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+    plugins: [
+      ApolloServerPluginDrainHttpServer({ httpServer }),
+      {
+        async serverWillStart() {
+          return {
+            async drainServer() {
+              await serverCleanUp.dispose();
+            },
+          };
+        },
+      },
+    ],
   });
   await server.start();
 
