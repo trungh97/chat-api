@@ -3,6 +3,7 @@ import { expressMiddleware } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import config from "@config/config";
 import { redisClient } from "@infrastructure/persistence/databases/redis/connection";
+import { pubSub } from "@infrastructure/persistence/websocket/connection";
 import {
   ConversationResolver,
   PostResolver,
@@ -34,6 +35,7 @@ const main = async () => {
 
   const schema = await buildSchema({
     resolvers: [PostResolver, UserResolver, ConversationResolver],
+    pubSub,
   });
 
   const webSocketServer = new WebSocketServer({

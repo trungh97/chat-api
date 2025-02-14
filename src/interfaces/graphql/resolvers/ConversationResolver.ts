@@ -7,10 +7,24 @@ import {
   IGetAllConversationsUsecase,
 } from "@domain/usecases/conversation";
 import { container, TYPES } from "@infrastructure/external/di/inversify";
+import {
+  NewConversationPayload,
+  pubSub,
+  Topic,
+} from "@infrastructure/persistence/websocket/connection";
 import { ILogger } from "@shared/logger";
 import { GlobalResponse } from "@shared/responses";
 import { StatusCodes } from "http-status-codes";
-import { Arg, Ctx, Mutation, ObjectType, Query, Resolver } from "type-graphql";
+import {
+  Arg,
+  Ctx,
+  Mutation,
+  ObjectType,
+  Query,
+  Resolver,
+  Root,
+  Subscription,
+} from "type-graphql";
 import { Context } from "types";
 import { ConversationDTO } from "../DTOs";
 import { ConversationMapper } from "../mappers";
@@ -123,6 +137,11 @@ export class ConversationResolver {
         };
       }
 
+      await pubSub.publish(
+        Topic.NEW_CONVERSATION,
+        ConversationMapper.toDTO(result.data)
+      );
+
       return {
         statusCode: StatusCodes.CREATED,
         message: "Conversation created successfully!",
@@ -191,5 +210,12 @@ export class ConversationResolver {
         error: error.message,
       };
     }
+  }
+
+  @Subscription(() => ConversationDTO, { topics: Topic.NEW_CONVERSATION })
+  newConversationAdded(
+    @Root() conversation: NewConversationPayload
+  ): ConversationDTO {
+    return conversation;
   }
 }

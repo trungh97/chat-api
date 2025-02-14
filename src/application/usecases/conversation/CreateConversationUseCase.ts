@@ -23,7 +23,10 @@ class CreateConversationUseCase implements ICreateConversationUsecase {
     conversation: ICreateConversationRequestDTO
   ): Promise<UseCaseResponse<Conversation>> {
     try {
-      if (participants.length < 2) {
+      if (
+        participants.length < 1 ||
+        (participants.length === 1 && participants[0] === userId)
+      ) {
         return {
           data: null,
           error: "Invalid request",
