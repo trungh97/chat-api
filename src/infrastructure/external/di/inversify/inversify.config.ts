@@ -3,6 +3,7 @@ import { Container } from "inversify";
 import "reflect-metadata";
 import { TYPES } from "./types";
 
+import { CreateContactUseCase, DeleteContactUseCase, FindContactByIdUseCase, GetContactsByUserIdUseCase } from "@application/usecases/contact";
 import {
   CreateConversationUseCase,
   DeleteConversationUseCase,
@@ -15,10 +16,12 @@ import { RegisterCredentialBasedUserUseCase } from "@application/usecases/user/c
 import { LoginCredentialBasedUserUseCase } from "@application/usecases/user/credential-based/LoginUserUseCase";
 import { LoginGoogleUserUseCase } from "@application/usecases/user/federated-credential/LoginGoogleUserUseCase";
 import {
+  IContactRepository,
   IConversationRepository,
   IPostRepository,
   IUserRepository,
 } from "@domain/repositories";
+import { ICreateContactUseCase, IDeleteContactUseCase, IFindContactByIdUseCase, IGetContactsByUserIdUseCase } from "@domain/usecases/contact";
 import {
   ICreateConversationUsecase,
   IDeleteConversationUsecase,
@@ -35,6 +38,7 @@ import { ILoginGoogleUserUseCase } from "@domain/usecases/user/federated-credent
 import { googleOAuth2Client } from "@infrastructure/external/auth/google";
 import { prismaClient } from "@infrastructure/persistence/databases/mysql/connection";
 import { redisClient } from "@infrastructure/persistence/databases/redis/connection";
+import { ContactPrismaRepository } from "@infrastructure/persistence/repositories/contact";
 import { ConversationPrismaRepository } from "@infrastructure/persistence/repositories/conversation";
 import { PostPrismaRepository } from "@infrastructure/persistence/repositories/post/PostPrismaRepository";
 import { UserPrismaRepository } from "@infrastructure/persistence/repositories/user";
@@ -68,6 +72,9 @@ container
 container
   .bind<IConversationRepository>(TYPES.ConversationPrismaRepository)
   .to(ConversationPrismaRepository);
+container
+  .bind<IContactRepository>(TYPES.ContactPrismaRepository)
+  .to(ContactPrismaRepository);
 
 // Binding use cases
 container
@@ -99,6 +106,18 @@ container
 container
   .bind<IFindConversationByIdUseCase>(TYPES.FindConversationByIdUseCase)
   .to(FindConversationByIdUseCase);
+container
+  .bind<IGetContactsByUserIdUseCase>(TYPES.GetContactsByUserIdUseCase)
+  .to(GetContactsByUserIdUseCase);
+container
+  .bind<ICreateContactUseCase>(TYPES.CreateContactUseCase)
+  .to(CreateContactUseCase)
+container
+  .bind<IDeleteContactUseCase>(TYPES.DeleteContactUseCase)
+  .to(DeleteContactUseCase);
+container
+  .bind<IFindContactByIdUseCase>(TYPES.FindContactByIdUseCase)
+  .to(FindContactByIdUseCase);
 
 export { container };
 

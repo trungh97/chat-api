@@ -8,6 +8,7 @@ import {
   ConversationResolver,
   PostResolver,
   UserResolver,
+  ContactResolver,
 } from "@interfaces/graphql/resolvers";
 import { COOKIE_NAME } from "@shared/constants";
 import RedisStore from "connect-redis";
@@ -34,7 +35,12 @@ const main = async () => {
   app.use(express.urlencoded({ extended: false }));
 
   const schema = await buildSchema({
-    resolvers: [PostResolver, UserResolver, ConversationResolver],
+    resolvers: [
+      PostResolver,
+      UserResolver,
+      ConversationResolver,
+      ContactResolver,
+    ],
     pubSub,
   });
 

@@ -5,6 +5,7 @@ export const TYPES = {
   UserPrismaRepository: Symbol.for("UserPrismaRepository"),
   UserRedisRepository: Symbol.for("UserRedisRepository"),
   ConversationPrismaRepository: Symbol.for("ConversationPrismaRepository"),
+  ContactPrismaRepository: Symbol.for("ContactPrismaRepository"),
 
   /* USE CASES DEFINITION - BEGIN*/
 
@@ -24,6 +25,12 @@ export const TYPES = {
   CreateConversationUseCase: Symbol.for("CreateConversationUseCase"),
   DeleteConversationUseCase: Symbol.for("DeleteConversationUseCase"),
   FindConversationByIdUseCase: Symbol.for("FindConversationByIdUseCase"),
+
+  /* Contact */
+  CreateContactUseCase: Symbol.for("CreateContactUseCase"),
+  GetContactsByUserIdUseCase: Symbol.for("GetContactsByUserIdUseCase"),
+  FindContactByIdUseCase: Symbol.for("FindContactByIdUseCase"),
+  DeleteContactUseCase: Symbol.for("DeleteContactUseCase"),
 
   /* USE CASES DEFINITION - END */
 
