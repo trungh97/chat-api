@@ -42,6 +42,12 @@ enum UserProvider {
   FACEBOOK
 }
 
+enum FriendRequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
 // Models
 model Post {
   id        String   @id @default(uuid())
@@ -71,8 +77,10 @@ model User {
   contactOwners        Contact[]             @relation("ContactOwner")
   contactUsers         Contact[]             @relation("ContactUser")
 
-  federatedCredential FederatedCredential?
-  credentialBased     CredentialBasedAuth?
+  federatedCredential    FederatedCredential?
+  credentialBased        CredentialBasedAuth?
+  friendRequestSenders   FriendRequest[]      @relation("ReceiverId")
+  friendRequestReceivers FriendRequest[]      @relation("SenderId")
 }
 
 model FederatedCredential {
@@ -187,4 +195,18 @@ model Attachment {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   message Message @relation(fields: [messageId], references: [id])
+}
+
+model FriendRequest {
+  id         String              @id @default(uuid())
+  senderId   String              @map("sender_id")
+  receiverId String              @map("receiver_id")
+  status     FriendRequestStatus @map("status")
+  createdAt  DateTime            @default(now()) @map("created_at")
+
+  sender   User    @relation("SenderId", fields: [senderId], references: [id])
+  receiver User    @relation("ReceiverId", fields: [receiverId], references: [id])
+  userId   String?
+
+  @@index([senderId, receiverId])
 }
