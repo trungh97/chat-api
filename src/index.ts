@@ -5,10 +5,11 @@ import config from "@config/config";
 import { redisClient } from "@infrastructure/persistence/databases/redis/connection";
 import { pubSub } from "@infrastructure/persistence/websocket/connection";
 import {
+  ContactResolver,
   ConversationResolver,
+  FriendRequestResolver,
   PostResolver,
   UserResolver,
-  ContactResolver,
 } from "@interfaces/graphql/resolvers";
 import { COOKIE_NAME } from "@shared/constants";
 import RedisStore from "connect-redis";
@@ -40,6 +41,7 @@ const main = async () => {
       UserResolver,
       ConversationResolver,
       ContactResolver,
+      FriendRequestResolver,
     ],
     pubSub,
   });

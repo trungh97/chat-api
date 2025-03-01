@@ -1,0 +1,326 @@
+import { FriendRequestStatus } from "@domain/enums";
+import {
+  IChangeFriendRequestStatusUseCase,
+  ICreateFriendRequestUseCase,
+  IDeleteFriendRequestUseCase,
+  IGetFriendRequestByIdUseCase,
+  IGetFriendRequestByUsersUseCase,
+  IGetFriendRequestsByUserIdUseCase,
+} from "@domain/usecases/friend-request";
+import { container, TYPES } from "@infrastructure/external/di/inversify";
+import { ILogger } from "@shared/logger";
+import { GlobalResponse } from "@shared/responses";
+import { StatusCodes } from "http-status-codes";
+import { Arg, Ctx, Mutation, ObjectType, Query, Resolver } from "type-graphql";
+import { Context } from "types";
+import { FriendRequestDTO } from "../DTOs";
+import { FriendRequestMapper } from "../mappers";
+import { FriendRequestCreateMutationRequest } from "../types/friend-request";
+
+const FriendRequestResponseObjectType = GlobalResponse(FriendRequestDTO);
+const FriendRequestListResponseObjectType = GlobalResponse(
+  FriendRequestDTO,
+  true
+);
+
+@ObjectType()
+class FriendRequestResponse extends FriendRequestResponseObjectType {}
+
+@ObjectType()
+class FriendRequestListResponse extends FriendRequestListResponseObjectType {}
+
+@Resolver()
+export class FriendRequestResolver {
+  private createFriendRequestUseCase: ICreateFriendRequestUseCase;
+  private getFriendRequestByIdUseCase: IGetFriendRequestByIdUseCase;
+  private getFriendRequestByUsersUseCase: IGetFriendRequestByUsersUseCase;
+  private getFriendRequestsByUserIdUseCase: IGetFriendRequestsByUserIdUseCase;
+  private deleteFriendRequestUseCase: IDeleteFriendRequestUseCase;
+  private changeFriendRequestStatusUseCase: IChangeFriendRequestStatusUseCase;
+  private logger: ILogger;
+
+  constructor() {
+    this.createFriendRequestUseCase =
+      container.get<ICreateFriendRequestUseCase>(
+        TYPES.CreateFriendRequestUseCase
+      );
+    this.getFriendRequestByIdUseCase =
+      container.get<IGetFriendRequestByIdUseCase>(
+        TYPES.GetFriendRequestByIdUseCase
+      );
+    this.getFriendRequestByUsersUseCase =
+      container.get<IGetFriendRequestByUsersUseCase>(
+        TYPES.GetFriendRequestByUsersUseCase
+      );
+    this.getFriendRequestsByUserIdUseCase =
+      container.get<IGetFriendRequestsByUserIdUseCase>(
+        TYPES.GetFriendRequestsByUserIdUseCase
+      );
+    this.deleteFriendRequestUseCase =
+      container.get<IDeleteFriendRequestUseCase>(
+        TYPES.DeleteFriendRequestUseCase
+      );
+    this.changeFriendRequestStatusUseCase =
+      container.get<IChangeFriendRequestStatusUseCase>(
+        TYPES.ChangeFriendRequestStatusUseCase
+      );
+    this.logger = container.get<ILogger>(TYPES.WinstonLogger);
+  }
+
+  @Mutation(() => FriendRequestResponse)
+  async createFriendRequest(
+    @Arg("request", () => FriendRequestCreateMutationRequest)
+    request: { receiverId: string },
+    @Ctx()
+    {
+      req: {
+        session: { userId },
+      },
+    }: Context
+  ): Promise<FriendRequestResponse> {
+    try {
+      if (!userId) {
+        return {
+          statusCode: StatusCodes.UNAUTHORIZED,
+          error: "User is not authenticated",
+        };
+      }
+
+      const friendRequest = await this.createFriendRequestUseCase.execute({
+        ...request,
+        senderId: userId,
+      });
+
+      if (friendRequest.error || !friendRequest.value) {
+        this.logger.error(
+          `Error creating friend request: ${friendRequest.error}`
+        );
+        return {
+          statusCode: StatusCodes.NOT_FOUND,
+          error: "Failed to create new friend request",
+        };
+      }
+
+      return {
+        statusCode: StatusCodes.CREATED,
+        message: "Friend request created successfully!",
+        data: FriendRequestMapper.toDTO(friendRequest.value),
+      };
+    } catch (error) {
+      this.logger.error(`Error creating friend request: ${error.message}`);
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      };
+    }
+  }
+
+  @Query(() => FriendRequestListResponse)
+  async getFriendRequestsByUserId(
+    @Ctx()
+    {
+      req: {
+        session: { userId },
+      },
+    }: Context
+  ): Promise<FriendRequestListResponse> {
+    try {
+      if (!userId) {
+        return {
+          statusCode: StatusCodes.UNAUTHORIZED,
+          error: "User is not authenticated",
+        };
+      }
+
+      const result = await this.getFriendRequestsByUserIdUseCase.execute(
+        userId
+      );
+
+      if (result.error) {
+        return {
+          statusCode: StatusCodes.NOT_FOUND,
+          error: "Failed to fetch the friend request list!",
+        };
+      }
+
+      const { value: friendRequests } = result;
+
+      return {
+        statusCode: StatusCodes.OK,
+        data: friendRequests.map(FriendRequestMapper.toDTO),
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error getting friend request list of userId ${userId}: ${error.message}`
+      );
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      };
+    }
+  }
+
+  @Query(() => FriendRequestResponse)
+  async getFriendRequestById(
+    @Arg("id", () => String) id: string,
+    @Ctx()
+    {
+      req: {
+        session: { userId },
+      },
+    }: Context
+  ): Promise<FriendRequestResponse> {
+    try {
+      if (!userId) {
+        return {
+          statusCode: StatusCodes.UNAUTHORIZED,
+          error: "User is not authenticated",
+        };
+      }
+
+      const response = await this.getFriendRequestByIdUseCase.execute(id);
+
+      if (response.error || !response.value) {
+        this.logger.error(`Error fetching friend request: ${response.error}`);
+        return {
+          statusCode: StatusCodes.NOT_FOUND,
+          error: "Friend request not found",
+        };
+      }
+
+      return {
+        statusCode: StatusCodes.OK,
+        data: FriendRequestMapper.toDTO(response.value),
+      };
+    } catch (error) {
+      this.logger.error(`Error fetching friend request: ${error.message}`);
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      };
+    }
+  }
+
+  @Query(() => FriendRequestResponse)
+  async getFriendRequestByUsers(
+    @Arg("senderId", () => String) senderId: string,
+    @Arg("receiverId", () => String) receiverId: string,
+    @Ctx()
+    {
+      req: {
+        session: { userId },
+      },
+    }: Context
+  ): Promise<FriendRequestResponse> {
+    try {
+      if (!userId) {
+        return {
+          statusCode: StatusCodes.UNAUTHORIZED,
+          error: "User is not authenticated",
+        };
+      }
+
+      const response = await this.getFriendRequestByUsersUseCase.execute(
+        senderId,
+        receiverId
+      );
+
+      if (response.error || !response.value) {
+        this.logger.error(`Error fetching friend request: ${response.error}`);
+        return {
+          statusCode: StatusCodes.NOT_FOUND,
+          error: "Friend request not found",
+        };
+      }
+
+      return {
+        statusCode: StatusCodes.OK,
+        data: FriendRequestMapper.toDTO(response.value),
+      };
+    } catch (error) {
+      this.logger.error(`Error fetching friend request: ${error.message}`);
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      };
+    }
+  }
+
+  @Mutation(() => FriendRequestResponse)
+  async changeFriendRequestStatus(
+    @Arg("id", () => String) id: string,
+    @Arg("status", () => FriendRequestStatus) status: FriendRequestStatus,
+    @Ctx()
+    {
+      req: {
+        session: { userId },
+      },
+    }: Context
+  ): Promise<FriendRequestResponse> {
+    try {
+      if (!userId) {
+        return {
+          statusCode: StatusCodes.UNAUTHORIZED,
+          error: "User is not authenticated",
+        };
+      }
+
+      const response = await this.changeFriendRequestStatusUseCase.execute(
+        id,
+        status
+      );
+      if (response.error || !response.value) {
+        this.logger.error(
+          `Error changing friend request status: ${response.error}`
+        );
+        return {
+          statusCode: StatusCodes.NOT_FOUND,
+          error: "Failed to change friend request status",
+        };
+      }
+
+      return {
+        statusCode: StatusCodes.OK,
+        message: "Friend request status changed successfully!",
+        data: FriendRequestMapper.toDTO(response.value),
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error changing friend request status: ${error.message}`
+      );
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      };
+    }
+  }
+
+  @Mutation(() => Boolean)
+  async deleteFriendRequest(
+    @Arg("id", () => String) id: string,
+    @Ctx()
+    {
+      req: {
+        session: { userId },
+      },
+    }: Context
+  ): Promise<boolean> {
+    try {
+      if (!userId) {
+        return false;
+      }
+
+      const response = await this.deleteFriendRequestUseCase.execute(id);
+
+      if (response.error) {
+        this.logger.error(`Error deleting friend request: ${response.error}`);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      this.logger.error(`Error deleting friend request: ${error.message}`);
+      return false;
+    }
+  }
+}

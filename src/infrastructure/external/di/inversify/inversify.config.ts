@@ -3,13 +3,26 @@ import { Container } from "inversify";
 import "reflect-metadata";
 import { TYPES } from "./types";
 
-import { CreateContactUseCase, DeleteContactUseCase, FindContactByIdUseCase, GetContactsByUserIdUseCase } from "@application/usecases/contact";
+import {
+  CreateContactUseCase,
+  DeleteContactUseCase,
+  FindContactByIdUseCase,
+  GetContactsByUserIdUseCase,
+} from "@application/usecases/contact";
 import {
   CreateConversationUseCase,
   DeleteConversationUseCase,
   FindConversationByIdUseCase,
   GetAllConversationsUseCase,
 } from "@application/usecases/conversation";
+import {
+  ChangeFriendRequestStatusUseCase,
+  CreateFriendRequestUseCase,
+  DeleteFriendRequestUseCase,
+  GetFriendRequestByIdUseCase,
+  GetFriendRequestByUsersUseCase,
+  GetFriendRequestsByUserIdUseCase,
+} from "@application/usecases/friend-request";
 import { FindPostByIDUseCase } from "@application/usecases/post";
 import { GetUserByIdUsecase } from "@application/usecases/user";
 import { RegisterCredentialBasedUserUseCase } from "@application/usecases/user/credential-based";
@@ -18,16 +31,30 @@ import { LoginGoogleUserUseCase } from "@application/usecases/user/federated-cre
 import {
   IContactRepository,
   IConversationRepository,
+  IFriendRequestRepository,
   IPostRepository,
   IUserRepository,
 } from "@domain/repositories";
-import { ICreateContactUseCase, IDeleteContactUseCase, IFindContactByIdUseCase, IGetContactsByUserIdUseCase } from "@domain/usecases/contact";
+import {
+  ICreateContactUseCase,
+  IDeleteContactUseCase,
+  IFindContactByIdUseCase,
+  IGetContactsByUserIdUseCase,
+} from "@domain/usecases/contact";
 import {
   ICreateConversationUsecase,
   IDeleteConversationUsecase,
   IFindConversationByIdUseCase,
   IGetAllConversationsUsecase,
 } from "@domain/usecases/conversation";
+import {
+  IChangeFriendRequestStatusUseCase,
+  ICreateFriendRequestUseCase,
+  IDeleteFriendRequestUseCase,
+  IGetFriendRequestByIdUseCase,
+  IGetFriendRequestByUsersUseCase,
+  IGetFriendRequestsByUserIdUseCase,
+} from "@domain/usecases/friend-request";
 import { IFindPostByIDUseCase } from "@domain/usecases/post";
 import { IGetUserByIdUsecase } from "@domain/usecases/user";
 import {
@@ -40,6 +67,7 @@ import { prismaClient } from "@infrastructure/persistence/databases/mysql/connec
 import { redisClient } from "@infrastructure/persistence/databases/redis/connection";
 import { ContactPrismaRepository } from "@infrastructure/persistence/repositories/contact";
 import { ConversationPrismaRepository } from "@infrastructure/persistence/repositories/conversation";
+import { FriendRequestPrismaRepository } from "@infrastructure/persistence/repositories/friendRequest";
 import { PostPrismaRepository } from "@infrastructure/persistence/repositories/post/PostPrismaRepository";
 import { UserPrismaRepository } from "@infrastructure/persistence/repositories/user";
 import {
@@ -75,6 +103,9 @@ container
 container
   .bind<IContactRepository>(TYPES.ContactPrismaRepository)
   .to(ContactPrismaRepository);
+container
+  .bind<IFriendRequestRepository>(TYPES.FriendRequestPrismaRepository)
+  .to(FriendRequestPrismaRepository);
 
 // Binding use cases
 container
@@ -111,13 +142,35 @@ container
   .to(GetContactsByUserIdUseCase);
 container
   .bind<ICreateContactUseCase>(TYPES.CreateContactUseCase)
-  .to(CreateContactUseCase)
+  .to(CreateContactUseCase);
 container
   .bind<IDeleteContactUseCase>(TYPES.DeleteContactUseCase)
   .to(DeleteContactUseCase);
 container
   .bind<IFindContactByIdUseCase>(TYPES.FindContactByIdUseCase)
   .to(FindContactByIdUseCase);
+container
+  .bind<ICreateFriendRequestUseCase>(TYPES.CreateFriendRequestUseCase)
+  .to(CreateFriendRequestUseCase);
+container
+  .bind<IGetFriendRequestsByUserIdUseCase>(
+    TYPES.GetFriendRequestsByUserIdUseCase
+  )
+  .to(GetFriendRequestsByUserIdUseCase);
+container
+  .bind<IGetFriendRequestByIdUseCase>(TYPES.GetFriendRequestByIdUseCase)
+  .to(GetFriendRequestByIdUseCase);
+container
+  .bind<IGetFriendRequestByUsersUseCase>(TYPES.GetFriendRequestByUsersUseCase)
+  .to(GetFriendRequestByUsersUseCase);
+container
+  .bind<IDeleteFriendRequestUseCase>(TYPES.DeleteFriendRequestUseCase)
+  .to(DeleteFriendRequestUseCase);
+container
+  .bind<IChangeFriendRequestStatusUseCase>(
+    TYPES.ChangeFriendRequestStatusUseCase
+  )
+  .to(ChangeFriendRequestStatusUseCase);
 
 export { container };
 

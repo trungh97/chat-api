@@ -6,6 +6,7 @@ export const TYPES = {
   UserRedisRepository: Symbol.for("UserRedisRepository"),
   ConversationPrismaRepository: Symbol.for("ConversationPrismaRepository"),
   ContactPrismaRepository: Symbol.for("ContactPrismaRepository"),
+  FriendRequestPrismaRepository: Symbol.for("FriendRequestPrismaRepository"),
 
   /* USE CASES DEFINITION - BEGIN*/
 
@@ -25,6 +26,18 @@ export const TYPES = {
   CreateConversationUseCase: Symbol.for("CreateConversationUseCase"),
   DeleteConversationUseCase: Symbol.for("DeleteConversationUseCase"),
   FindConversationByIdUseCase: Symbol.for("FindConversationByIdUseCase"),
+
+  /* Friend Request */
+  CreateFriendRequestUseCase: Symbol.for("CreateFriendRequestUseCase"),
+  GetFriendRequestsByUserIdUseCase: Symbol.for(
+    "GetFriendRequestsByUserIdUseCase"
+  ),
+  GetFriendRequestByIdUseCase: Symbol.for("GetFriendRequestByIdUseCase"),
+  GetFriendRequestByUsersUseCase: Symbol.for("GetFriendRequestByUsersUseCase"),
+  DeleteFriendRequestUseCase: Symbol.for("DeleteFriendRequestUseCase"),
+  ChangeFriendRequestStatusUseCase: Symbol.for(
+    "ChangeFriendRequestStatusUseCase"
+  ),
 
   /* Contact */
   CreateContactUseCase: Symbol.for("CreateContactUseCase"),
