@@ -179,4 +179,36 @@ export class FriendRequestPrismaRepository implements IFriendRequestRepository {
       };
     }
   }
+
+  async findDeclinedFriendRequestsOlderThan(
+    days: number
+  ): Promise<RepositoryResponse<FriendRequest[], Error>> {
+    try {
+      const dateThreshold = new Date();
+      dateThreshold.setDate(dateThreshold.getDate() - days);
+
+      const friendRequests = await this.prisma.friendRequest.findMany({
+        where: {
+          status: FriendRequestStatus.DECLINED,
+          createdAt: {
+            lt: dateThreshold,
+          },
+        },
+      });
+
+      return {
+        value: friendRequests.map(this.toDomainFromPersistence),
+      };
+    } catch (e) {
+      this.logger.error(
+        `Error fetching declined friend requests older than ${days} days: ${e.message}`
+      );
+      return {
+        error: new Error(
+          `Error fetching declined friend requests older than ${days} days`
+        ),
+        value: null,
+      };
+    }
+  }
 }

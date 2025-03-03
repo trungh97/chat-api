@@ -3,6 +3,7 @@ import { expressMiddleware } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import config from "@config/config";
 import { redisClient } from "@infrastructure/persistence/databases/redis/connection";
+import { setupAllSchedulers } from "@infrastructure/persistence/scheduler";
 import { pubSub } from "@infrastructure/persistence/websocket/connection";
 import {
   ContactResolver,
@@ -106,6 +107,9 @@ const main = async () => {
       context: async ({ req, res }) => ({ req, res }),
     })
   );
+
+  // Setup cron jobs (background jobs)
+  setupAllSchedulers();
 
   await new Promise<void>(() =>
     httpServer.listen({ port }, () => {

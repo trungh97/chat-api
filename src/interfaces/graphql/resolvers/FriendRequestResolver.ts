@@ -1,4 +1,5 @@
 import { FriendRequestStatus } from "@domain/enums";
+import { ICreateContactUseCase } from "@domain/usecases/contact";
 import {
   IChangeFriendRequestStatusUseCase,
   ICreateFriendRequestUseCase,
@@ -16,6 +17,7 @@ import { Context } from "types";
 import { FriendRequestDTO } from "../DTOs";
 import { FriendRequestMapper } from "../mappers";
 import { FriendRequestCreateMutationRequest } from "../types/friend-request";
+import { IGetUserByIdUsecase } from "@domain/usecases/user";
 
 const FriendRequestResponseObjectType = GlobalResponse(FriendRequestDTO);
 const FriendRequestListResponseObjectType = GlobalResponse(
@@ -37,6 +39,8 @@ export class FriendRequestResolver {
   private getFriendRequestsByUserIdUseCase: IGetFriendRequestsByUserIdUseCase;
   private deleteFriendRequestUseCase: IDeleteFriendRequestUseCase;
   private changeFriendRequestStatusUseCase: IChangeFriendRequestStatusUseCase;
+  private createContactUseCase: ICreateContactUseCase;
+  private getUserByIdUseCase: IGetUserByIdUsecase;
   private logger: ILogger;
 
   constructor() {
@@ -64,6 +68,12 @@ export class FriendRequestResolver {
       container.get<IChangeFriendRequestStatusUseCase>(
         TYPES.ChangeFriendRequestStatusUseCase
       );
+    this.createContactUseCase = container.get<ICreateContactUseCase>(
+      TYPES.CreateContactUseCase
+    );
+    this.getUserByIdUseCase = container.get<IGetUserByIdUsecase>(
+      TYPES.GetUserByIdUseCase
+    );
     this.logger = container.get<ILogger>(TYPES.WinstonLogger);
   }
 
@@ -83,6 +93,24 @@ export class FriendRequestResolver {
         return {
           statusCode: StatusCodes.UNAUTHORIZED,
           error: "User is not authenticated",
+        };
+      }
+
+      if (userId === request.receiverId) {
+        return {
+          statusCode: StatusCodes.BAD_REQUEST,
+          error: "Sender and receiver cannot be the same",
+        };
+      }
+
+      // Validate receiverId
+      const receiverResponse = await this.getUserByIdUseCase.execute(
+        request.receiverId
+      );
+      if (receiverResponse.error || !receiverResponse.data.id) {
+        return {
+          statusCode: StatusCodes.NOT_FOUND,
+          error: "Invalid request",
         };
       }
 
@@ -279,9 +307,26 @@ export class FriendRequestResolver {
         };
       }
 
+      // If status is ACCEPTED, add new contact
+      if (status === FriendRequestStatus.ACCEPTED) {
+        const friendRequest = response.value;
+        const contactResponse = await this.createContactUseCase.execute({
+          userId: friendRequest.senderId,
+          contactId: friendRequest.receiverId,
+        });
+
+        if (contactResponse.error) {
+          this.logger.error(`Error creating contact: ${contactResponse.error}`);
+          return {
+            statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+            error: "Failed to create contact",
+          };
+        }
+      }
+
       return {
         statusCode: StatusCodes.OK,
-        message: "Friend request status changed successfully!",
+        message: "New friend added!",
         data: FriendRequestMapper.toDTO(response.value),
       };
     } catch (error) {

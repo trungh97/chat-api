@@ -70,4 +70,15 @@ export interface IFriendRequestRepository {
     senderId: string,
     receiverId: string
   ): Promise<RepositoryResponse<FriendRequest, Error>>;
+
+  /**
+   * Finds declined friend requests older than the specified days.
+   *
+   * @async
+   * @param {number} days - The day to compare.
+   * @returns {Promise<RepositoryResponse<FriendRequest[], Error>>} The declined friend requests older than the specified timestamp.
+   */
+  findDeclinedFriendRequestsOlderThan(
+    days: number
+  ): Promise<RepositoryResponse<FriendRequest[], Error>>;
 }

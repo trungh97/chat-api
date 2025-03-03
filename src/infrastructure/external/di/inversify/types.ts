@@ -38,6 +38,9 @@ export const TYPES = {
   ChangeFriendRequestStatusUseCase: Symbol.for(
     "ChangeFriendRequestStatusUseCase"
   ),
+  DeleteExpiredFriendRequestsUseCase: Symbol.for(
+    "DeleteExpiredFriendRequestsUseCase"
+  ),
 
   /* Contact */
   CreateContactUseCase: Symbol.for("CreateContactUseCase"),

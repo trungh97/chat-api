@@ -22,7 +22,6 @@ export class CreateFriendRequestUseCase implements ICreateFriendRequestUseCase {
   ): Promise<RepositoryResponse<FriendRequest, Error>> {
     try {
       const { senderId, receiverId } = request;
-      // TODO: Validate the sender and receiver ids
 
       // Check if the friend request already exists
       const existingFriendRequest =

@@ -27,7 +27,6 @@ export class ChangeFriendRequestStatusUseCase
     status: FriendRequestStatus
   ): Promise<RepositoryResponse<FriendRequest, Error>> {
     try {
-      // TODO: Can only change status from PENDING to ACCEPTED or DECLINED
       const friendRequestResponse =
         await this.friendRequestRepository.getFriendRequestById(id);
 
@@ -40,9 +39,19 @@ export class ChangeFriendRequestStatusUseCase
       }
 
       const friendRequest = friendRequestResponse.value;
+      if (
+        status === FriendRequestStatus.PENDING ||
+        friendRequest.status !== FriendRequestStatus.PENDING
+      ) {
+        return {
+          value: null,
+          error: new Error(
+            `Can not change Friend request status with id ${id}`
+          ),
+        };
+      }
       friendRequest.status = status;
       // TODO: if status is DECLINED, keep it for a period of time, then run a job to delete it
-      // TODO: if status is ACCEPTED, add new contact
 
       const updateResponse =
         await this.friendRequestRepository.changeFriendRequestStatus(

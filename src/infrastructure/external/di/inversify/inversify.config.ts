@@ -18,6 +18,7 @@ import {
 import {
   ChangeFriendRequestStatusUseCase,
   CreateFriendRequestUseCase,
+  DeleteExpiredFriendRequestsUseCase,
   DeleteFriendRequestUseCase,
   GetFriendRequestByIdUseCase,
   GetFriendRequestByUsersUseCase,
@@ -51,6 +52,7 @@ import {
   IChangeFriendRequestStatusUseCase,
   ICreateFriendRequestUseCase,
   IDeleteFriendRequestUseCase,
+  IDeleteExpiredFriendRequestsUseCase,
   IGetFriendRequestByIdUseCase,
   IGetFriendRequestByUsersUseCase,
   IGetFriendRequestsByUserIdUseCase,
@@ -171,6 +173,10 @@ container
     TYPES.ChangeFriendRequestStatusUseCase
   )
   .to(ChangeFriendRequestStatusUseCase);
+container
+  .bind<IDeleteExpiredFriendRequestsUseCase>(
+    TYPES.DeleteExpiredFriendRequestsUseCase
+  )
+  .to(DeleteExpiredFriendRequestsUseCase);
 
 export { container };
-
