@@ -1,4 +1,4 @@
-import { FriendRequest } from "@domain/entities";
+import { FriendRequest, User } from "@domain/entities";
 import { FriendRequestStatus } from "@domain/enums";
 import { IFriendRequestRepository } from "@domain/repositories";
 import { IChangeFriendRequestStatusUseCase } from "@domain/usecases/friend-request/ChangeFriendRequestStatusUseCase";
@@ -24,7 +24,8 @@ export class ChangeFriendRequestStatusUseCase
 
   async execute(
     id: string,
-    status: FriendRequestStatus
+    status: FriendRequestStatus,
+    currentUserId: User["id"]
   ): Promise<RepositoryResponse<FriendRequest, Error>> {
     try {
       const friendRequestResponse =
@@ -35,6 +36,15 @@ export class ChangeFriendRequestStatusUseCase
         return {
           value: null,
           error: new Error(`Friend request with id ${id} not found`),
+        };
+      }
+
+      if (currentUserId !== friendRequestResponse.value.receiverId) {
+        return {
+          value: null,
+          error: new Error(
+            `You are not allowed to change friend request status with id ${id}`
+          ),
         };
       }
 
@@ -51,7 +61,6 @@ export class ChangeFriendRequestStatusUseCase
         };
       }
       friendRequest.status = status;
-      // TODO: if status is DECLINED, keep it for a period of time, then run a job to delete it
 
       const updateResponse =
         await this.friendRequestRepository.changeFriendRequestStatus(

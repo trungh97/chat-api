@@ -144,7 +144,7 @@ export class FriendRequestResolver {
   }
 
   @Query(() => FriendRequestListResponse)
-  async getFriendRequestsByUserId(
+  async getMyFriendRequests(
     @Ctx()
     {
       req: {
@@ -248,6 +248,13 @@ export class FriendRequestResolver {
         };
       }
 
+      if (userId !== senderId && userId !== receiverId) {
+        return {
+          statusCode: StatusCodes.BAD_REQUEST,
+          error: "You are not allowed to fetch this friend request",
+        };
+      }
+
       const response = await this.getFriendRequestByUsersUseCase.execute(
         senderId,
         receiverId
@@ -295,7 +302,8 @@ export class FriendRequestResolver {
 
       const response = await this.changeFriendRequestStatusUseCase.execute(
         id,
-        status
+        status,
+        userId
       );
       if (response.error || !response.value) {
         this.logger.error(
@@ -352,6 +360,12 @@ export class FriendRequestResolver {
   ): Promise<boolean> {
     try {
       if (!userId) {
+        return false;
+      }
+
+      const friendRequest = await this.getFriendRequestByIdUseCase.execute(id);
+
+      if (friendRequest.value.senderId !== userId) {
         return false;
       }
 
