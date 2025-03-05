@@ -87,7 +87,7 @@ container.bind(TYPES.RedisClient).toConstantValue(redisClient);
 container.bind(TYPES.OAuth2Client).toConstantValue(googleOAuth2Client);
 
 // Bind logger
-container.bind<ILogger>(TYPES.WinstonLogger).to(WinstonLogger);
+container.bind<ILogger>(TYPES.WinstonLogger).to(WinstonLogger).inSingletonScope();
 
 // Binding repositories
 container
