@@ -110,15 +110,17 @@ model CredentialBasedAuth {
 model Message {
   id               String       @id @default(uuid())
   senderId         String       @map("sender_id") @db.VarChar(255)
+  conversationId   String       @map("conversation_id")
   messageType      MessageType? @map("message_type") // Enum for text, image, video, file
   replyToMessageId String?      @map("reply_to_message_id")
   content          String?
   createdAt        DateTime     @default(now()) @map("created_at")
   updatedAt        DateTime     @updatedAt @map("updated_at")
 
-  sender         User      @relation("Sender", fields: [senderId], references: [id])
-  replyToMessage Message?  @relation("Reply", fields: [replyToMessageId], references: [id])
-  replies        Message[] @relation("Reply")
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  sender         User         @relation("Sender", fields: [senderId], references: [id])
+  replyToMessage Message?     @relation("Reply", fields: [replyToMessageId], references: [id])
+  replies        Message[]    @relation("Reply")
 
   deletedMessages DeletedMessage[]
   attachments     Attachment[]
@@ -137,6 +139,7 @@ model Conversation {
 
   conversationParticipants Participant[]
   deletedConversations     DeletedConversation[]
+  Message                  Message[]
 }
 
 model Participant {
