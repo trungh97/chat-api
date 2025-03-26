@@ -1,7 +1,9 @@
 import { Contact } from "@domain/entities";
+import { ICursorBasedPaginationResponse } from "@domain/interfaces/pagination/CursorBasedPagination";
 import { IContactRepository } from "@domain/repositories";
 import { TYPES } from "@infrastructure/external/di/inversify";
 import { Contact as ContactPrismaModel, PrismaClient } from "@prisma/client";
+import { PAGE_LIMIT } from "@shared/constants";
 import { ILogger } from "@shared/logger";
 import { RepositoryResponse } from "@shared/responses";
 import { inject, injectable } from "inversify";
@@ -83,14 +85,30 @@ export class ContactPrismaRepository implements IContactRepository {
   }
 
   async getContactsByUserId(
-    userId: string
-  ): Promise<RepositoryResponse<Contact[], Error>> {
+    userId: string,
+    cursor?: string,
+    limit = PAGE_LIMIT
+  ): Promise<
+    RepositoryResponse<ICursorBasedPaginationResponse<Contact>, Error>
+  > {
     try {
       const contacts = await this.prisma.contact.findMany({
+        take: limit + 1,
+        cursor: cursor ? { id: cursor } : undefined,
         where: { userId },
+        orderBy: {
+          createdAt: "desc",
+        },
       });
+
+      const nextCursor =
+        contacts.length > limit ? contacts[limit].id : undefined;
+
       return {
-        value: contacts.map(this.toDomainFromPersistence),
+        value: {
+          data: contacts.slice(0, limit).map(this.toDomainFromPersistence),
+          nextCursor,
+        },
       };
     } catch (e) {
       this.logger.error(

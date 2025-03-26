@@ -7,6 +7,7 @@ export const TYPES = {
   ConversationPrismaRepository: Symbol.for("ConversationPrismaRepository"),
   ContactPrismaRepository: Symbol.for("ContactPrismaRepository"),
   FriendRequestPrismaRepository: Symbol.for("FriendRequestPrismaRepository"),
+  MessagePrismaRepository: Symbol.for("MessagePrismaRepository"),
 
   /* USE CASES DEFINITION - BEGIN*/
 
@@ -47,6 +48,18 @@ export const TYPES = {
   GetContactsByUserIdUseCase: Symbol.for("GetContactsByUserIdUseCase"),
   FindContactByIdUseCase: Symbol.for("FindContactByIdUseCase"),
   DeleteContactUseCase: Symbol.for("DeleteContactUseCase"),
+
+  /* Message */
+  CreateMessageUseCase: Symbol.for("CreateMessageUseCase"),
+  GetMessageByIdUseCase: Symbol.for("GetMessageByIdUseCase"),
+  GetLastMessageByConversationIdUseCase: Symbol.for(
+    "GetLastMessageByConversationIdUseCase"
+  ),
+  UpdateMessageUseCase: Symbol.for("UpdateMessageUseCase"),
+  DeleteMessageUseCase: Symbol.for("DeleteMessageUseCase"),
+  GetMessagesByConversationIdUseCase: Symbol.for(
+    "GetMessagesByConversationIdUseCase"
+  ),
 
   /* USE CASES DEFINITION - END */
 

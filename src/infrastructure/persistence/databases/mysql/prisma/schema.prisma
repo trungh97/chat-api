@@ -114,6 +114,7 @@ model Message {
   messageType      MessageType? @map("message_type") // Enum for text, image, video, file
   replyToMessageId String?      @map("reply_to_message_id")
   content          String?
+  extra            Json?
   createdAt        DateTime     @default(now()) @map("created_at")
   updatedAt        DateTime     @updatedAt @map("updated_at")
 

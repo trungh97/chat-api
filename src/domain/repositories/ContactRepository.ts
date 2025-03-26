@@ -1,4 +1,5 @@
 import { Contact } from "@domain/entities";
+import { ICursorBasedPaginationResponse } from "@domain/interfaces/pagination/CursorBasedPagination";
 import { RepositoryResponse } from "@shared/responses";
 
 export interface IContactRepository {
@@ -29,11 +30,15 @@ export interface IContactRepository {
    *
    * @async
    * @param {string} userId - The user id.
-   * @returns {Promise<RepositoryResponse<Contact[], Error>>} The contacts' information.
+   * @returns {Promise<RepositoryResponse<ICursorBasedPaginationResponse<Contact>, Error>>} The contacts' information.
    */
   getContactsByUserId(
-    userId: string
-  ): Promise<RepositoryResponse<Contact[], Error>>;
+    userId: string,
+    cursor?: string,
+    limit?: number
+  ): Promise<
+    RepositoryResponse<ICursorBasedPaginationResponse<Contact>, Error>
+  >;
 
   /**
    * Creates a new contact.

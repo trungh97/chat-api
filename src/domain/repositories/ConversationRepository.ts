@@ -1,6 +1,5 @@
 import { Conversation } from "@domain/entities";
 import { ICursorBasedPaginationResponse } from "@domain/interfaces/pagination/CursorBasedPagination";
-import { PAGE_LIMIT } from "@shared/constants";
 import { RepositoryResponse } from "@shared/responses";
 
 export interface IConversationRepository {

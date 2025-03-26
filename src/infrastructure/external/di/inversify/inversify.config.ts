@@ -33,6 +33,7 @@ import {
   IContactRepository,
   IConversationRepository,
   IFriendRequestRepository,
+  IMessageRepository,
   IPostRepository,
   IUserRepository,
 } from "@domain/repositories";
@@ -77,6 +78,7 @@ import {
   UserRedisRepository,
 } from "@infrastructure/persistence/repositories/user/UserRedisRepository";
 import { ILogger, WinstonLogger } from "@shared/logger";
+import { MessagePrismaRepository } from "@infrastructure/persistence/repositories/message";
 
 const container = new Container();
 
@@ -87,7 +89,10 @@ container.bind(TYPES.RedisClient).toConstantValue(redisClient);
 container.bind(TYPES.OAuth2Client).toConstantValue(googleOAuth2Client);
 
 // Bind logger
-container.bind<ILogger>(TYPES.WinstonLogger).to(WinstonLogger).inSingletonScope();
+container
+  .bind<ILogger>(TYPES.WinstonLogger)
+  .to(WinstonLogger)
+  .inSingletonScope();
 
 // Binding repositories
 container
@@ -108,6 +113,9 @@ container
 container
   .bind<IFriendRequestRepository>(TYPES.FriendRequestPrismaRepository)
   .to(FriendRequestPrismaRepository);
+container
+  .bind<IMessageRepository>(TYPES.MessagePrismaRepository)
+  .to(MessagePrismaRepository);
 
 // Binding use cases
 container
