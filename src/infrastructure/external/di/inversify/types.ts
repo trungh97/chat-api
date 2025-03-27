@@ -8,6 +8,7 @@ export const TYPES = {
   ContactPrismaRepository: Symbol.for("ContactPrismaRepository"),
   FriendRequestPrismaRepository: Symbol.for("FriendRequestPrismaRepository"),
   MessagePrismaRepository: Symbol.for("MessagePrismaRepository"),
+  ParticipantPrismaRepository: Symbol.for("ParticipantPrismaRepository"),
 
   /* USE CASES DEFINITION - BEGIN*/
 
