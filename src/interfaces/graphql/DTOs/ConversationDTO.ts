@@ -1,4 +1,10 @@
-import { ObjectType, Field, ID } from "type-graphql";
+import { ConversationType } from "@domain/enums";
+import { ObjectType, Field, ID, registerEnumType } from "type-graphql";
+
+registerEnumType(ConversationType, {
+  name: "ConversationType",
+  description: "Conversation type",
+});
 
 @ObjectType()
 export class ConversationDTO {
@@ -16,4 +22,7 @@ export class ConversationDTO {
 
   @Field(() => Date, { nullable: true })
   deletedAt: Date;
+
+  @Field(() => ConversationType)
+  type: ConversationType;
 }

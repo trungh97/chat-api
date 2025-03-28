@@ -5,6 +5,7 @@ import {
 import { inject, injectable } from "inversify";
 
 import { Conversation } from "@domain/entities";
+import { ConversationType } from "@domain/enums";
 import { ICursorBasedPaginationResponse } from "@domain/interfaces/pagination/CursorBasedPagination";
 import { IConversationRepository } from "@domain/repositories";
 import { TYPES } from "@infrastructure/external/di/inversify";
@@ -28,6 +29,7 @@ class ConversationPrismaRepository implements IConversationRepository {
       creatorId: conversationPrismaModel.creatorId,
       isArchived: conversationPrismaModel.isArchived,
       deletedAt: conversationPrismaModel.deletedAt,
+      type: conversationPrismaModel.type as ConversationType,
     });
   }
 
@@ -200,3 +202,4 @@ class ConversationPrismaRepository implements IConversationRepository {
 }
 
 export { ConversationPrismaRepository };
+

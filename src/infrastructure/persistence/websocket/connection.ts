@@ -1,6 +1,7 @@
 import Redis from "ioredis";
 import { createPubSub } from "@graphql-yoga/subscription";
 import { createRedisEventTarget } from "@graphql-yoga/redis-event-target";
+import { ConversationType } from "@domain/enums";
 
 // TODO: Refactor this file
 export const enum Topic {
@@ -16,6 +17,8 @@ export type NewConversationPayload = {
   isArchived: boolean;
 
   deletedAt: Date;
+
+  type: ConversationType;
 };
 
 const options = {

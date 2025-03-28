@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `conversation` ADD COLUMN `type` ENUM('PRIVATE', 'GROUP') NOT NULL DEFAULT 'PRIVATE';

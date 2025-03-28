@@ -14,6 +14,7 @@ export class ConversationMapper {
       creatorId: conversation.creatorId,
       deletedAt: conversation.deletedAt,
       isArchived: conversation.isArchived,
+      type: conversation.type,
     };
   }
 
