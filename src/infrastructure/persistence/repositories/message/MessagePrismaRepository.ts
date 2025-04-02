@@ -25,6 +25,7 @@ export class MessagePrismaRepository implements IMessageRepository {
       extra: message.extra,
       messageType: message.messageType as MessageType,
       replyToMessageId: message.replyToMessageId,
+      createdAt: message.createdAt,
     });
   }
 

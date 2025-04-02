@@ -1,12 +1,19 @@
-import { buildConversationTitle } from "@application/utils";
+import {
+  buildConversationTitle,
+  guessConversationType,
+} from "@application/utils";
 import { ICreateConversationRequestDTO } from "@domain/dtos/conversation";
 import { Conversation } from "@domain/entities";
+import { ConversationType } from "@domain/enums";
 import { IConversationRepository, IUserRepository } from "@domain/repositories";
 import { ICreateConversationUsecase } from "@domain/usecases/conversation";
 import { TYPES } from "@infrastructure/external/di/inversify";
+import { ParticipantType } from "@prisma/client";
 import { ILogger } from "@shared/logger";
 import { UseCaseResponse } from "@shared/responses";
 import { inject, injectable } from "inversify";
+import compact from "lodash/compact";
+import uniq from "lodash/uniq";
 
 @injectable()
 class CreateConversationUseCase implements ICreateConversationUsecase {
@@ -19,22 +26,21 @@ class CreateConversationUseCase implements ICreateConversationUsecase {
 
   async execute(
     userId: string,
-    participants: string[],
+    participantsData: string[],
     conversation: ICreateConversationRequestDTO
   ): Promise<UseCaseResponse<Conversation>> {
     try {
-      if (
-        participants.length < 1 ||
-        (participants.length === 1 && participants[0] === userId)
-      ) {
-        return {
-          data: null,
-          error: "Invalid request",
-        };
-      }
-
+      const participants = compact(uniq(participantsData));
       if (!participants.includes(userId)) {
         participants.push(userId);
+      }
+      const conversationType = guessConversationType(participants);
+
+      if (conversationType === null) {
+        return {
+          data: null,
+          error: "Invalid participants.",
+        };
       }
 
       const { value: userNames, error: userNamesError } =
@@ -58,11 +64,21 @@ class CreateConversationUseCase implements ICreateConversationUsecase {
         conversation.title
       );
 
+      const participantsRequest = participants.map((id) => ({
+        id,
+        type:
+          id === userId && conversationType === ConversationType.GROUP
+            ? ParticipantType.ADMIN
+            : ParticipantType.MEMBER,
+      }));
+
       const conversationData = await Conversation.create(userId, conversation);
+      conversationData.type = conversationType;
+
       const { value, error } =
         await this.conversationRepository.createConversation(
           conversationData,
-          participants
+          participantsRequest
         );
 
       if (error) {

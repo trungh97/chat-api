@@ -2,7 +2,7 @@ import { inject, injectable } from "inversify";
 import { IConversationRepository } from "@domain/repositories";
 import { UseCaseResponse } from "@shared/responses";
 import { TYPES } from "@infrastructure/external/di/inversify";
-import { Conversation } from "@domain/entities";
+import { Conversation, Participant } from "@domain/entities";
 import { IFindConversationByIdUseCase } from "@domain/usecases/conversation";
 
 @injectable()
@@ -12,7 +12,16 @@ class FindConversationByIdUseCase implements IFindConversationByIdUseCase {
     private conversationRepository: IConversationRepository
   ) {}
 
-  async execute(id: string): Promise<UseCaseResponse<Conversation>> {
+  async execute(
+    id: string,
+    userId: string
+  ): Promise<
+    UseCaseResponse<
+      Conversation & {
+        participants: Participant[];
+      }
+    >
+  > {
     try {
       const result = await this.conversationRepository.getConversationById(id);
 
@@ -20,6 +29,17 @@ class FindConversationByIdUseCase implements IFindConversationByIdUseCase {
         return {
           data: null,
           error: result.error.message,
+        };
+      }
+
+      const isParticipant = result.value.participants.some(
+        (participant) => participant.userId === userId
+      );
+
+      if (!isParticipant) {
+        return {
+          data: null,
+          error: "You are not a participant of this conversation",
         };
       }
 

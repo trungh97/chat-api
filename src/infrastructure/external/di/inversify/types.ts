@@ -24,7 +24,7 @@ export const TYPES = {
   LoginCredentialBasedUserUseCase: Symbol.for("LoginUserUseCase"),
 
   /* Conversation */
-  GetAllConversationsUseCase: Symbol.for("GetAllConversationsUseCase"),
+  GetMyConversationsUseCase: Symbol.for("GetMyConversationsUseCase"),
   CreateConversationUseCase: Symbol.for("CreateConversationUseCase"),
   DeleteConversationUseCase: Symbol.for("DeleteConversationUseCase"),
   FindConversationByIdUseCase: Symbol.for("FindConversationByIdUseCase"),

@@ -1,5 +1,5 @@
 import { UseCaseResponse } from "@shared/responses";
-import { Conversation } from "@domain/entities";
+import { Conversation, Participant } from "@domain/entities";
 
 /**
  * Interface for the use case that finds a conversation by its unique identifier.
@@ -12,7 +12,17 @@ export interface IFindConversationByIdUseCase {
    *
    * @async
    * @param {string} id - The conversation id
-   * @returns {Promise<UseCaseResponse<Conversation>>} The response data
+   * @param {string} userId - The user id of the participant
+   * @returns {Promise<UseCaseResponse<Conversation & { participants: Participant[] }>>} The response data
    */
-  execute(id: string): Promise<UseCaseResponse<Conversation>>;
+  execute(
+    id: string,
+    userId: string
+  ): Promise<
+    UseCaseResponse<
+      Conversation & {
+        participants: Participant[];
+      }
+    >
+  >;
 }
