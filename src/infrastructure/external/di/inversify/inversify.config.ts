@@ -13,7 +13,7 @@ import {
   CreateConversationUseCase,
   DeleteConversationUseCase,
   FindConversationByIdUseCase,
-  GetAllConversationsUseCase,
+  GetMyConversationsUseCase,
 } from "@application/usecases/conversation";
 import {
   ChangeFriendRequestStatusUseCase,
@@ -47,7 +47,7 @@ import {
   ICreateConversationUsecase,
   IDeleteConversationUsecase,
   IFindConversationByIdUseCase,
-  IGetAllConversationsUsecase,
+  IGetMyConversationsUsecase,
 } from "@domain/usecases/conversation";
 import {
   IChangeFriendRequestStatusUseCase,
@@ -79,6 +79,8 @@ import {
 } from "@infrastructure/persistence/repositories/user/UserRedisRepository";
 import { ILogger, WinstonLogger } from "@shared/logger";
 import { MessagePrismaRepository } from "@infrastructure/persistence/repositories/message";
+import { ICreateMessageUseCase } from "@domain/usecases/message";
+import { CreateMessageUseCase } from "@application/usecases/message";
 
 const container = new Container();
 
@@ -136,8 +138,8 @@ container
   .bind<ILoginCredentialBasedUserUseCase>(TYPES.LoginCredentialBasedUserUseCase)
   .to(LoginCredentialBasedUserUseCase);
 container
-  .bind<IGetAllConversationsUsecase>(TYPES.GetAllConversationsUseCase)
-  .to(GetAllConversationsUseCase);
+  .bind<IGetMyConversationsUsecase>(TYPES.GetMyConversationsUseCase)
+  .to(GetMyConversationsUseCase);
 container
   .bind<ICreateConversationUsecase>(TYPES.CreateConversationUseCase)
   .to(CreateConversationUseCase);
@@ -186,5 +188,9 @@ container
     TYPES.DeleteExpiredFriendRequestsUseCase
   )
   .to(DeleteExpiredFriendRequestsUseCase);
+
+container
+  .bind<ICreateMessageUseCase>(TYPES.CreateMessageUseCase)
+  .to(CreateMessageUseCase);
 
 export { container };

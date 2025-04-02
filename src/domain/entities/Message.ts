@@ -1,5 +1,6 @@
 import { ICreateMessageRequestDTO } from "@domain/dtos/message";
 import { MessageType } from "@domain/enums";
+import sanitize from "sanitize-html";
 import { v4 as uuid } from "uuid";
 
 export interface MessageProps {
@@ -10,6 +11,7 @@ export interface MessageProps {
   extra: Object;
   messageType: MessageType;
   replyToMessageId: string;
+  createdAt: Date;
 }
 
 export class Message {
@@ -20,6 +22,7 @@ export class Message {
   private _extra: Object;
   private _messageType: MessageType;
   private _replyToMessageId: string;
+  private _createdAt: Date;
 
   constructor({
     id,
@@ -37,6 +40,7 @@ export class Message {
     this._extra = extra;
     this._messageType = messageType;
     this._replyToMessageId = replyToMessageId;
+    this._createdAt = new Date();
   }
 
   get id(): string {
@@ -91,15 +95,27 @@ export class Message {
     this._replyToMessageId = replyToMessageId;
   }
 
+  get createdAt(): Date {
+    return this._createdAt;
+  }
+
+  set createdAt(createdAt: Date) {
+    this._createdAt = createdAt;
+  }
+
   static async create(request: ICreateMessageRequestDTO): Promise<Message> {
     const newMessage = {
       id: uuid(),
       senderId: request.senderId,
       conversationId: request.conversationId,
-      content: request.content,
+      content: sanitize(request.content, {
+        allowedTags: [],
+        allowedAttributes: {},
+      }),
       extra: request?.extra,
       messageType: request.messageType,
       replyToMessageId: request.replyToMessageId,
+      createdAt: new Date(),
     };
 
     return new Message(newMessage);

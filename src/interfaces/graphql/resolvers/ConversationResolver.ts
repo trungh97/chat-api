@@ -4,7 +4,7 @@ import {
   ICreateConversationUsecase,
   IDeleteConversationUsecase,
   IFindConversationByIdUseCase,
-  IGetAllConversationsUsecase,
+  IGetMyConversationsUsecase,
 } from "@domain/usecases/conversation";
 import { container, TYPES } from "@infrastructure/external/di/inversify";
 import {
@@ -47,16 +47,15 @@ class ConversationDeleteGlobalResponse extends ConversationDeleteResponse {}
 @Resolver()
 export class ConversationResolver {
   constructor(
-    private getAllConversationsUseCase: IGetAllConversationsUsecase,
+    private getMyConversationsUseCase: IGetMyConversationsUsecase,
     private createConversationUseCase: ICreateConversationUsecase,
     private deleteConverationUseCase: IDeleteConversationUsecase,
     private findConversationByIdUseCase: IFindConversationByIdUseCase,
     private logger: ILogger
   ) {
-    this.getAllConversationsUseCase =
-      container.get<IGetAllConversationsUsecase>(
-        TYPES.GetAllConversationsUseCase
-      );
+    this.getMyConversationsUseCase = container.get<IGetMyConversationsUsecase>(
+      TYPES.GetMyConversationsUseCase
+    );
     this.createConversationUseCase = container.get<ICreateConversationUsecase>(
       TYPES.CreateConversationUseCase
     );
@@ -71,16 +70,21 @@ export class ConversationResolver {
   }
 
   @Query(() => ConversationListGlobalResponse)
-  async getAllConversations(
+  async getMyConversations(
     @Arg("options", () => CursorBasedPaginationParams)
-    options: ICursorBasedPaginationParams
+    options: ICursorBasedPaginationParams,
+    @Ctx()
+    {
+      req: {
+        session: { userId },
+      },
+    }: Context
   ): Promise<ConversationListGlobalResponse> {
     try {
-      const { cursor, limit } = options;
-      const result = await this.getAllConversationsUseCase.execute({
-        cursor,
-        limit,
-      });
+      const result = await this.getMyConversationsUseCase.execute(
+        userId,
+        options
+      );
 
       const { data, error } = result;
 
@@ -97,7 +101,7 @@ export class ConversationResolver {
         data: data.data.map(ConversationMapper.toDTO),
       };
     } catch (error) {
-      this.logger.error(`Error getting all conversations: ${error.message}`);
+      this.logger.error(`Error getting my conversations: ${error.message}`);
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         error: error.message,
@@ -171,7 +175,10 @@ export class ConversationResolver {
 
       // Check if the conversation exists
       const { data: conversation, error } =
-        await this.findConversationByIdUseCase.execute(conversationId);
+        await this.findConversationByIdUseCase.execute(
+          conversationId,
+          req.session.userId
+        );
 
       if (!conversation || error) {
         return {
@@ -212,10 +219,55 @@ export class ConversationResolver {
     }
   }
 
-  @Subscription(() => ConversationDTO, { topics: Topic.NEW_CONVERSATION })
-  newConversationAdded(
-    @Root() conversation: NewConversationPayload
-  ): ConversationDTO {
-    return conversation;
+  @Query(() => ConversationGlobalResponse)
+  async getConversationById(
+    @Arg("conversationId", () => String) conversationId: string,
+    @Ctx()
+    {
+      req: {
+        session: { userId },
+      },
+    }: Context
+  ): Promise<ConversationGlobalResponse> {
+    try {
+      if (!userId) {
+        return {
+          statusCode: StatusCodes.UNAUTHORIZED,
+          error: "User is not authenticated",
+        };
+      }
+
+      const { data, error } = await this.findConversationByIdUseCase.execute(
+        conversationId,
+        userId
+      );
+
+      if (error) {
+        this.logger.error(error);
+        return {
+          error,
+          statusCode: StatusCodes.NOT_FOUND,
+        };
+      }
+
+      return {
+        statusCode: StatusCodes.OK,
+        message: "Get conversation successfully!",
+        data: ConversationMapper.toDTO(data),
+      };
+    } catch (error) {
+      this.logger.error(`Error getting conversation by ID: ${error.message}`);
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      };
+    }
   }
+
+  // @Subscription(() => ConversationDTO, { topics: Topic.NEW_CONVERSATION })
+  // newConversationAdded(
+  //   @Root() conversation: NewConversationPayload
+  // ): ConversationDTO {
+  //   return conversation;
+  // }
 }
