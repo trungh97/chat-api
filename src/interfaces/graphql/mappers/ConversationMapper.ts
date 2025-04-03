@@ -25,7 +25,6 @@ export class ConversationMapper {
           })
       ),
       messages: conversation.messages.map((message) => {
-        console.log(message);
         return new Message({
           id: message.id,
           conversationId: message.conversationId,

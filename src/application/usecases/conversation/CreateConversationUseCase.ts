@@ -26,11 +26,10 @@ class CreateConversationUseCase implements ICreateConversationUsecase {
 
   async execute(
     userId: string,
-    participantsData: string[],
     conversation: ICreateConversationRequestDTO
   ): Promise<UseCaseResponse<Conversation>> {
     try {
-      const participants = compact(uniq(participantsData));
+      const participants = compact(uniq(conversation.participants));
       if (!participants.includes(userId)) {
         participants.push(userId);
       }
@@ -95,3 +94,4 @@ class CreateConversationUseCase implements ICreateConversationUsecase {
 }
 
 export { CreateConversationUseCase };
+

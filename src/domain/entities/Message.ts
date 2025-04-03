@@ -103,10 +103,13 @@ export class Message {
     this._createdAt = createdAt;
   }
 
-  static async create(request: ICreateMessageRequestDTO): Promise<Message> {
+  static async create(
+    request: ICreateMessageRequestDTO,
+    currentUserId: string
+  ): Promise<Message> {
     const newMessage = {
       id: uuid(),
-      senderId: request.senderId,
+      senderId: currentUserId,
       conversationId: request.conversationId,
       content: sanitize(request.content, {
         allowedTags: [],

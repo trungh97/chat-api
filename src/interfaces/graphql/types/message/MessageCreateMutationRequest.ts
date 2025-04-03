@@ -8,11 +8,8 @@ registerEnumType(MessageType, {
 
 @InputType()
 export class MessageCreateMutationRequest {
-  @Field(() => String)
-  senderId: string;
-
-  @Field(() => String)
-  conversationId: string;
+  @Field(() => String, { nullable: true })
+  conversationId?: string;
 
   @Field(() => String)
   content: string;
@@ -25,4 +22,7 @@ export class MessageCreateMutationRequest {
 
   @Field(() => String, { nullable: true })
   replyToMessageId?: string;
+
+  @Field(() => [String], { nullable: true })
+  receivers?: string[];
 }

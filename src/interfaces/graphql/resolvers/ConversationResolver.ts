@@ -113,23 +113,23 @@ export class ConversationResolver {
   async createConversation(
     @Arg("conversation", () => ConversationCreateMutationRequest)
     conversation: ICreateConversationRequestDTO,
-    @Ctx() { req }: Context
+    @Ctx()
+    {
+      req: {
+        session: { userId },
+      },
+    }: Context
   ): Promise<ConversationGlobalResponse> {
     try {
-      const { participants } = conversation;
-
-      if (!req.session.userId) {
+      if (!userId) {
         return {
           statusCode: StatusCodes.UNAUTHORIZED,
           error: "User is not authenticated",
         };
       }
 
-      const currentUser = req.session.userId;
-
       const result = await this.createConversationUseCase.execute(
-        currentUser,
-        participants,
+        userId,
         conversation
       );
 
