@@ -16,6 +16,6 @@ export interface ICreateMessageUseCase {
    */
   execute(
     currentUserId: string,
-    request: ICreateMessageRequestDTO
+    request: ICreateMessageRequestDTO,
   ): Promise<UseCaseResponse<Message>>;
 }
