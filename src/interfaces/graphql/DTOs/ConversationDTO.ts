@@ -1,5 +1,8 @@
+import { Message, Participant } from "@domain/entities";
 import { ConversationType } from "@domain/enums";
 import { ObjectType, Field, ID, registerEnumType } from "type-graphql";
+import { ParticipantDTO } from "./ParticipantDTO";
+import { MessageDTO } from "./MessageDTO";
 
 registerEnumType(ConversationType, {
   name: "ConversationType",
@@ -25,4 +28,10 @@ export class ConversationDTO {
 
   @Field(() => ConversationType)
   type: ConversationType;
+
+  @Field(() => [ParticipantDTO])
+  participants: Participant[];
+
+  @Field(() => [MessageDTO])
+  messages: Message[];
 }

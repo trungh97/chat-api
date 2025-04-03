@@ -1,6 +1,8 @@
 import { ICreateConversationRequestDTO } from "@domain/dtos/conversation";
 import { ConversationType } from "@domain/enums";
 import { v4 as uuid } from "uuid";
+import { Participant } from "./Participant";
+import { Message } from "./Message";
 
 export interface ConversationProps {
   id: string;
@@ -9,6 +11,8 @@ export interface ConversationProps {
   isArchived: boolean;
   deletedAt: Date;
   type: ConversationType;
+  participants: Participant[];
+  messages: Message[];
 }
 
 export class Conversation {
@@ -18,6 +22,8 @@ export class Conversation {
   private _isArchived: boolean;
   private _deletedAt: Date;
   private _type: ConversationType;
+  private _participants: Participant[];
+  private _messages: Message[];
 
   constructor(props: ConversationProps) {
     this._id = props.id;
@@ -26,6 +32,8 @@ export class Conversation {
     this._isArchived = props.isArchived;
     this._deletedAt = props.deletedAt;
     this._type = props.type;
+    this._participants = props.participants || [];
+    this._messages = props.messages;
   }
 
   get id(): string {
@@ -74,6 +82,17 @@ export class Conversation {
     this._type = type;
   }
 
+  get participants(): Participant[] {
+    return this._participants;
+  }
+  set participants(participants: Participant[]) {
+    this._participants = participants;
+  }
+
+  get messages(): Message[] {
+    return this._messages;
+  }
+
   static async create(
     userId: string,
     request: ICreateConversationRequestDTO
@@ -84,7 +103,9 @@ export class Conversation {
       creatorId: userId,
       isArchived: false,
       deletedAt: null,
-      type: request.type,
+      type: ConversationType.PRIVATE,
+      participants: [],
+      messages: [],
     };
 
     return new Conversation(newConversation);

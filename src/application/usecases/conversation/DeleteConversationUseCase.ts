@@ -36,7 +36,6 @@ export class DeleteConversationUseCase implements IDeleteConversationUsecase {
         data: result.value,
       };
     } catch (error) {
-      console.log(error);
       this.logger.error(
         `Error deleting conversation with id ${id}: ${error.message}`
       );

@@ -1,30 +1,32 @@
-import { inject, injectable } from "inversify";
-import { IConversationRepository } from "@domain/repositories";
-import { TYPES } from "@infrastructure/external/di/inversify";
-import { UseCaseResponse } from "@shared/responses";
 import { Conversation } from "@domain/entities";
-import { IGetAllConversationsUsecase } from "@domain/usecases/conversation";
-import { PAGE_LIMIT } from "@shared/constants";
 import {
   ICursorBasedPaginationParams,
   ICursorBasedPaginationResponse,
 } from "@domain/interfaces/pagination/CursorBasedPagination";
+import { IConversationRepository } from "@domain/repositories";
+import { IGetMyConversationsUsecase } from "@domain/usecases/conversation";
+import { TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
+import { UseCaseResponse } from "@shared/responses";
+import { inject, injectable } from "inversify";
 
 @injectable()
-class GetAllConversationsUseCase implements IGetAllConversationsUsecase {
+class GetMyConversationsUseCase implements IGetMyConversationsUsecase {
   constructor(
     @inject(TYPES.ConversationPrismaRepository)
     private conversationRepository: IConversationRepository,
     @inject(TYPES.WinstonLogger) private logger: ILogger
   ) {}
   async execute(
-    params: ICursorBasedPaginationParams
+    userId: string,
+    pagination: ICursorBasedPaginationParams
   ): Promise<UseCaseResponse<ICursorBasedPaginationResponse<Conversation>>> {
     try {
-      const { cursor, limit = PAGE_LIMIT } = params;
       const { value, error } =
-        await this.conversationRepository.getAllConversations(cursor, limit);
+        await this.conversationRepository.getMyConversations(
+          userId,
+          pagination
+        );
 
       if (error) {
         this.logger.error(error.message);
@@ -51,4 +53,4 @@ class GetAllConversationsUseCase implements IGetAllConversationsUsecase {
   }
 }
 
-export { GetAllConversationsUseCase };
+export { GetMyConversationsUseCase };

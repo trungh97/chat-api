@@ -4,11 +4,13 @@ import {
   IConversationRepository,
   IMessageRepository,
 } from "@domain/repositories";
+import { ICreateConversationUsecase } from "@domain/usecases/conversation";
 import { ICreateMessageUseCase } from "@domain/usecases/message";
 import { TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
 import { UseCaseResponse } from "@shared/responses";
 import { inject, injectable } from "inversify";
+import isNull from "lodash/isNull";
 
 @injectable()
 export class CreateMessageUseCase implements ICreateMessageUseCase {
@@ -19,6 +21,9 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
     @inject(TYPES.ConversationPrismaRepository)
     private conversationRepository: IConversationRepository,
 
+    @inject(TYPES.CreateConversationUseCase)
+    private createConversationUseCase: ICreateConversationUsecase,
+
     @inject(TYPES.WinstonLogger)
     private logger: ILogger
   ) {}
@@ -28,16 +33,6 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
     request: ICreateMessageRequestDTO
   ): Promise<UseCaseResponse<Message>> {
     try {
-      if (currentUserId !== request.senderId) {
-        this.logger.error(
-          `User ${currentUserId} is not authorized to create a message for user ${request.senderId}`
-        );
-        return {
-          data: null,
-          error: `User ${currentUserId} is not authorized to create a message for user ${request.senderId}`,
-        };
-      }
-
       if (!request.content.trim()) {
         return {
           data: null,
@@ -52,30 +47,48 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
         };
       }
 
-      const { value: conversation, error: conversationError } =
-        await this.conversationRepository.getConversationById(
-          request.conversationId
+      if (isNull(request.conversationId)) {
+        // Create a new conversation in case this is the first message.
+        const { data: newConversation, error: newConversationError } =
+          await this.createConversationUseCase.execute(currentUserId, {
+            participants: request.receivers,
+          });
+
+        if (newConversationError) {
+          return {
+            data: null,
+            error: `Error starting conversation: ${newConversationError}`,
+          };
+        }
+
+        request.conversationId = newConversation.id;
+      } else {
+        // Check if the conversation exists and if the user is a participant.
+        const { value: conversation, error: conversationError } =
+          await this.conversationRepository.getConversationById(
+            request.conversationId
+          );
+
+        if (conversationError || !conversation.id) {
+          return {
+            data: null,
+            error: `Conversation with ID ${request.conversationId} does not exist.`,
+          };
+        }
+
+        const isMember = conversation.participants.some(
+          (participant) => participant.id === currentUserId
         );
 
-      if (conversationError || !conversation.id) {
-        return {
-          data: null,
-          error: `Conversation with ID ${request.conversationId} does not exist.`,
-        };
+        if (!isMember) {
+          return {
+            data: null,
+            error: `User ${currentUserId} is not a participant in the conversation.`,
+          };
+        }
       }
 
-      const isMember = conversation.participants.some(
-        (participant) => participant.id === currentUserId
-      );
-
-      if (!isMember) {
-        return {
-          data: null,
-          error: `User ${currentUserId} is not a participant in the conversation.`,
-        };
-      }
-
-      const messageData = await Message.create(request);
+      const messageData = await Message.create(request, currentUserId);
 
       const response = await this.messageRepository.createMessage(messageData);
 

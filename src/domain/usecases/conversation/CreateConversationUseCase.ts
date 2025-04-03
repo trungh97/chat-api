@@ -12,11 +12,12 @@ export interface ICreateConversationUsecase {
    * Executes the create conversation use case.
    *
    * @async
+   * @param {string} userId - The ID of the user creating the conversation.
+   * @param {ICreateConversationRequestDTO} conversation - The conversation data to create.
    * @returns {Promise<UseCaseResponse<Conversation>>} The response data.
    */
   execute(
     userId: string,
-    participants: string[],
     conversation: ICreateConversationRequestDTO
   ): Promise<UseCaseResponse<Conversation>>;
 }

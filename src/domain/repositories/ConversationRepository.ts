@@ -1,15 +1,19 @@
-import { Conversation } from "@domain/entities";
-import { ICursorBasedPaginationResponse } from "@domain/interfaces/pagination/CursorBasedPagination";
+import { Conversation, Participant } from "@domain/entities";
+import { ParticipantType } from "@domain/enums";
+import {
+  ICursorBasedPaginationParams,
+  ICursorBasedPaginationResponse,
+} from "@domain/interfaces/pagination/CursorBasedPagination";
 import { RepositoryResponse } from "@shared/responses";
 
 export interface IConversationRepository {
   /**
-   * Fetches all conversations.
+   * Fetches all my conversations.
    * @returns A promise resolving to an array of all conversations.
    */
-  getAllConversations(
-    cursor?: string,
-    limit?: number
+  getMyConversations(
+    userId: string,
+    pagination: ICursorBasedPaginationParams
   ): Promise<
     RepositoryResponse<ICursorBasedPaginationResponse<Conversation>, Error>
   >;
@@ -21,7 +25,9 @@ export interface IConversationRepository {
    */
   getConversationById(
     id: string
-  ): Promise<RepositoryResponse<Conversation, Error>>;
+  ): Promise<
+    RepositoryResponse<Conversation & { participants: Participant[] }, Error>
+  >;
 
   /**
    * Creates a new conversation.
@@ -30,7 +36,7 @@ export interface IConversationRepository {
    */
   createConversation(
     conversation: Conversation,
-    participants: string[]
+    participants: { id: string; type: keyof typeof ParticipantType }[]
   ): Promise<RepositoryResponse<Conversation, Error>>;
 
   /**
