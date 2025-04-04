@@ -8,9 +8,9 @@ export interface MessageProps {
   senderId: string;
   conversationId: string;
   content: string;
-  extra: Object;
+  extra?: Object;
   messageType: MessageType;
-  replyToMessageId: string;
+  replyToMessageId?: string;
   createdAt: Date;
 }
 
