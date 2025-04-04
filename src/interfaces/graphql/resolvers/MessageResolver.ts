@@ -1,10 +1,22 @@
 import { ICreateMessageRequestDTO } from "@domain/dtos/message";
+import { MessageProps } from "@domain/entities";
 import { ICreateMessageUseCase } from "@domain/usecases/message";
 import { container, TYPES } from "@infrastructure/external/di/inversify";
+import { pubSub } from "@infrastructure/persistence/websocket/connection";
+import { Topic } from "@infrastructure/persistence/websocket/topics";
 import { ILogger } from "@shared/logger";
 import { GlobalResponse } from "@shared/responses";
 import { StatusCodes } from "http-status-codes";
-import { Arg, Ctx, Mutation, ObjectType, Resolver } from "type-graphql";
+import isNil from "lodash/isNil";
+import {
+  Arg,
+  Ctx,
+  Mutation,
+  ObjectType,
+  Resolver,
+  Root,
+  Subscription,
+} from "type-graphql";
 import { Context } from "types";
 import { MessageDTO } from "../DTOs";
 import { MessageMapper } from "../mappers";
@@ -54,10 +66,15 @@ export class MessageResolver {
         };
       }
 
+      const finalResult = MessageMapper.toDTO(data);
+
+      // Publish the new message to the WebSocket channel
+      await pubSub.publish(Topic.NEW_MESSAGE, finalResult);
+
       return {
         statusCode: 200,
         message: "Message created successfully",
-        data: MessageMapper.toDTO(data),
+        data: finalResult,
       };
     } catch (error) {
       this.logger.error(`Error creating message: ${error.message}`);
@@ -68,5 +85,13 @@ export class MessageResolver {
         error: error.message,
       };
     }
+  }
+
+  @Subscription(() => MessageDTO, { topics: Topic.NEW_MESSAGE })
+  newMessageAdded(@Root() message: MessageProps): MessageDTO {
+    return {
+      ...message,
+      extra: isNil(message.extra) ? null : JSON.stringify(message.extra),
+    };
   }
 }
