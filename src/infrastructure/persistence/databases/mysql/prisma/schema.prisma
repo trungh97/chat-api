@@ -25,6 +25,7 @@ enum MessageType {
   IMAGE
   VIDEO
   FILE
+  SYSTEM
 }
 
 enum ParticipantType {
