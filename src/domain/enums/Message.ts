@@ -5,3 +5,8 @@ export enum MessageType {
   FILE = "FILE",
   SYSTEM = "SYSTEM",
 }
+
+export enum SystemMessageType {
+  PARTICIPANT_JOINED = "PARTICIPANT_JOINED",
+  PARTICIPANT_LEFT = "PARTICIPANT_LEFT",
+}

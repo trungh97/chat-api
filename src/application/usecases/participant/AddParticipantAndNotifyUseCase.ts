@@ -1,17 +1,22 @@
+import { ICreateSystemMessageRequestDTO } from "@domain/dtos/message";
+import { ICreateParticipantRequestDTO } from "@domain/dtos/participant";
 import { Participant } from "@domain/entities";
-import { ConversationType, ParticipantType } from "@domain/enums";
+import { ConversationType, SystemMessageType } from "@domain/enums";
 import {
   IConversationRepository,
   IParticipantRepository,
 } from "@domain/repositories";
-import { ICreateParticipantUseCase } from "@domain/usecases/participant";
+import { ICreateSystemMessageUseCase } from "@domain/usecases/message";
+import { IAddingParticipantAndNotifyUseCase } from "@domain/usecases/participant";
 import { TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
 import { UseCaseResponse } from "@shared/responses";
 import { inject, injectable } from "inversify";
 
 @injectable()
-export class CreateParticipantUseCase implements ICreateParticipantUseCase {
+export class AddParticipantAndNotifyUseCase
+  implements IAddingParticipantAndNotifyUseCase
+{
   constructor(
     @inject(TYPES.ParticipantPrismaRepository)
     private participantRepository: IParticipantRepository,
@@ -19,19 +24,22 @@ export class CreateParticipantUseCase implements ICreateParticipantUseCase {
     @inject(TYPES.ConversationPrismaRepository)
     private conversationRepository: IConversationRepository,
 
+    @inject(TYPES.CreateSystemMessageUseCase)
+    private createSystemMessageUseCase: ICreateSystemMessageUseCase,
+
     @inject(TYPES.WinstonLogger)
     private logger: ILogger
   ) {}
 
   async execute(
-    participantRequest: Participant,
+    request: ICreateParticipantRequestDTO,
     currentUserId: string
   ): Promise<UseCaseResponse<Participant>> {
     try {
       // check if the conversation existed
       const { value: conversation, error: conversationError } =
         await this.conversationRepository.getConversationById(
-          participantRequest.conversationId
+          request.conversationId
         );
 
       if (conversationError || !conversation.id) {
@@ -44,18 +52,18 @@ export class CreateParticipantUseCase implements ICreateParticipantUseCase {
       // check if the conversation is a group conversation
       if (conversation.type !== ConversationType.GROUP) {
         this.logger.error(
-          `Conversation ${participantRequest.conversationId} is not a group conversation`
+          `Conversation ${request.conversationId} is not a group conversation`
         );
         return {
           data: null,
-          error: `Conversation ${participantRequest.conversationId} is not a group conversation`,
+          error: `Conversation ${request.conversationId} is not a group conversation`,
         };
       }
 
       // check if the current user is a member of the conversation
       const conversationParticipants =
         await this.participantRepository.getParticipantsByConversationId(
-          participantRequest.conversationId
+          request.conversationId
         );
 
       if (conversationParticipants.error || !conversationParticipants.value) {
@@ -71,46 +79,70 @@ export class CreateParticipantUseCase implements ICreateParticipantUseCase {
 
       if (!isConversationMember) {
         this.logger.error(
-          `User ${currentUserId} is not authorized to create a participant for conversation ${participantRequest.conversationId}`
+          `User ${currentUserId} is not authorized to create a participant for conversation ${request.conversationId}`
         );
         return {
           data: null,
-          error: `User ${currentUserId} is not authorized to create a participant for conversation ${participantRequest.conversationId}`,
+          error: `User ${currentUserId} is not authorized to create a participant for conversation ${request.conversationId}`,
         };
       }
 
       // check if the participant already existed
       const existingParticipant = conversationParticipants.value.find(
-        (p) => p.userId === participantRequest.userId
+        (p) => p.userId === request.userId
       );
 
       if (existingParticipant) {
         this.logger.error(
-          `Participant ${participantRequest.userId} already exists in conversation ${participantRequest.conversationId}`
+          `Participant ${request.userId} already exists in conversation ${request.conversationId}`
         );
         return {
           data: null,
-          error: `Participant ${participantRequest.userId} already exists in conversation ${participantRequest.conversationId}`,
+          error: `Participant ${request.userId} already exists in conversation ${request.conversationId}`,
         };
       }
+
+      const participantRequest = await Participant.create(request);
 
       const response = await this.participantRepository.createParticipant(
         participantRequest
       );
+
       if (response.error) {
         this.logger.error(
-          `Error creating participant: ${response.error.message}`
+          `Error adding participant: ${response.error.message}`
         );
         return { data: null, error: response.error.message };
       }
+
+      // Create a system message to notify that a participant has joined the conversation
+      const systemMessageRequest: ICreateSystemMessageRequestDTO = {
+        conversationId: request.conversationId,
+        systemMessageType: SystemMessageType.PARTICIPANT_JOINED,
+        relatedUser: response.value.name,
+      };
+
+      const systemMessageResponse =
+        await this.createSystemMessageUseCase.execute(systemMessageRequest);
+
+      if (systemMessageResponse.error || !systemMessageResponse.data.id) {
+        this.logger.error(
+          `Error creating system message: ${systemMessageResponse.error}`
+        );
+        return {
+          data: null,
+          error: systemMessageResponse.error,
+        };
+      }
+
       return { data: response.value };
     } catch (error) {
       this.logger.error(
-        `Error executing create participant use case: ${error.message}`
+        `Error executing add participant use case: ${error.message}`
       );
       return {
         data: null,
-        error: `Error executing create participant use case: ${error.message}`,
+        error: `Error executing add participant use case: ${error.message}`,
       };
     }
   }

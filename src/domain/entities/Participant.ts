@@ -62,3 +62,20 @@ export class Participant {
     return new Participant(newParticipant);
   }
 }
+
+export class ParticipantWithName extends Participant {
+  private _name: string;
+
+  constructor(participant: Participant, name: string) {
+    super(participant);
+    this._name = name;
+  }
+
+  get name(): string {
+    return this._name;
+  }
+
+  set name(value: string) {
+    this._name = value;
+  }
+}

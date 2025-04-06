@@ -15,10 +15,10 @@ export class MessageDTO {
   content!: string;
 
   @Field(() => MessageType)
-  messageType!: MessageType;
+  messageType!: keyof typeof MessageType;
 
-  @Field(() => String)
-  senderId!: string;
+  @Field(() => String, { nullable: true })
+  senderId: string;
 
   @Field(() => String, { nullable: true })
   extra?: string;

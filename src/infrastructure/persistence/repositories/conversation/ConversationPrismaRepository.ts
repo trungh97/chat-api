@@ -80,6 +80,7 @@ class ConversationPrismaRepository implements IConversationRepository {
         where: { conversationParticipants: { some: { userId } } },
         include: {
           messages: {
+            where: { messageType: { not: MessageType.SYSTEM } },
             orderBy: { createdAt: "desc" },
             take: 1,
           },

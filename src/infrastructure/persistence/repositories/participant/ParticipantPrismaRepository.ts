@@ -1,10 +1,11 @@
+import { ParticipantWithNameDTO } from "@domain/dtos/participant";
 import { Participant } from "@domain/entities";
 import { ParticipantType } from "@domain/enums";
 import { IParticipantRepository } from "@domain/repositories";
 import { TYPES } from "@infrastructure/external/di/inversify";
 import {
-  PrismaClient,
   Participant as ParticipantPrismaModel,
+  PrismaClient,
 } from "@prisma/client";
 import { ILogger } from "@shared/logger";
 import { RepositoryResponse } from "@shared/responses";
@@ -30,7 +31,7 @@ export class ParticipantPrismaRepository implements IParticipantRepository {
 
   async createParticipant(
     participant: Participant
-  ): Promise<RepositoryResponse<Participant, Error>> {
+  ): Promise<RepositoryResponse<ParticipantWithNameDTO, Error>> {
     try {
       const createdParticipant = await this.prisma.participant.create({
         data: {
@@ -38,10 +39,28 @@ export class ParticipantPrismaRepository implements IParticipantRepository {
           userId: participant.userId,
           type: participant.type,
         },
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
       });
 
+      const result = new ParticipantWithNameDTO(
+        new Participant({
+          id: createdParticipant.id,
+          userId: createdParticipant.userId,
+          conversationId: createdParticipant.conversationId,
+          type: createdParticipant.type as ParticipantType,
+        }),
+        `${createdParticipant.user.firstName} ${createdParticipant.user.lastName}`
+      );
+
       return {
-        value: this.toDomainFromPersistence(createdParticipant),
+        value: result,
       };
     } catch (error) {
       this.logger.error(`Error creating participant: ${error.message}`);

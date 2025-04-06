@@ -34,6 +34,7 @@ import {
   IConversationRepository,
   IFriendRequestRepository,
   IMessageRepository,
+  IParticipantRepository,
   IPostRepository,
   IUserRepository,
 } from "@domain/repositories";
@@ -79,8 +80,17 @@ import {
 } from "@infrastructure/persistence/repositories/user/UserRedisRepository";
 import { ILogger, WinstonLogger } from "@shared/logger";
 import { MessagePrismaRepository } from "@infrastructure/persistence/repositories/message";
-import { ICreateMessageUseCase } from "@domain/usecases/message";
-import { CreateMessageUseCase } from "@application/usecases/message";
+import {
+  ICreateMessageUseCase,
+  ICreateSystemMessageUseCase,
+} from "@domain/usecases/message";
+import {
+  CreateMessageUseCase,
+  CreateSystemMessageUseCase,
+} from "@application/usecases/message";
+import { ParticipantPrismaRepository } from "@infrastructure/persistence/repositories/participant";
+import { IAddingParticipantAndNotifyUseCase } from "@domain/usecases/participant";
+import { AddParticipantAndNotifyUseCase } from "@application/usecases/participant";
 
 const container = new Container();
 
@@ -90,39 +100,20 @@ container.bind(TYPES.RedisClient).toConstantValue(redisClient);
 
 container.bind(TYPES.OAuth2Client).toConstantValue(googleOAuth2Client);
 
-// Bind logger
 container
   .bind<ILogger>(TYPES.WinstonLogger)
   .to(WinstonLogger)
   .inSingletonScope();
 
-// Binding repositories
-container
-  .bind<IPostRepository>(TYPES.PostPrismaRepository)
-  .to(PostPrismaRepository);
+/** -------------- USER REPOSITORIES --------------- */
 container
   .bind<IUserRepository>(TYPES.UserPrismaRepository)
   .to(UserPrismaRepository);
 container
   .bind<IUserRedisRepository>(TYPES.UserRedisRepository)
   .to(UserRedisRepository);
-container
-  .bind<IConversationRepository>(TYPES.ConversationPrismaRepository)
-  .to(ConversationPrismaRepository);
-container
-  .bind<IContactRepository>(TYPES.ContactPrismaRepository)
-  .to(ContactPrismaRepository);
-container
-  .bind<IFriendRequestRepository>(TYPES.FriendRequestPrismaRepository)
-  .to(FriendRequestPrismaRepository);
-container
-  .bind<IMessageRepository>(TYPES.MessagePrismaRepository)
-  .to(MessagePrismaRepository);
 
-// Binding use cases
-container
-  .bind<IFindPostByIDUseCase>(TYPES.FindPostByIDUseCase)
-  .to(FindPostByIDUseCase);
+/** -------------- USER USECASES --------------- */
 container
   .bind<IRegisterCredentialBasedUserUseCase>(
     TYPES.RegisterCredentialBasedUserUseCase
@@ -137,6 +128,13 @@ container
 container
   .bind<ILoginCredentialBasedUserUseCase>(TYPES.LoginCredentialBasedUserUseCase)
   .to(LoginCredentialBasedUserUseCase);
+
+/** -------------- CONVERSATION REPOSITORIES --------------- */
+container
+  .bind<IConversationRepository>(TYPES.ConversationPrismaRepository)
+  .to(ConversationPrismaRepository);
+
+/** -------------- CONVERSATION USECASES --------------- */
 container
   .bind<IGetMyConversationsUsecase>(TYPES.GetMyConversationsUseCase)
   .to(GetMyConversationsUseCase);
@@ -149,18 +147,13 @@ container
 container
   .bind<IFindConversationByIdUseCase>(TYPES.FindConversationByIdUseCase)
   .to(FindConversationByIdUseCase);
+
+/** -------------- FRIEND REQUEST REPOSITORIES --------------- */
 container
-  .bind<IGetContactsByUserIdUseCase>(TYPES.GetContactsByUserIdUseCase)
-  .to(GetContactsByUserIdUseCase);
-container
-  .bind<ICreateContactUseCase>(TYPES.CreateContactUseCase)
-  .to(CreateContactUseCase);
-container
-  .bind<IDeleteContactUseCase>(TYPES.DeleteContactUseCase)
-  .to(DeleteContactUseCase);
-container
-  .bind<IFindContactByIdUseCase>(TYPES.FindContactByIdUseCase)
-  .to(FindContactByIdUseCase);
+  .bind<IFriendRequestRepository>(TYPES.FriendRequestPrismaRepository)
+  .to(FriendRequestPrismaRepository);
+
+/** -------------- FRIEND REQUEST USECASES --------------- */
 container
   .bind<ICreateFriendRequestUseCase>(TYPES.CreateFriendRequestUseCase)
   .to(CreateFriendRequestUseCase);
@@ -189,8 +182,58 @@ container
   )
   .to(DeleteExpiredFriendRequestsUseCase);
 
+/** -------------- MESSAGE REPOSITORIES --------------- */
+container
+  .bind<IMessageRepository>(TYPES.MessagePrismaRepository)
+  .to(MessagePrismaRepository);
+
+/** -------------- MESSAGE USECASES --------------- */
 container
   .bind<ICreateMessageUseCase>(TYPES.CreateMessageUseCase)
   .to(CreateMessageUseCase);
+container
+  .bind<ICreateSystemMessageUseCase>(TYPES.CreateSystemMessageUseCase)
+  .to(CreateSystemMessageUseCase);
+
+/** -------------- PARTICIPANT REPOSITORIES --------------- */
+container
+  .bind<IParticipantRepository>(TYPES.ParticipantPrismaRepository)
+  .to(ParticipantPrismaRepository);
+
+/** -------------- PARTICIPANT USECASES --------------- */
+container
+  .bind<IAddingParticipantAndNotifyUseCase>(
+    TYPES.AddParticipantAndNotifyUseCase
+  )
+  .to(AddParticipantAndNotifyUseCase);
+
+/** -------------- CONTACT REPOSITORIES --------------- */
+container
+  .bind<IContactRepository>(TYPES.ContactPrismaRepository)
+  .to(ContactPrismaRepository);
+
+/** -------------- CONTACT USECASES --------------- */
+container
+  .bind<IGetContactsByUserIdUseCase>(TYPES.GetContactsByUserIdUseCase)
+  .to(GetContactsByUserIdUseCase);
+container
+  .bind<ICreateContactUseCase>(TYPES.CreateContactUseCase)
+  .to(CreateContactUseCase);
+container
+  .bind<IDeleteContactUseCase>(TYPES.DeleteContactUseCase)
+  .to(DeleteContactUseCase);
+container
+  .bind<IFindContactByIdUseCase>(TYPES.FindContactByIdUseCase)
+  .to(FindContactByIdUseCase);
+
+/** -------------- POST REPOSITORIES --------------- */
+container
+  .bind<IPostRepository>(TYPES.PostPrismaRepository)
+  .to(PostPrismaRepository);
+
+/** -------------- POST USECASES --------------- */
+container
+  .bind<IFindPostByIDUseCase>(TYPES.FindPostByIDUseCase)
+  .to(FindPostByIDUseCase);
 
 export { container };

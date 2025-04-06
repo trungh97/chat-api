@@ -52,6 +52,7 @@ export const TYPES = {
 
   /* Message */
   CreateMessageUseCase: Symbol.for("CreateMessageUseCase"),
+  CreateSystemMessageUseCase: Symbol.for("CreateSystemMessageUseCase"),
   GetMessageByIdUseCase: Symbol.for("GetMessageByIdUseCase"),
   GetLastMessageByConversationIdUseCase: Symbol.for(
     "GetLastMessageByConversationIdUseCase"
@@ -61,6 +62,9 @@ export const TYPES = {
   GetMessagesByConversationIdUseCase: Symbol.for(
     "GetMessagesByConversationIdUseCase"
   ),
+
+  /* Participant */
+  AddParticipantAndNotifyUseCase: Symbol.for("AddParticipantAndNotifyUseCase"),
 
   /* USE CASES DEFINITION - END */
 

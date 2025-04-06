@@ -10,6 +10,7 @@ import {
   ConversationResolver,
   FriendRequestResolver,
   MessageResolver,
+  ParticipantResolver,
   PostResolver,
   UserResolver,
 } from "@interfaces/graphql/resolvers";
@@ -45,6 +46,7 @@ const main = async () => {
       ContactResolver,
       FriendRequestResolver,
       MessageResolver,
+      ParticipantResolver,
     ],
     pubSub,
   });
