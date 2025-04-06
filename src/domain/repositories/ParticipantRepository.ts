@@ -1,3 +1,4 @@
+import { ParticipantWithNameDTO } from "@domain/dtos/participant";
 import { Participant } from "@domain/entities";
 import { RepositoryResponse } from "@shared/responses";
 
@@ -10,7 +11,7 @@ export interface IParticipantRepository {
    */
   createParticipant(
     participant: Participant
-  ): Promise<RepositoryResponse<Participant, Error>>;
+  ): Promise<RepositoryResponse<ParticipantWithNameDTO, Error>>;
 
   /**
    * Checks if a participant exists in a conversation.
@@ -30,7 +31,9 @@ export interface IParticipantRepository {
    * @param id - The unique identifier of the participant.
    * @returns A promise resolving to an empty response or an error.
    */
-  deleteParticipantById(id: string): Promise<RepositoryResponse<boolean, Error>>;
+  deleteParticipantById(
+    id: string
+  ): Promise<RepositoryResponse<boolean, Error>>;
 
   /**
    * Fetches the names of the participants with the given IDs.

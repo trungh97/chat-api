@@ -1,15 +1,17 @@
-import { ICreateMessageRequestDTO } from "@domain/dtos/message";
+import {
+  ICreateMessageRequestDTO
+} from "@domain/dtos/message";
 import { MessageType } from "@domain/enums";
 import sanitize from "sanitize-html";
 import { v4 as uuid } from "uuid";
 
 export interface MessageProps {
   id: string;
-  senderId: string;
+  senderId?: string;
   conversationId: string;
   content: string;
   extra?: Object;
-  messageType: MessageType;
+  messageType: keyof typeof MessageType;
   replyToMessageId?: string;
   createdAt: Date;
 }
@@ -20,7 +22,7 @@ export class Message {
   private _conversationId: string;
   private _content: string;
   private _extra: Object;
-  private _messageType: MessageType;
+  private _messageType: keyof typeof MessageType;
   private _replyToMessageId: string;
   private _createdAt: Date;
 
@@ -79,11 +81,11 @@ export class Message {
     this._extra = extra;
   }
 
-  get messageType(): MessageType {
+  get messageType(): keyof typeof MessageType {
     return this._messageType;
   }
 
-  set messageType(messageType: MessageType) {
+  set messageType(messageType: keyof typeof MessageType) {
     this._messageType = messageType;
   }
 

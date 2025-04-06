@@ -3,4 +3,10 @@ export enum MessageType {
   IMAGE = "IMAGE",
   VIDEO = "VIDEO",
   FILE = "FILE",
+  SYSTEM = "SYSTEM",
+}
+
+export enum SystemMessageType {
+  PARTICIPANT_JOINED = "PARTICIPANT_JOINED",
+  PARTICIPANT_LEFT = "PARTICIPANT_LEFT",
 }

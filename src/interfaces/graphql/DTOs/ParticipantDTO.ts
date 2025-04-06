@@ -18,5 +18,5 @@ export class ParticipantDTO {
   userId: string;
 
   @Field(() => ParticipantType)
-  type: ParticipantType;
+  type: keyof typeof ParticipantType;
 }
