@@ -11,16 +11,25 @@ export class MessageMapper {
    * @param {Message} message - The Message entity to be converted.
    * @returns {MessageDTO} - The resulting MessageDTO.
    */
-  static toDTO(message: Message): MessageDTO {
+  static toDTO({
+    id,
+    content,
+    senderId,
+    conversationId,
+    messageType,
+    extra,
+    replyToMessageId,
+    createdAt,
+  }: Message): MessageDTO {
     return {
-      id: message.id,
-      content: message.content,
-      senderId: message.senderId,
-      conversationId: message.conversationId,
-      messageType: message.messageType,
-      extra: JSON.stringify(message.extra),
-      replyToMessageId: message.replyToMessageId,
-      createdAt: message.createdAt,
+      id,
+      content,
+      senderId,
+      conversationId,
+      messageType,
+      extra: JSON.stringify(extra),
+      replyToMessageId,
+      createdAt,
     };
   }
 
@@ -31,15 +40,6 @@ export class MessageMapper {
    * @returns {Message} - The resulting Message entity.
    */
   static toEntity(messageDTO: MessageDTO): Message {
-    return new Message({
-      id: messageDTO.id,
-      content: messageDTO.content,
-      senderId: messageDTO.senderId,
-      conversationId: messageDTO.conversationId,
-      messageType: messageDTO.messageType,
-      extra: messageDTO.extra,
-      replyToMessageId: messageDTO.replyToMessageId,
-      createdAt: messageDTO.createdAt,
-    });
+    return new Message(messageDTO);
   }
 }

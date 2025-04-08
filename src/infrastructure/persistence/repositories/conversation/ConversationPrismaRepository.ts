@@ -33,33 +33,17 @@ class ConversationPrismaRepository implements IConversationRepository {
     const participants = (participantsPrismaModel || []).map(
       (participant) =>
         new Participant({
-          id: participant.userId,
-          userId: participant.userId,
-          conversationId: participant.conversationId,
+          ...participant,
           type: participant.type as ParticipantType,
         })
     );
 
     const messages = (messagesPrismaModel || []).map(
-      (message) =>
-        new Message({
-          id: message.id,
-          conversationId: message.conversationId,
-          senderId: message.senderId,
-          content: message.content,
-          messageType: message.messageType as MessageType,
-          extra: message.extra,
-          replyToMessageId: message.replyToMessageId,
-          createdAt: message.createdAt,
-        })
+      (message) => new Message(message)
     );
 
     return new Conversation({
-      id: conversationPrismaModel.id,
-      title: conversationPrismaModel.title,
-      creatorId: conversationPrismaModel.creatorId,
-      isArchived: conversationPrismaModel.isArchived,
-      deletedAt: conversationPrismaModel.deletedAt,
+      ...conversationPrismaModel,
       type: conversationPrismaModel.type as ConversationType,
       participants,
       messages,
@@ -157,7 +141,7 @@ class ConversationPrismaRepository implements IConversationRepository {
   }
 
   async createConversation(
-    conversation: Conversation,
+    { id, title, creatorId, isArchived, deletedAt, type }: Conversation,
     participants: { id: string; type: keyof typeof ParticipantType }[]
   ): Promise<RepositoryResponse<Conversation, Error>> {
     try {
@@ -183,12 +167,12 @@ class ConversationPrismaRepository implements IConversationRepository {
 
       const newConversation = await this.prisma.conversation.create({
         data: {
-          id: conversation.id,
-          title: conversation.title,
-          creatorId: conversation.creatorId,
-          isArchived: conversation.isArchived,
-          deletedAt: conversation.deletedAt,
-          type: conversation.type,
+          id,
+          title,
+          creatorId,
+          isArchived,
+          deletedAt,
+          type,
           conversationParticipants: {
             create: participants.map(({ id, type }) => ({
               userId: id,
@@ -213,16 +197,16 @@ class ConversationPrismaRepository implements IConversationRepository {
 
   async updateConversation(
     id: string,
-    conversation: Conversation
+    { title, creatorId, isArchived, deletedAt }: Conversation
   ): Promise<RepositoryResponse<Conversation, Error>> {
     try {
       const updatedConversation = await this.prisma.conversation.update({
         where: { id },
         data: {
-          title: conversation.title,
-          creatorId: conversation.creatorId,
-          isArchived: conversation.isArchived,
-          deletedAt: conversation.deletedAt,
+          title,
+          creatorId,
+          isArchived,
+          deletedAt,
         },
       });
 

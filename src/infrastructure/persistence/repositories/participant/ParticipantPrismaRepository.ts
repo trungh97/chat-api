@@ -22,22 +22,22 @@ export class ParticipantPrismaRepository implements IParticipantRepository {
     participant: ParticipantPrismaModel
   ): Participant {
     return new Participant({
-      id: participant.id,
-      userId: participant.userId,
-      conversationId: participant.conversationId,
+      ...participant,
       type: participant.type as ParticipantType,
     });
   }
 
-  async createParticipant(
-    participant: Participant
-  ): Promise<RepositoryResponse<ParticipantWithNameDTO, Error>> {
+  async createParticipant({
+    conversationId,
+    userId,
+    type,
+  }: Participant): Promise<RepositoryResponse<ParticipantWithNameDTO, Error>> {
     try {
       const createdParticipant = await this.prisma.participant.create({
         data: {
-          conversationId: participant.conversationId,
-          userId: participant.userId,
-          type: participant.type,
+          conversationId,
+          userId,
+          type,
         },
         include: {
           user: {
@@ -51,9 +51,7 @@ export class ParticipantPrismaRepository implements IParticipantRepository {
 
       const result = new ParticipantWithNameDTO(
         new Participant({
-          id: createdParticipant.id,
-          userId: createdParticipant.userId,
-          conversationId: createdParticipant.conversationId,
+          ...createdParticipant,
           type: createdParticipant.type as ParticipantType,
         }),
         `${createdParticipant.user.firstName} ${createdParticipant.user.lastName}`

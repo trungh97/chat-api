@@ -13,12 +13,7 @@ export class ContactMapper {
    * @returns {ContactDTO} - The resulting ContactDTO.
    */
   static toDTO(contact: IContactResponseDTO): ContactDTO {
-    return {
-      id: contact.id,
-      contactName: contact.contactName,
-      contactId: contact.contactId,
-      userId: contact.userId,
-    };
+    return contact;
   }
 
   /**

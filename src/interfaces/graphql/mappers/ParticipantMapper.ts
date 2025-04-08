@@ -12,12 +12,7 @@ export class ParticipantMapper {
    * @returns The corresponding ParticipantDTO.
    */
   static toDTO(participant: Participant): ParticipantDTO {
-    return {
-      id: participant.id,
-      conversationId: participant.conversationId,
-      userId: participant.userId,
-      type: participant.type,
-    };
+    return participant;
   }
 
   /**
@@ -27,9 +22,7 @@ export class ParticipantMapper {
    */
   static toDomain(participantDTO: ParticipantDTO): Participant {
     return new Participant({
-      id: participantDTO.id,
-      conversationId: participantDTO.conversationId,
-      userId: participantDTO.userId,
+      ...participantDTO,
       type: participantDTO.type as ParticipantType,
     });
   }
