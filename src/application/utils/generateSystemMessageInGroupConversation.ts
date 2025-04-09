@@ -12,7 +12,7 @@ const systemMessageMap: Record<SystemMessageType, string> = {
  * @param {string} user - The user who triggered the message
  * @returns {string} The generated system message
  */
-export const generateSystemMessageInGroupConversation = (
+export const generateSystemMessageContent = (
   systemMessageType: SystemMessageType,
   user: string
 ) => {

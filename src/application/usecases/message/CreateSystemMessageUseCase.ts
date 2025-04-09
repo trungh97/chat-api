@@ -1,4 +1,4 @@
-import { generateSystemMessageInGroupConversation } from "@application/utils";
+import { generateSystemMessageContent } from "@application/utils";
 import { ICreateSystemMessageRequestDTO } from "@domain/dtos/message";
 import { Message } from "@domain/entities";
 import {
@@ -44,10 +44,7 @@ export class CreateSystemMessageUseCase implements ICreateSystemMessageUseCase {
 
       const systemMessage = new Message({
         id: uuid(),
-        content: generateSystemMessageInGroupConversation(
-          systemMessageType,
-          relatedUser
-        ),
+        content: generateSystemMessageContent(systemMessageType, relatedUser),
         messageType: MessageType.SYSTEM,
         senderId: null,
         conversationId,
