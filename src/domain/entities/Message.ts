@@ -1,15 +1,19 @@
-import { ICreateMessageRequestDTO } from "@domain/dtos/message";
+import {
+  ICreateMessageRequestDTO
+} from "@domain/dtos/message";
 import { MessageType } from "@domain/enums";
+import sanitize from "sanitize-html";
 import { v4 as uuid } from "uuid";
 
 export interface MessageProps {
   id: string;
-  senderId: string;
+  senderId?: string;
   conversationId: string;
   content: string;
-  extra: Object;
-  messageType: MessageType;
-  replyToMessageId: string;
+  extra?: Object;
+  messageType: keyof typeof MessageType;
+  replyToMessageId?: string;
+  createdAt: Date;
 }
 
 export class Message {
@@ -18,8 +22,9 @@ export class Message {
   private _conversationId: string;
   private _content: string;
   private _extra: Object;
-  private _messageType: MessageType;
+  private _messageType: keyof typeof MessageType;
   private _replyToMessageId: string;
+  private _createdAt: Date;
 
   constructor({
     id,
@@ -37,6 +42,7 @@ export class Message {
     this._extra = extra;
     this._messageType = messageType;
     this._replyToMessageId = replyToMessageId;
+    this._createdAt = new Date();
   }
 
   get id(): string {
@@ -75,11 +81,11 @@ export class Message {
     this._extra = extra;
   }
 
-  get messageType(): MessageType {
+  get messageType(): keyof typeof MessageType {
     return this._messageType;
   }
 
-  set messageType(messageType: MessageType) {
+  set messageType(messageType: keyof typeof MessageType) {
     this._messageType = messageType;
   }
 
@@ -91,15 +97,30 @@ export class Message {
     this._replyToMessageId = replyToMessageId;
   }
 
-  static async create(request: ICreateMessageRequestDTO): Promise<Message> {
+  get createdAt(): Date {
+    return this._createdAt;
+  }
+
+  set createdAt(createdAt: Date) {
+    this._createdAt = createdAt;
+  }
+
+  static async create(
+    request: ICreateMessageRequestDTO,
+    currentUserId: string
+  ): Promise<Message> {
     const newMessage = {
       id: uuid(),
-      senderId: request.senderId,
+      senderId: currentUserId,
       conversationId: request.conversationId,
-      content: request.content,
+      content: sanitize(request.content, {
+        allowedTags: [],
+        allowedAttributes: {},
+      }),
       extra: request?.extra,
       messageType: request.messageType,
       replyToMessageId: request.replyToMessageId,
+      createdAt: new Date(),
     };
 
     return new Message(newMessage);

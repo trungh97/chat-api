@@ -1,3 +1,4 @@
+import { ICreateMessageRequestDTO } from "@domain/dtos/message";
 import { Message } from "@domain/entities";
 import { UseCaseResponse } from "@shared/responses";
 
@@ -10,11 +11,11 @@ export interface ICreateMessageUseCase {
    *
    * @async
    * @param {string} currentUserId - The ID of the current user.
-   * @param {Message} message - The message to create.
+   * @param {ICreateMessageRequestDTO} request - The message to create.
    * @returns {Promise<UseCaseResponse<Message>>} The response data.
    */
   execute(
     currentUserId: string,
-    message: Message
+    request: ICreateMessageRequestDTO,
   ): Promise<UseCaseResponse<Message>>;
 }

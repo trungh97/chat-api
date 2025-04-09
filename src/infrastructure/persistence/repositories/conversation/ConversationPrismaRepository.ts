@@ -1,12 +1,17 @@
 import {
   Conversation as ConversationPrismaModel,
+  Participant as ParticipantPrismaModel,
+  Message as MessagePrismaModel,
   PrismaClient,
 } from "@prisma/client";
 import { inject, injectable } from "inversify";
 
-import { Conversation } from "@domain/entities";
-import { ConversationType } from "@domain/enums";
-import { ICursorBasedPaginationResponse } from "@domain/interfaces/pagination/CursorBasedPagination";
+import { Conversation, Message, Participant } from "@domain/entities";
+import { ConversationType, MessageType, ParticipantType } from "@domain/enums";
+import {
+  ICursorBasedPaginationParams,
+  ICursorBasedPaginationResponse,
+} from "@domain/interfaces/pagination/CursorBasedPagination";
 import { IConversationRepository } from "@domain/repositories";
 import { TYPES } from "@infrastructure/external/di/inversify";
 import { PAGE_LIMIT } from "@shared/constants";
@@ -21,28 +26,49 @@ class ConversationPrismaRepository implements IConversationRepository {
   ) {}
 
   private toDomainFromPersistence(
-    conversationPrismaModel: ConversationPrismaModel
+    conversationPrismaModel: ConversationPrismaModel,
+    participantsPrismaModel?: ParticipantPrismaModel[],
+    messagesPrismaModel?: MessagePrismaModel[]
   ): Conversation {
+    const participants = (participantsPrismaModel || []).map(
+      (participant) =>
+        new Participant({
+          ...participant,
+          type: participant.type as ParticipantType,
+        })
+    );
+
+    const messages = (messagesPrismaModel || []).map(
+      (message) => new Message(message)
+    );
+
     return new Conversation({
-      id: conversationPrismaModel.id,
-      title: conversationPrismaModel.title,
-      creatorId: conversationPrismaModel.creatorId,
-      isArchived: conversationPrismaModel.isArchived,
-      deletedAt: conversationPrismaModel.deletedAt,
+      ...conversationPrismaModel,
       type: conversationPrismaModel.type as ConversationType,
+      participants,
+      messages,
     });
   }
 
-  async getAllConversations(
-    cursor?: string,
-    limit = PAGE_LIMIT
+  async getMyConversations(
+    userId: string,
+    pagination: ICursorBasedPaginationParams
   ): Promise<
     RepositoryResponse<ICursorBasedPaginationResponse<Conversation>, Error>
   > {
     try {
+      const { cursor, limit = PAGE_LIMIT } = pagination;
       const conversations = await this.prisma.conversation.findMany({
         take: limit + 1,
         cursor: cursor ? { id: cursor } : undefined,
+        where: { conversationParticipants: { some: { userId } } },
+        include: {
+          messages: {
+            where: { messageType: { not: MessageType.SYSTEM } },
+            orderBy: { createdAt: "desc" },
+            take: 1,
+          },
+        },
         orderBy: {
           createdAt: "desc",
         },
@@ -53,14 +79,22 @@ class ConversationPrismaRepository implements IConversationRepository {
 
       return {
         value: {
-          data: conversations.slice(0, limit).map(this.toDomainFromPersistence),
+          data: conversations
+            .slice(0, limit)
+            .map((conversation) =>
+              this.toDomainFromPersistence(
+                conversation,
+                undefined,
+                conversation.messages
+              )
+            ),
           nextCursor,
         },
       };
     } catch (error) {
-      this.logger.error(`Error getting all conversations: ${error.message}`);
+      this.logger.error(`Error getting my conversations: ${error.message}`);
       return {
-        error: new Error(`Error getting all conversations: ${error.message}`),
+        error: new Error(`Error getting my conversations: ${error.message}`),
         value: {
           data: [],
           nextCursor: undefined,
@@ -71,10 +105,15 @@ class ConversationPrismaRepository implements IConversationRepository {
 
   async getConversationById(
     id: string
-  ): Promise<RepositoryResponse<Conversation, Error>> {
+  ): Promise<
+    RepositoryResponse<Conversation & { participants: Participant[] }, Error>
+  > {
     try {
       const conversation = await this.prisma.conversation.findUnique({
         where: { id },
+        include: {
+          conversationParticipants: true,
+        },
       });
 
       if (!conversation) {
@@ -85,7 +124,10 @@ class ConversationPrismaRepository implements IConversationRepository {
       }
 
       return {
-        value: this.toDomainFromPersistence(conversation),
+        value: this.toDomainFromPersistence(
+          conversation,
+          conversation.conversationParticipants
+        ),
       };
     } catch (error) {
       this.logger.error(
@@ -99,8 +141,8 @@ class ConversationPrismaRepository implements IConversationRepository {
   }
 
   async createConversation(
-    conversation: Conversation,
-    participants: string[]
+    { id, title, creatorId, isArchived, deletedAt, type }: Conversation,
+    participants: { id: string; type: keyof typeof ParticipantType }[]
   ): Promise<RepositoryResponse<Conversation, Error>> {
     try {
       if (participants.length === 2) {
@@ -109,7 +151,7 @@ class ConversationPrismaRepository implements IConversationRepository {
             conversationParticipants: {
               every: {
                 userId: {
-                  in: participants,
+                  in: participants.map((participant) => participant.id),
                 },
               },
             },
@@ -125,14 +167,16 @@ class ConversationPrismaRepository implements IConversationRepository {
 
       const newConversation = await this.prisma.conversation.create({
         data: {
-          id: conversation.id,
-          title: conversation.title,
-          creatorId: conversation.creatorId,
-          isArchived: conversation.isArchived,
-          deletedAt: conversation.deletedAt,
+          id,
+          title,
+          creatorId,
+          isArchived,
+          deletedAt,
+          type,
           conversationParticipants: {
-            create: participants.map((participantId) => ({
-              userId: participantId,
+            create: participants.map(({ id, type }) => ({
+              userId: id,
+              type,
             })),
           },
         },
@@ -153,16 +197,16 @@ class ConversationPrismaRepository implements IConversationRepository {
 
   async updateConversation(
     id: string,
-    conversation: Conversation
+    { title, creatorId, isArchived, deletedAt }: Conversation
   ): Promise<RepositoryResponse<Conversation, Error>> {
     try {
       const updatedConversation = await this.prisma.conversation.update({
         where: { id },
         data: {
-          title: conversation.title,
-          creatorId: conversation.creatorId,
-          isArchived: conversation.isArchived,
-          deletedAt: conversation.deletedAt,
+          title,
+          creatorId,
+          isArchived,
+          deletedAt,
         },
       });
 
@@ -202,4 +246,3 @@ class ConversationPrismaRepository implements IConversationRepository {
 }
 
 export { ConversationPrismaRepository };
-

@@ -1,4 +1,4 @@
-import { Conversation } from "@domain/entities";
+import { Conversation, Message, Participant } from "@domain/entities";
 import { ConversationDTO } from "../DTOs";
 
 export class ConversationMapper {
@@ -7,14 +7,29 @@ export class ConversationMapper {
    * @param conversation The conversation entity to be mapped.
    * @returns The mapped ConversationDTO.
    */
-  static toDTO(conversation: Conversation): ConversationDTO {
+  static toDTO({
+    id,
+    title,
+    creatorId,
+    deletedAt,
+    isArchived,
+    type,
+    participants,
+    messages,
+  }: Conversation): ConversationDTO {
     return {
-      id: conversation.id,
-      title: conversation.title,
-      creatorId: conversation.creatorId,
-      deletedAt: conversation.deletedAt,
-      isArchived: conversation.isArchived,
-      type: conversation.type,
+      id,
+      title,
+      creatorId,
+      deletedAt,
+      isArchived,
+      type,
+      participants: participants.map(
+        (participant) => new Participant(participant)
+      ),
+      messages: messages.map((message) => {
+        return new Message(message);
+      }),
     };
   }
 

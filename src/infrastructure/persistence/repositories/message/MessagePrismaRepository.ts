@@ -25,6 +25,7 @@ export class MessagePrismaRepository implements IMessageRepository {
       extra: message.extra,
       messageType: message.messageType as MessageType,
       replyToMessageId: message.replyToMessageId,
+      createdAt: message.createdAt,
     });
   }
 
@@ -35,12 +36,18 @@ export class MessagePrismaRepository implements IMessageRepository {
       const createdMessage = await this.prisma.message.create({
         data: {
           id: message.id,
-          senderId: message.senderId,
-          conversationId: message.conversationId,
           content: message.content,
           extra: JSON.stringify(message.extra),
-          replyToMessageId: message.replyToMessageId,
           messageType: message.messageType,
+          conversation: {
+            connect: { id: message.conversationId },
+          },
+          ...(message.senderId && {
+            sender: { connect: { id: message.senderId } },
+          }),
+          ...(message.replyToMessageId && {
+            replyToMessage: { connect: { id: message.replyToMessageId } },
+          }),
         },
       });
       return {

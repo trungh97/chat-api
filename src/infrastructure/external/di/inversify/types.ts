@@ -24,7 +24,7 @@ export const TYPES = {
   LoginCredentialBasedUserUseCase: Symbol.for("LoginUserUseCase"),
 
   /* Conversation */
-  GetAllConversationsUseCase: Symbol.for("GetAllConversationsUseCase"),
+  GetMyConversationsUseCase: Symbol.for("GetMyConversationsUseCase"),
   CreateConversationUseCase: Symbol.for("CreateConversationUseCase"),
   DeleteConversationUseCase: Symbol.for("DeleteConversationUseCase"),
   FindConversationByIdUseCase: Symbol.for("FindConversationByIdUseCase"),
@@ -52,6 +52,7 @@ export const TYPES = {
 
   /* Message */
   CreateMessageUseCase: Symbol.for("CreateMessageUseCase"),
+  CreateSystemMessageUseCase: Symbol.for("CreateSystemMessageUseCase"),
   GetMessageByIdUseCase: Symbol.for("GetMessageByIdUseCase"),
   GetLastMessageByConversationIdUseCase: Symbol.for(
     "GetLastMessageByConversationIdUseCase"
@@ -61,6 +62,9 @@ export const TYPES = {
   GetMessagesByConversationIdUseCase: Symbol.for(
     "GetMessagesByConversationIdUseCase"
   ),
+
+  /* Participant */
+  AddParticipantAndNotifyUseCase: Symbol.for("AddParticipantAndNotifyUseCase"),
 
   /* USE CASES DEFINITION - END */
 

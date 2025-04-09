@@ -6,18 +6,21 @@ import {
 import { UseCaseResponse } from "@shared/responses";
 
 /**
- * Interface for the use case that retrieves all conversations.
+ * Interface for the use case that retrieves the current user's conversations.
  *
  * @interface
  */
-export interface IGetAllConversationsUsecase {
+export interface IGetMyConversationsUsecase {
   /**
-   * Executes the get all conversations use case.
+   * Executes the get the current user's conversations use case.
    *
    * @async
+   * @param {string} userId - The ID of the user.
+   * @param {ICursorBasedPaginationParams} pagination - The pagination parameters.
    * @returns {Promise<UseCaseResponse<CursorBasedPaginationResponse<Conversation>>>} The response data.
    */
   execute(
-    params: ICursorBasedPaginationParams
+    userId: string,
+    pagination: ICursorBasedPaginationParams
   ): Promise<UseCaseResponse<ICursorBasedPaginationResponse<Conversation>>>;
 }

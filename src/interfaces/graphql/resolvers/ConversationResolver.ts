@@ -4,14 +4,9 @@ import {
   ICreateConversationUsecase,
   IDeleteConversationUsecase,
   IFindConversationByIdUseCase,
-  IGetAllConversationsUsecase,
+  IGetMyConversationsUsecase,
 } from "@domain/usecases/conversation";
 import { container, TYPES } from "@infrastructure/external/di/inversify";
-import {
-  NewConversationPayload,
-  pubSub,
-  Topic,
-} from "@infrastructure/persistence/websocket/connection";
 import { ILogger } from "@shared/logger";
 import { GlobalResponse } from "@shared/responses";
 import { StatusCodes } from "http-status-codes";
@@ -21,9 +16,7 @@ import {
   Mutation,
   ObjectType,
   Query,
-  Resolver,
-  Root,
-  Subscription,
+  Resolver
 } from "type-graphql";
 import { Context } from "types";
 import { ConversationDTO } from "../DTOs";
@@ -47,16 +40,15 @@ class ConversationDeleteGlobalResponse extends ConversationDeleteResponse {}
 @Resolver()
 export class ConversationResolver {
   constructor(
-    private getAllConversationsUseCase: IGetAllConversationsUsecase,
+    private getMyConversationsUseCase: IGetMyConversationsUsecase,
     private createConversationUseCase: ICreateConversationUsecase,
     private deleteConverationUseCase: IDeleteConversationUsecase,
     private findConversationByIdUseCase: IFindConversationByIdUseCase,
     private logger: ILogger
   ) {
-    this.getAllConversationsUseCase =
-      container.get<IGetAllConversationsUsecase>(
-        TYPES.GetAllConversationsUseCase
-      );
+    this.getMyConversationsUseCase = container.get<IGetMyConversationsUsecase>(
+      TYPES.GetMyConversationsUseCase
+    );
     this.createConversationUseCase = container.get<ICreateConversationUsecase>(
       TYPES.CreateConversationUseCase
     );
@@ -71,16 +63,21 @@ export class ConversationResolver {
   }
 
   @Query(() => ConversationListGlobalResponse)
-  async getAllConversations(
+  async getMyConversations(
     @Arg("options", () => CursorBasedPaginationParams)
-    options: ICursorBasedPaginationParams
+    options: ICursorBasedPaginationParams,
+    @Ctx()
+    {
+      req: {
+        session: { userId },
+      },
+    }: Context
   ): Promise<ConversationListGlobalResponse> {
     try {
-      const { cursor, limit } = options;
-      const result = await this.getAllConversationsUseCase.execute({
-        cursor,
-        limit,
-      });
+      const result = await this.getMyConversationsUseCase.execute(
+        userId,
+        options
+      );
 
       const { data, error } = result;
 
@@ -97,7 +94,7 @@ export class ConversationResolver {
         data: data.data.map(ConversationMapper.toDTO),
       };
     } catch (error) {
-      this.logger.error(`Error getting all conversations: ${error.message}`);
+      this.logger.error(`Error getting my conversations: ${error.message}`);
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         error: error.message,
@@ -109,23 +106,23 @@ export class ConversationResolver {
   async createConversation(
     @Arg("conversation", () => ConversationCreateMutationRequest)
     conversation: ICreateConversationRequestDTO,
-    @Ctx() { req }: Context
+    @Ctx()
+    {
+      req: {
+        session: { userId },
+      },
+    }: Context
   ): Promise<ConversationGlobalResponse> {
     try {
-      const { participants } = conversation;
-
-      if (!req.session.userId) {
+      if (!userId) {
         return {
           statusCode: StatusCodes.UNAUTHORIZED,
           error: "User is not authenticated",
         };
       }
 
-      const currentUser = req.session.userId;
-
       const result = await this.createConversationUseCase.execute(
-        currentUser,
-        participants,
+        userId,
         conversation
       );
 
@@ -136,11 +133,6 @@ export class ConversationResolver {
           statusCode: StatusCodes.BAD_REQUEST,
         };
       }
-
-      await pubSub.publish(
-        Topic.NEW_CONVERSATION,
-        ConversationMapper.toDTO(result.data)
-      );
 
       return {
         statusCode: StatusCodes.CREATED,
@@ -171,7 +163,10 @@ export class ConversationResolver {
 
       // Check if the conversation exists
       const { data: conversation, error } =
-        await this.findConversationByIdUseCase.execute(conversationId);
+        await this.findConversationByIdUseCase.execute(
+          conversationId,
+          req.session.userId
+        );
 
       if (!conversation || error) {
         return {
@@ -212,10 +207,48 @@ export class ConversationResolver {
     }
   }
 
-  @Subscription(() => ConversationDTO, { topics: Topic.NEW_CONVERSATION })
-  newConversationAdded(
-    @Root() conversation: NewConversationPayload
-  ): ConversationDTO {
-    return conversation;
+  @Query(() => ConversationGlobalResponse)
+  async getConversationById(
+    @Arg("conversationId", () => String) conversationId: string,
+    @Ctx()
+    {
+      req: {
+        session: { userId },
+      },
+    }: Context
+  ): Promise<ConversationGlobalResponse> {
+    try {
+      if (!userId) {
+        return {
+          statusCode: StatusCodes.UNAUTHORIZED,
+          error: "User is not authenticated",
+        };
+      }
+
+      const { data, error } = await this.findConversationByIdUseCase.execute(
+        conversationId,
+        userId
+      );
+
+      if (error) {
+        this.logger.error(error);
+        return {
+          error,
+          statusCode: StatusCodes.NOT_FOUND,
+        };
+      }
+
+      return {
+        statusCode: StatusCodes.OK,
+        message: "Get conversation successfully!",
+        data: ConversationMapper.toDTO(data),
+      };
+    } catch (error) {
+      this.logger.error(`Error getting conversation by ID: ${error.message}`);
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      };
+    }
   }
 }
