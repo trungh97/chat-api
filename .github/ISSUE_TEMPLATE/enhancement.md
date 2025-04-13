@@ -1,3 +1,11 @@
+---
+name: 📌 Enhancement Request
+about: Create a new enhancement task.
+title: "[Enhancement] <Brief Title>"
+labels: ["enhancement"]
+assignees:
+---
+
 ### 🚀 Enhancement Request
 
 ---

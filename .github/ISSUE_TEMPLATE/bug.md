@@ -1,80 +1,56 @@
-name: "🐛 Bug Report"
-description: Create a new ticket for a bug.
-title: "🐛 [BUG] - <title>"
-labels: [
-  "bug"
-]
-body:
-  - type: textarea
-    id: description
-    attributes:
-      label: "Description"
-      description: Please enter an explicit description of your issue
-      placeholder: Short and explicit description of your incident...
-    validations:
-      required: true
-  - type: input
-    id: reprod-url
-    attributes:
-      label: "Reproduction URL"
-      description: Please enter your GitHub URL to provide a reproduction of the issue
-      placeholder: ex. https://github.com/USERNAME/REPO-NAME
-    validations:
-      required: true
-  - type: textarea
-    id: reprod
-    attributes:
-      label: "Reproduction steps"
-      description: Please enter an explicit description of your issue
-      value: |
-        1. Go to '...'
-        2. Click on '....'
-        3. Scroll down to '....'
-        4. See error
-      render: bash
-    validations:
-      required: true
-  - type: textarea
-    id: screenshot
-    attributes:
-      label: "Screenshots"
-      description: If applicable, add screenshots to help explain your problem.
-      value: |
-        ![DESCRIPTION](LINK.png)
-      render: bash
-    validations:
-      required: false
-  - type: textarea
-    id: logs
-    attributes:
-      label: "Logs"
-      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
-      render: bash
-    validations:
-      required: false
-  - type: dropdown
-    id: browsers
-    attributes:
-      label: "Browsers"
-      description: What browsers are you seeing the problem on ?
-      multiple: true
-      options:
-        - Firefox
-        - Chrome
-        - Safari
-        - Microsoft Edge
-        - Opera
-    validations:
-      required: false
-  - type: dropdown
-    id: os
-    attributes:
-      label: "OS"
-      description: What is the impacted environment ?
-      multiple: true
-      options:
-        - Windows
-        - Linux
-        - Mac
-    validations:
-      required: false
+---
+name: 📌 Bug Report
+about: Report a bug.
+title: "[Bug] <Brief Title>"
+labels: ["bug"]
+assignees:
+---
+
+### 🐞 Bug Report
+
+---
+
+### 📄 Description  
+_A clear and concise description of what the bug is._
+
+---
+
+### ✅ Expected Behavior  
+_What you expected to happen._
+
+---
+
+### ❌ Actual Behavior  
+_What actually happened instead._
+
+---
+
+### 📍 Steps to Reproduce  
+_Step-by-step guide to reproduce the issue:_
+1. Go to '...'
+2. Click on '...'
+3. Scroll down to '...'
+4. See error
+
+---
+
+### 💻 Environment  
+| Info | Details |
+|------|---------|
+| Device / OS | e.g. MacBook Pro / macOS 14 |
+| Browser | e.g. Chrome 123.0.1 |
+| App Version | e.g. 1.2.3 |
+| Environment | `development` / `staging` / `production` |
+
+---
+
+### 📷 Screenshots / Video  
+_If applicable, add screenshots or screen recordings to help explain your problem._
+
+---
+
+### 📦 Related Logs or Errors  
+_Please paste any error messages or relevant logs here:_
+```sh
+// Example logs
+TypeError: cannot read property 'message' of undefined
