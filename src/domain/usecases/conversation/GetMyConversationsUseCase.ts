@@ -1,4 +1,4 @@
-import { Conversation } from "@domain/entities";
+import { IConversationResponseDTO } from "@domain/dtos/conversation";
 import {
   ICursorBasedPaginationParams,
   ICursorBasedPaginationResponse,
@@ -17,10 +17,10 @@ export interface IGetMyConversationsUsecase {
    * @async
    * @param {string} userId - The ID of the user.
    * @param {ICursorBasedPaginationParams} pagination - The pagination parameters.
-   * @returns {Promise<UseCaseResponse<CursorBasedPaginationResponse<Conversation>>>} The response data.
+   * @returns {Promise<UseCaseResponse<CursorBasedPaginationResponse<IConversationResponseDTO>>>} The response data.
    */
   execute(
     userId: string,
     pagination: ICursorBasedPaginationParams
-  ): Promise<UseCaseResponse<ICursorBasedPaginationResponse<Conversation>>>;
+  ): Promise<UseCaseResponse<ICursorBasedPaginationResponse<IConversationResponseDTO>>>;
 }

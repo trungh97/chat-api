@@ -1,5 +1,4 @@
 import { Participant } from "@domain/entities/Participant";
-import { ParticipantType } from "@domain/enums";
 import { ParticipantDTO } from "../dtos/ParticipantDTO";
 
 /**
@@ -23,7 +22,7 @@ export class ParticipantMapper {
   static toDomain(participantDTO: ParticipantDTO): Participant {
     return new Participant({
       ...participantDTO,
-      type: participantDTO.type as ParticipantType,
+      type: participantDTO.type,
     });
   }
 }

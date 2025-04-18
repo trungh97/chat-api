@@ -4,4 +4,5 @@ export interface ICreateParticipantRequestDTO {
   conversationId: string;
   userId: string;
   type: ParticipantType;
+  customTitle?: string;
 }

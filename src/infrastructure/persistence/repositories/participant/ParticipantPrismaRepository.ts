@@ -23,7 +23,7 @@ export class ParticipantPrismaRepository implements IParticipantRepository {
   ): Participant {
     return new Participant({
       ...participant,
-      type: participant.type as ParticipantType,
+      type: participant.type,
     });
   }
 
@@ -52,7 +52,7 @@ export class ParticipantPrismaRepository implements IParticipantRepository {
       const result = new ParticipantWithNameDTO(
         new Participant({
           ...createdParticipant,
-          type: createdParticipant.type as ParticipantType,
+          type: createdParticipant.type,
         }),
         `${createdParticipant.user.firstName} ${createdParticipant.user.lastName}`
       );
