@@ -1,5 +1,5 @@
 import {
-  buildConversationTitle,
+  buildDefaultConversationTitle,
   guessConversationType,
 } from "@application/utils";
 import { ICreateConversationRequestDTO } from "@domain/dtos/conversation";
@@ -52,23 +52,23 @@ class CreateConversationUseCase implements ICreateConversationUsecase {
         };
       }
 
-      const participantsInfo = userNames.map((user) => ({
-        id: user.id,
-        name: `${user.firstName} ${user.lastName}`,
-      }));
-
-      conversation.title = buildConversationTitle(
-        participantsInfo,
-        userId,
-        conversation.title
+      const participantIdAndNames = userNames.map(
+        ({ id, firstName, lastName }) => ({
+          id,
+          name: `${firstName} ${lastName}`,
+        })
       );
 
-      const participantsRequest = participants.map((id) => ({
+      const participantsRequest = participantIdAndNames.map(({ id }) => ({
         id,
         type:
           id === userId && conversationType === ConversationType.GROUP
             ? ParticipantType.ADMIN
             : ParticipantType.MEMBER,
+        customTitle: buildDefaultConversationTitle({
+          currentParticipant: id,
+          allParticipants: participantIdAndNames,
+        }),
       }));
 
       const conversationData = await Conversation.create(userId, conversation);
@@ -94,4 +94,3 @@ class CreateConversationUseCase implements ICreateConversationUsecase {
 }
 
 export { CreateConversationUseCase };
-

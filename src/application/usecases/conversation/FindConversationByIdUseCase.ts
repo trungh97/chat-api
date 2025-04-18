@@ -1,9 +1,11 @@
-import { inject, injectable } from "inversify";
+import { getConversationTitle } from "@application/utils";
+import { IConversationResponseDTO } from "@domain/dtos/conversation";
+import { ParticipantWithNameDTO } from "@domain/dtos/participant";
 import { IConversationRepository } from "@domain/repositories";
-import { UseCaseResponse } from "@shared/responses";
-import { TYPES } from "@infrastructure/external/di/inversify";
-import { Conversation, Participant } from "@domain/entities";
 import { IFindConversationByIdUseCase } from "@domain/usecases/conversation";
+import { TYPES } from "@infrastructure/external/di/inversify";
+import { UseCaseResponse } from "@shared/responses";
+import { inject, injectable } from "inversify";
 
 @injectable()
 class FindConversationByIdUseCase implements IFindConversationByIdUseCase {
@@ -15,13 +17,7 @@ class FindConversationByIdUseCase implements IFindConversationByIdUseCase {
   async execute(
     id: string,
     userId: string
-  ): Promise<
-    UseCaseResponse<
-      Conversation & {
-        participants: Participant[];
-      }
-    >
-  > {
+  ): Promise<UseCaseResponse<IConversationResponseDTO>> {
     try {
       const result = await this.conversationRepository.getConversationById(id);
 
@@ -43,6 +39,17 @@ class FindConversationByIdUseCase implements IFindConversationByIdUseCase {
         };
       }
 
+      const currentParticipant = result.value.participants.find(
+        (participant) => participant.userId === userId
+      );
+
+      const conversationTitle = getConversationTitle({
+        currentParticipant,
+        allParticipants: result.value.participants as ParticipantWithNameDTO[],
+      });
+
+      result.value.conversation.title = conversationTitle;
+
       return {
         data: result.value,
       };
@@ -56,3 +63,4 @@ class FindConversationByIdUseCase implements IFindConversationByIdUseCase {
 }
 
 export { FindConversationByIdUseCase };
+

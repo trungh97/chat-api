@@ -1,4 +1,6 @@
-import { Conversation } from "@domain/entities";
+import { getConversationTitle } from "@application/utils";
+import { IConversationResponseDTO } from "@domain/dtos/conversation";
+import { ParticipantWithNameDTO } from "@domain/dtos/participant";
 import {
   ICursorBasedPaginationParams,
   ICursorBasedPaginationResponse,
@@ -20,7 +22,9 @@ class GetMyConversationsUseCase implements IGetMyConversationsUsecase {
   async execute(
     userId: string,
     pagination: ICursorBasedPaginationParams
-  ): Promise<UseCaseResponse<ICursorBasedPaginationResponse<Conversation>>> {
+  ): Promise<
+    UseCaseResponse<ICursorBasedPaginationResponse<IConversationResponseDTO>>
+  > {
     try {
       const { value, error } =
         await this.conversationRepository.getMyConversations(
@@ -39,6 +43,20 @@ class GetMyConversationsUseCase implements IGetMyConversationsUsecase {
         };
       }
 
+      // Get the corresponding conversation title
+      for (const { conversation, participants } of value.data) {
+        if (!conversation.title) {
+          const currentUser = participants.find(
+            (participant) => participant.userId === userId
+          );
+
+          conversation.title = getConversationTitle({
+            currentParticipant: currentUser,
+            allParticipants: participants as ParticipantWithNameDTO[],
+          });
+        }
+      }
+
       return { data: value, error: null };
     } catch (error) {
       this.logger.error(error.message);
@@ -54,3 +72,4 @@ class GetMyConversationsUseCase implements IGetMyConversationsUsecase {
 }
 
 export { GetMyConversationsUseCase };
+

@@ -1,13 +1,15 @@
 import {
   Conversation as ConversationPrismaModel,
-  Participant as ParticipantPrismaModel,
   Message as MessagePrismaModel,
+  Participant as ParticipantPrismaModel,
   PrismaClient,
 } from "@prisma/client";
 import { inject, injectable } from "inversify";
 
+import { IConversationResponseDTO } from "@domain/dtos/conversation";
+import { ParticipantWithNameDTO } from "@domain/dtos/participant";
 import { Conversation, Message, Participant } from "@domain/entities";
-import { ConversationType, MessageType, ParticipantType } from "@domain/enums";
+import { ConversationType, MessageType } from "@domain/enums";
 import {
   ICursorBasedPaginationParams,
   ICursorBasedPaginationResponse,
@@ -25,36 +27,75 @@ class ConversationPrismaRepository implements IConversationRepository {
     @inject(TYPES.WinstonLogger) private logger: ILogger
   ) {}
 
-  private toDomainFromPersistence(
-    conversationPrismaModel: ConversationPrismaModel,
-    participantsPrismaModel?: ParticipantPrismaModel[],
-    messagesPrismaModel?: MessagePrismaModel[]
-  ): Conversation {
-    const participants = (participantsPrismaModel || []).map(
-      (participant) =>
-        new Participant({
-          ...participant,
-          type: participant.type as ParticipantType,
-        })
-    );
+  /**
+   * Converts a Prisma model representation of a conversation and its related entities
+   * into a domain-specific conversation response DTO.
+   *
+   * @param {ConversationPrismaModel} conversationPrismaModel - The Prisma model of the conversation.
+   * @param {(ParticipantPrismaModel & { user: { firstName: string, lastName: string } })[]} [participantsPrismaModel] -
+   *   Optional array of Prisma models of participants, including user information.
+   * @param {MessagePrismaModel[]} [messagesPrismaModel] - Optional array of Prisma models of messages.
+   * @returns {IConversationResponseDTO} The domain-specific conversation response DTO.
+   */
 
-    const messages = (messagesPrismaModel || []).map(
-      (message) => new Message(message)
-    );
-
-    return new Conversation({
+  private toDomainFromPersistence(options: {
+    conversationPrismaModel: ConversationPrismaModel;
+    participantsPrismaModel?: (ParticipantPrismaModel & {
+      user?: { firstName: string; lastName: string };
+    })[];
+    messagesPrismaModel?: MessagePrismaModel[];
+  }): IConversationResponseDTO {
+    const {
+      conversationPrismaModel,
+      participantsPrismaModel,
+      messagesPrismaModel,
+    } = options;
+    const conversation = new Conversation({
       ...conversationPrismaModel,
       type: conversationPrismaModel.type as ConversationType,
-      participants,
-      messages,
     });
+
+    const result: IConversationResponseDTO = {
+      conversation,
+    };
+
+    if (participantsPrismaModel?.length > 0) {
+      result.participants = (participantsPrismaModel || []).map(
+        ({ type, user: { firstName, lastName }, ...participant }) => {
+          const newParticipant = new Participant({
+            ...participant,
+            type,
+          });
+
+          if (!firstName && !lastName) {
+            return newParticipant;
+          }
+
+          return new ParticipantWithNameDTO(
+            newParticipant,
+            `${firstName} ${lastName}`
+          );
+        }
+      );
+    }
+
+    if (messagesPrismaModel?.length > 0) {
+      result.messages = (messagesPrismaModel || []).map(
+        (message) => new Message(message)
+      );
+    }
+
+    return result;
   }
 
   async getMyConversations(
     userId: string,
     pagination: ICursorBasedPaginationParams
   ): Promise<
-    RepositoryResponse<ICursorBasedPaginationResponse<Conversation>, Error>
+    RepositoryResponse<
+      ICursorBasedPaginationResponse<IConversationResponseDTO>,
+      Error
+    >
   > {
     try {
       const { cursor, limit = PAGE_LIMIT } = pagination;
@@ -67,6 +108,16 @@ class ConversationPrismaRepository implements IConversationRepository {
             where: { messageType: { not: MessageType.SYSTEM } },
             orderBy: { createdAt: "desc" },
             take: 1,
+          },
+          conversationParticipants: {
+            include: {
+              user: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+            },
           },
         },
         orderBy: {
@@ -81,12 +132,17 @@ class ConversationPrismaRepository implements IConversationRepository {
         value: {
           data: conversations
             .slice(0, limit)
-            .map((conversation) =>
-              this.toDomainFromPersistence(
-                conversation,
-                undefined,
-                conversation.messages
-              )
+            .map(
+              ({
+                conversationParticipants: participants,
+                messages,
+                ...conversation
+              }) =>
+                this.toDomainFromPersistence({
+                  conversationPrismaModel: conversation,
+                  participantsPrismaModel: participants,
+                  messagesPrismaModel: messages,
+                })
             ),
           nextCursor,
         },
@@ -105,29 +161,38 @@ class ConversationPrismaRepository implements IConversationRepository {
 
   async getConversationById(
     id: string
-  ): Promise<
-    RepositoryResponse<Conversation & { participants: Participant[] }, Error>
-  > {
+  ): Promise<RepositoryResponse<IConversationResponseDTO, Error>> {
     try {
-      const conversation = await this.prisma.conversation.findUnique({
+      const conversationData = await this.prisma.conversation.findUnique({
         where: { id },
         include: {
-          conversationParticipants: true,
+          conversationParticipants: {
+            include: {
+              user: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+            },
+          },
         },
       });
 
-      if (!conversation) {
+      if (!conversationData) {
         return {
           error: new Error("Conversation not found"),
           value: null,
         };
       }
 
+      const { conversationParticipants, ...conversation } = conversationData;
+
       return {
-        value: this.toDomainFromPersistence(
-          conversation,
-          conversation.conversationParticipants
-        ),
+        value: this.toDomainFromPersistence({
+          conversationPrismaModel: conversation,
+          participantsPrismaModel: conversationParticipants,
+        }),
       };
     } catch (error) {
       this.logger.error(
@@ -142,7 +207,7 @@ class ConversationPrismaRepository implements IConversationRepository {
 
   async createConversation(
     { id, title, creatorId, isArchived, deletedAt, type }: Conversation,
-    participants: { id: string; type: keyof typeof ParticipantType }[]
+    participants: Pick<Participant, "id" | "type" | "customTitle">[]
   ): Promise<RepositoryResponse<Conversation, Error>> {
     try {
       if (participants.length === 2) {
@@ -160,7 +225,9 @@ class ConversationPrismaRepository implements IConversationRepository {
 
         if (existingConversation) {
           return {
-            value: this.toDomainFromPersistence(existingConversation),
+            value: this.toDomainFromPersistence({
+              conversationPrismaModel: existingConversation,
+            }).conversation,
           };
         }
       }
@@ -174,9 +241,10 @@ class ConversationPrismaRepository implements IConversationRepository {
           deletedAt,
           type,
           conversationParticipants: {
-            create: participants.map(({ id, type }) => ({
+            create: participants.map(({ id, type, customTitle }) => ({
               userId: id,
               type,
+              customTitle,
             })),
           },
         },
@@ -185,7 +253,11 @@ class ConversationPrismaRepository implements IConversationRepository {
         },
       });
 
-      return { value: this.toDomainFromPersistence(newConversation) };
+      return {
+        value: this.toDomainFromPersistence({
+          conversationPrismaModel: newConversation,
+        }).conversation,
+      };
     } catch (error) {
       this.logger.error(`Error creating conversation: ${error.message}`);
       return {
@@ -210,7 +282,11 @@ class ConversationPrismaRepository implements IConversationRepository {
         },
       });
 
-      return { value: this.toDomainFromPersistence(updatedConversation) };
+      return {
+        value: this.toDomainFromPersistence({
+          conversationPrismaModel: updatedConversation,
+        }).conversation,
+      };
     } catch (error) {
       this.logger.error(
         `Error updating conversation with id ${id}: ${error.message}`

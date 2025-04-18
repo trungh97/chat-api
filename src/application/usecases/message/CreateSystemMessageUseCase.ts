@@ -32,8 +32,10 @@ export class CreateSystemMessageUseCase implements ICreateSystemMessageUseCase {
     relatedUser,
   }: ICreateSystemMessageRequestDTO): Promise<UseCaseResponse<Message>> {
     try {
-      const { value: conversation, error: conversationError } =
-        await this.conversationRepository.getConversationById(conversationId);
+      const {
+        value: { conversation },
+        error: conversationError,
+      } = await this.conversationRepository.getConversationById(conversationId);
 
       if (conversationError || !conversation.id) {
         this.logger.error(

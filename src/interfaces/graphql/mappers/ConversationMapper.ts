@@ -1,5 +1,6 @@
 import { Conversation, Message, Participant } from "@domain/entities";
-import { ConversationDTO } from "../DTOs";
+import { FullConversationDTO } from "../DTOs";
+import { IConversationResponseDTO } from "@domain/dtos/conversation";
 
 export class ConversationMapper {
   /**
@@ -7,16 +8,9 @@ export class ConversationMapper {
    * @param conversation The conversation entity to be mapped.
    * @returns The mapped ConversationDTO.
    */
-  static toDTO({
-    id,
-    title,
-    creatorId,
-    deletedAt,
-    isArchived,
-    type,
-    participants,
-    messages,
-  }: Conversation): ConversationDTO {
+  static toDTO(options: IConversationResponseDTO): FullConversationDTO {
+    const { conversation, participants = [], messages = [] } = options;
+    const { id, title, creatorId, deletedAt, isArchived, type } = conversation;
     return {
       id,
       title,
@@ -38,7 +32,16 @@ export class ConversationMapper {
    * @param conversationDTO The ConversationDTO to be mapped.
    * @returns The mapped Conversation entity.
    */
-  static toEntity(conversationDTO: ConversationDTO): Conversation {
-    return new Conversation(conversationDTO);
+  static toEntity(conversationDTO: FullConversationDTO): Conversation {
+    const { id, title, creatorId, deletedAt, isArchived, type } =
+      conversationDTO;
+    return new Conversation({
+      id,
+      title,
+      creatorId,
+      deletedAt,
+      isArchived,
+      type,
+    });
   }
 }

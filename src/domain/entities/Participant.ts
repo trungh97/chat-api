@@ -6,19 +6,28 @@ export interface ParticipantProps {
   id: string;
   userId: string;
   conversationId: string;
-  type: ParticipantType;
+  type: keyof typeof ParticipantType;
+  customTitle?: string;
 }
 export class Participant {
   private readonly _id: string;
   private _userId: string;
   private _conversationId: string;
-  private _type: ParticipantType;
+  private _type: keyof typeof ParticipantType;
+  private _customTitle?: string;
 
-  constructor({ id, userId, conversationId, type }: ParticipantProps) {
+  constructor({
+    id,
+    userId,
+    conversationId,
+    type,
+    customTitle,
+  }: ParticipantProps) {
     this._id = id;
     this._userId = userId;
     this._conversationId = conversationId;
     this._type = type;
+    this._customTitle = customTitle;
   }
 
   get id(): string {
@@ -41,7 +50,7 @@ export class Participant {
     this._conversationId = value;
   }
 
-  get type(): ParticipantType {
+  get type(): keyof typeof ParticipantType {
     return this._type;
   }
 
@@ -49,14 +58,26 @@ export class Participant {
     this._type = value;
   }
 
-  static async create(
-    request: ICreateParticipantRequestDTO
-  ): Promise<Participant> {
+  get customTitle(): string | undefined {
+    return this._customTitle;
+  }
+
+  set customTitle(value: string | undefined) {
+    this._customTitle = value;
+  }
+
+  static async create({
+    userId,
+    conversationId,
+    type,
+    customTitle,
+  }: ICreateParticipantRequestDTO): Promise<Participant> {
     const newParticipant = {
       id: uuid(),
-      userId: request.userId,
-      conversationId: request.conversationId,
-      type: request.type as ParticipantType,
+      userId,
+      conversationId,
+      type,
+      customTitle,
     };
 
     return new Participant(newParticipant);

@@ -10,12 +10,12 @@ registerEnumType(ConversationType, {
 });
 
 @ObjectType()
-export class ConversationDTO {
+export class FullConversationDTO {
   @Field(() => ID)
   id: string;
 
-  @Field(() => String)
-  title: string;
+  @Field(() => String, { nullable: true })
+  title?: string;
 
   @Field(() => String)
   creatorId: string;

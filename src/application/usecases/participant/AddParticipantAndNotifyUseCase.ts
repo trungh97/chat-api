@@ -37,10 +37,12 @@ export class AddParticipantAndNotifyUseCase
   ): Promise<UseCaseResponse<Participant>> {
     try {
       // check if the conversation existed
-      const { value: conversation, error: conversationError } =
-        await this.conversationRepository.getConversationById(
-          request.conversationId
-        );
+      const {
+        value: { conversation, participants: conversationParticipants },
+        error: conversationError,
+      } = await this.conversationRepository.getConversationById(
+        request.conversationId
+      );
 
       if (conversationError || !conversation.id) {
         this.logger.error(
@@ -61,19 +63,7 @@ export class AddParticipantAndNotifyUseCase
       }
 
       // check if the current user is a member of the conversation
-      const conversationParticipants =
-        await this.participantRepository.getParticipantsByConversationId(
-          request.conversationId
-        );
-
-      if (conversationParticipants.error || !conversationParticipants.value) {
-        this.logger.error(
-          `Error getting participants: ${conversationParticipants.error.message}`
-        );
-        return { data: null, error: "Error creating participant" };
-      }
-
-      const isConversationMember = conversationParticipants.value.find(
+      const isConversationMember = conversationParticipants.find(
         (participant) => participant.userId === currentUserId
       );
 
@@ -88,7 +78,7 @@ export class AddParticipantAndNotifyUseCase
       }
 
       // check if the participant already existed
-      const existingParticipant = conversationParticipants.value.find(
+      const existingParticipant = conversationParticipants.find(
         (p) => p.userId === request.userId
       );
 

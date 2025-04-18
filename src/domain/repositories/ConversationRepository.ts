@@ -1,5 +1,5 @@
+import { IConversationResponseDTO } from "@domain/dtos/conversation";
 import { Conversation, Participant } from "@domain/entities";
-import { ParticipantType } from "@domain/enums";
 import {
   ICursorBasedPaginationParams,
   ICursorBasedPaginationResponse,
@@ -15,7 +15,10 @@ export interface IConversationRepository {
     userId: string,
     pagination: ICursorBasedPaginationParams
   ): Promise<
-    RepositoryResponse<ICursorBasedPaginationResponse<Conversation>, Error>
+    RepositoryResponse<
+      ICursorBasedPaginationResponse<IConversationResponseDTO>,
+      Error
+    >
   >;
 
   /**
@@ -25,9 +28,7 @@ export interface IConversationRepository {
    */
   getConversationById(
     id: string
-  ): Promise<
-    RepositoryResponse<Conversation & { participants: Participant[] }, Error>
-  >;
+  ): Promise<RepositoryResponse<IConversationResponseDTO, Error>>;
 
   /**
    * Creates a new conversation.
@@ -36,7 +37,7 @@ export interface IConversationRepository {
    */
   createConversation(
     conversation: Conversation,
-    participants: { id: string; type: keyof typeof ParticipantType }[]
+    participants: Pick<Participant, "id" | "type" | "customTitle">[]
   ): Promise<RepositoryResponse<Conversation, Error>>;
 
   /**

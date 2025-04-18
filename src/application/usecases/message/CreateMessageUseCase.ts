@@ -64,10 +64,12 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
         request.conversationId = newConversation.id;
       } else {
         // Check if the conversation exists and if the user is a participant.
-        const { value: conversation, error: conversationError } =
-          await this.conversationRepository.getConversationById(
-            request.conversationId
-          );
+        const {
+          value: { conversation, participants },
+          error: conversationError,
+        } = await this.conversationRepository.getConversationById(
+          request.conversationId
+        );
 
         if (conversationError || !conversation.id) {
           return {
@@ -76,8 +78,8 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
           };
         }
 
-        const isMember = conversation.participants.some(
-          (participant) => participant.id === currentUserId
+        const isMember = participants.some(
+          (participant) => participant.userId === currentUserId
         );
 
         if (!isMember) {

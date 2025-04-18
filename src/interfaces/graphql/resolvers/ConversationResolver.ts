@@ -10,22 +10,15 @@ import { container, TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
 import { GlobalResponse } from "@shared/responses";
 import { StatusCodes } from "http-status-codes";
-import {
-  Arg,
-  Ctx,
-  Mutation,
-  ObjectType,
-  Query,
-  Resolver
-} from "type-graphql";
+import { Arg, Ctx, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import { Context } from "types";
-import { ConversationDTO } from "../DTOs";
+import { FullConversationDTO } from "../DTOs";
 import { ConversationMapper } from "../mappers";
 import { ConversationCreateMutationRequest } from "../types/conversation";
 import { CursorBasedPaginationParams } from "../types/pagination";
 
-const ConversationResponse = GlobalResponse(ConversationDTO);
-const ConversationListResponse = GlobalResponse(ConversationDTO, true);
+const ConversationResponse = GlobalResponse(FullConversationDTO);
+const ConversationListResponse = GlobalResponse(FullConversationDTO, true);
 const ConversationDeleteResponse = GlobalResponse(Boolean);
 
 @ObjectType()
@@ -137,7 +130,7 @@ export class ConversationResolver {
       return {
         statusCode: StatusCodes.CREATED,
         message: "Conversation created successfully!",
-        data: ConversationMapper.toDTO(result.data),
+        data: ConversationMapper.toDTO({ conversation: result.data }),
       };
     } catch (error) {
       this.logger.error(`Error creating conversation: ${error.message}`);
@@ -162,18 +155,20 @@ export class ConversationResolver {
       }
 
       // Check if the conversation exists
-      const { data: conversation, error } =
+      const { data: conversationData, error } =
         await this.findConversationByIdUseCase.execute(
           conversationId,
           req.session.userId
         );
 
-      if (!conversation || error) {
+      if (!conversationData || error) {
         return {
           statusCode: StatusCodes.NOT_FOUND,
           error: "Conversation not found",
         };
       }
+
+      const { conversation } = conversationData;
 
       if (conversation.creatorId !== req.session.userId) {
         return {

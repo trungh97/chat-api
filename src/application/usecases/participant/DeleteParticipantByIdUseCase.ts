@@ -31,8 +31,10 @@ export class DeleteParticipantByIdUseCase
   ): Promise<UseCaseResponse<boolean>> {
     try {
       // check if the current user is an admin of the conversation
-      const { value: conversation, error: conversationError } =
-        await this.conversationRepository.getConversationById(conversationId);
+      const {
+        value: { conversation, participants: conversationParticipants },
+        error: conversationError,
+      } = await this.conversationRepository.getConversationById(conversationId);
 
       if (conversationError || !conversation.id) {
         this.logger.error(
@@ -44,12 +46,7 @@ export class DeleteParticipantByIdUseCase
         };
       }
 
-      const { value: participants } =
-        await this.participantRepository.getParticipantsByConversationId(
-          conversationId
-        );
-
-      const isAdmin = participants.find(
+      const isAdmin = conversationParticipants.find(
         (participant) =>
           participant.userId === currentUserId &&
           participant.type === ParticipantType.ADMIN

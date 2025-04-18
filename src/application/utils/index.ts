@@ -1,3 +1,3 @@
-export * from "./buildConversationTitle";
+export * from "./conversationTitle";
 export * from "./guessConversationType";
 export * from "./generateSystemMessageInGroupConversation";
