@@ -41,17 +41,22 @@ export const buildDefaultConversationTitle = (options: {
  * If the current participant has set a custom title, returns that.
  * Otherwise, returns the default title generated using buildDefaultConversationTitle.
  *
- * @param {{ currentParticipant: Participant; allParticipants: ParticipantWithNameDTO[]; }} options
+ * @param {{ currentParticipant: Participant; allParticipants: ParticipantWithNameDTO[]; customGroupTitle?: string }} options
  * @param {Participant} options.currentParticipant - The current participant.
  * @param {ParticipantWithNameDTO[]} options.allParticipants - An array of all participants in the conversation.
+ * @param {string} [options.customGroupTitle] - An optional custom group title.
  *
  * @returns {string} The title of the conversation.
  */
 export function getConversationTitle(options: {
   currentParticipant: Participant;
   allParticipants: ParticipantWithNameDTO[];
+  customGroupTitle?: string;
 }): string {
-  const { currentParticipant, allParticipants } = options;
+  const { currentParticipant, allParticipants, customGroupTitle } = options;
+  // If the group conversation has a custom title, use that
+  if (customGroupTitle) return customGroupTitle;
+
   if (currentParticipant.customTitle) return currentParticipant.customTitle;
 
   const defaultTitle = buildDefaultConversationTitle({
