@@ -72,4 +72,3 @@ class GetMyConversationsUseCase implements IGetMyConversationsUsecase {
 }
 
 export { GetMyConversationsUseCase };
-

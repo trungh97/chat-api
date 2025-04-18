@@ -28,7 +28,9 @@ class FindConversationByIdUseCase implements IFindConversationByIdUseCase {
         };
       }
 
-      const isParticipant = result.value.participants.some(
+      const { conversation, participants } = result.value;
+
+      const isParticipant = participants.some(
         (participant) => participant.userId === userId
       );
 
@@ -39,16 +41,16 @@ class FindConversationByIdUseCase implements IFindConversationByIdUseCase {
         };
       }
 
-      const currentParticipant = result.value.participants.find(
+      const currentParticipant = participants.find(
         (participant) => participant.userId === userId
       );
 
       const conversationTitle = getConversationTitle({
         currentParticipant,
-        allParticipants: result.value.participants as ParticipantWithNameDTO[],
+        allParticipants: participants as ParticipantWithNameDTO[],
       });
 
-      result.value.conversation.title = conversationTitle;
+      conversation.title = conversationTitle;
 
       return {
         data: result.value,
@@ -63,4 +65,3 @@ class FindConversationByIdUseCase implements IFindConversationByIdUseCase {
 }
 
 export { FindConversationByIdUseCase };
-
