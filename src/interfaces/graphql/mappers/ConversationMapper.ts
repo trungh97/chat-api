@@ -10,10 +10,12 @@ export class ConversationMapper {
    */
   static toDTO(options: IConversationResponseDTO): FullConversationDTO {
     const { conversation, participants = [], messages = [] } = options;
-    const { id, title, creatorId, deletedAt, isArchived, type } = conversation;
+    const { id, title, creatorId, deletedAt, isArchived, type, avatar } =
+      conversation;
     return {
       id,
       title,
+      avatar,
       creatorId,
       deletedAt,
       isArchived,
@@ -33,11 +35,12 @@ export class ConversationMapper {
    * @returns The mapped Conversation entity.
    */
   static toEntity(conversationDTO: FullConversationDTO): Conversation {
-    const { id, title, creatorId, deletedAt, isArchived, type } =
+    const { id, title, creatorId, deletedAt, isArchived, type, avatar } =
       conversationDTO;
     return new Conversation({
       id,
       title,
+      avatar,
       creatorId,
       deletedAt,
       isArchived,
