@@ -17,6 +17,9 @@ export class FullConversationDTO {
   @Field(() => String, { nullable: true })
   title?: string;
 
+  @Field(() => String, { nullable: true })
+  avatar?: string;
+
   @Field(() => String)
   creatorId: string;
 

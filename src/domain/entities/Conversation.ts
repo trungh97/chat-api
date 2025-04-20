@@ -1,8 +1,6 @@
 import { ICreateConversationRequestDTO } from "@domain/dtos/conversation";
 import { ConversationType } from "@domain/enums";
 import { v4 as uuid } from "uuid";
-import { Participant } from "./Participant";
-import { Message } from "./Message";
 
 export interface ConversationProps {
   id: string;
@@ -11,6 +9,7 @@ export interface ConversationProps {
   isArchived: boolean;
   deletedAt: Date;
   type: ConversationType;
+  avatar?: string;
 }
 
 export class Conversation {
@@ -20,6 +19,7 @@ export class Conversation {
   private _isArchived: boolean;
   private _deletedAt: Date;
   private _type: ConversationType;
+  private _avatar?: string;
 
   constructor(props: ConversationProps) {
     this._id = props.id;
@@ -28,6 +28,7 @@ export class Conversation {
     this._isArchived = props.isArchived;
     this._deletedAt = props.deletedAt;
     this._type = props.type;
+    this._avatar = props.avatar;
   }
 
   get id(): string {
@@ -74,6 +75,14 @@ export class Conversation {
 
   set type(type: ConversationType) {
     this._type = type;
+  }
+
+  get avatar(): string | undefined {
+    return this._avatar;
+  }
+
+  set avatar(avatar: string | undefined) {
+    this._avatar = avatar;
   }
 
   static async create(
