@@ -1,4 +1,4 @@
-import { ParticipantWithNameDTO } from "@domain/dtos/participant";
+import { ExtendedParticipant } from "@domain/dtos/participant";
 import { Participant } from "@domain/entities";
 import { ParticipantType } from "@domain/enums";
 import { IParticipantRepository } from "@domain/repositories";
@@ -31,7 +31,7 @@ export class ParticipantPrismaRepository implements IParticipantRepository {
     conversationId,
     userId,
     type,
-  }: Participant): Promise<RepositoryResponse<ParticipantWithNameDTO, Error>> {
+  }: Participant): Promise<RepositoryResponse<ExtendedParticipant, Error>> {
     try {
       const createdParticipant = await this.prisma.participant.create({
         data: {
@@ -44,12 +44,13 @@ export class ParticipantPrismaRepository implements IParticipantRepository {
             select: {
               firstName: true,
               lastName: true,
+              avatar: true,
             },
           },
         },
       });
 
-      const result = new ParticipantWithNameDTO(
+      const result = new ExtendedParticipant(
         new Participant({
           ...createdParticipant,
           type: createdParticipant.type,

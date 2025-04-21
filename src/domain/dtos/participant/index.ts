@@ -1,2 +1,2 @@
 export * from "./ICreateParticipantRequestDTO";
-export * from "./ParticipantWithNameDTO";
+export * from "./ExtendedParticipant";

@@ -21,6 +21,11 @@ export class RegisterCredentialBasedUserUseCase
     request: ICreateUserRequestDTO
   ): Promise<UseCaseResponse<User>> {
     const user = await User.create(request);
+
+    if (!request.avatar) {
+      user.avatar = `https://ui-avatars.com/api/?name=${user.firstName}+${user.lastName}&background=F9F5FF&color=7F56D9&bold=true`;
+    }
+
     const result = await this.userRepository.createCredentialBasedUser(user);
 
     if (result.error) {

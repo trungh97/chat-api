@@ -6,15 +6,17 @@ import {
 } from "@prisma/client";
 import { inject, injectable } from "inversify";
 
-import { IConversationResponseDTO } from "@domain/dtos/conversation";
-import { ParticipantWithNameDTO } from "@domain/dtos/participant";
+import { ExtendedParticipant } from "@domain/dtos/participant";
 import { Conversation, Message, Participant } from "@domain/entities";
 import { ConversationType, MessageType } from "@domain/enums";
 import {
   ICursorBasedPaginationParams,
   ICursorBasedPaginationResponse,
 } from "@domain/interfaces/pagination/CursorBasedPagination";
-import { IConversationRepository } from "@domain/repositories";
+import {
+  IConversationRepository,
+  IExtendedConversationRepositoryResponse,
+} from "@domain/repositories";
 import { TYPES } from "@infrastructure/external/di/inversify";
 import { PAGE_LIMIT } from "@shared/constants";
 import { ILogger } from "@shared/logger";
@@ -35,16 +37,16 @@ class ConversationPrismaRepository implements IConversationRepository {
    * @param {(ParticipantPrismaModel & { user: { firstName: string, lastName: string } })[]} [participantsPrismaModel] -
    *   Optional array of Prisma models of participants, including user information.
    * @param {MessagePrismaModel[]} [messagesPrismaModel] - Optional array of Prisma models of messages.
-   * @returns {IConversationResponseDTO} The domain-specific conversation response DTO.
+   * @returns {IExtendedConversationRepositoryResponse} The domain-specific conversation response DTO.
    */
 
   private toDomainFromPersistence(options: {
     conversationPrismaModel: ConversationPrismaModel;
     participantsPrismaModel?: (ParticipantPrismaModel & {
-      user?: { firstName: string; lastName: string };
+      user?: { firstName: string; lastName: string; avatar: string };
     })[];
     messagesPrismaModel?: MessagePrismaModel[];
-  }): IConversationResponseDTO {
+  }): IExtendedConversationRepositoryResponse {
     const {
       conversationPrismaModel,
       participantsPrismaModel,
@@ -55,25 +57,26 @@ class ConversationPrismaRepository implements IConversationRepository {
       type: conversationPrismaModel.type as ConversationType,
     });
 
-    const result: IConversationResponseDTO = {
+    const result: IExtendedConversationRepositoryResponse = {
       conversation,
     };
 
     if (participantsPrismaModel?.length > 0) {
       result.participants = (participantsPrismaModel || []).map(
-        ({ type, user: { firstName, lastName }, ...participant }) => {
+        ({ type, user: { firstName, lastName, avatar }, ...participant }) => {
           const newParticipant = new Participant({
             ...participant,
             type,
           });
 
           if (!firstName && !lastName) {
-            return newParticipant;
+            return newParticipant as ExtendedParticipant;
           }
 
-          return new ParticipantWithNameDTO(
+          return new ExtendedParticipant(
             newParticipant,
-            `${firstName} ${lastName}`
+            `${firstName} ${lastName}`,
+            avatar
           );
         }
       );
@@ -93,7 +96,7 @@ class ConversationPrismaRepository implements IConversationRepository {
     pagination: ICursorBasedPaginationParams
   ): Promise<
     RepositoryResponse<
-      ICursorBasedPaginationResponse<IConversationResponseDTO>,
+      ICursorBasedPaginationResponse<IExtendedConversationRepositoryResponse>,
       Error
     >
   > {
@@ -115,6 +118,7 @@ class ConversationPrismaRepository implements IConversationRepository {
                 select: {
                   firstName: true,
                   lastName: true,
+                  avatar: true,
                 },
               },
             },
@@ -161,7 +165,9 @@ class ConversationPrismaRepository implements IConversationRepository {
 
   async getConversationById(
     id: string
-  ): Promise<RepositoryResponse<IConversationResponseDTO, Error>> {
+  ): Promise<
+    RepositoryResponse<IExtendedConversationRepositoryResponse, Error>
+  > {
     try {
       const conversationData = await this.prisma.conversation.findUnique({
         where: { id },
@@ -172,6 +178,7 @@ class ConversationPrismaRepository implements IConversationRepository {
                 select: {
                   firstName: true,
                   lastName: true,
+                  avatar: true,
                 },
               },
             },

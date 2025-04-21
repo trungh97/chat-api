@@ -1,6 +1,12 @@
-import { getConversationTitle } from "@application/utils";
-import { IConversationResponseDTO } from "@domain/dtos/conversation";
-import { ParticipantWithNameDTO } from "@domain/dtos/participant";
+import {
+  getConversationAvatar,
+  getConversationTitle,
+} from "@application/utils";
+import {
+  ExtendedConversation,
+  IConversationResponseDTO,
+} from "@domain/dtos/conversation";
+import { ExtendedParticipant } from "@domain/dtos/participant";
 import {
   ICursorBasedPaginationParams,
   ICursorBasedPaginationResponse,
@@ -43,21 +49,39 @@ class GetMyConversationsUseCase implements IGetMyConversationsUsecase {
         };
       }
 
-      // Get the corresponding conversation title
-      for (const { conversation, participants } of value.data) {
-        if (!conversation.title) {
-          const currentUser = participants.find(
+      const response: IConversationResponseDTO[] = [...value.data].map(
+        ({ conversation, participants, messages }) => {
+          const currentParticipant = participants.find(
             (participant) => participant.userId === userId
           );
 
-          conversation.title = getConversationTitle({
-            currentParticipant: currentUser,
-            allParticipants: participants as ParticipantWithNameDTO[],
-          });
-        }
-      }
+          // Get the corresponding conversation title
+          conversation.title =
+            conversation.title ||
+            getConversationTitle({
+              currentParticipant,
+              allParticipants: participants as ExtendedParticipant[],
+            });
 
-      return { data: value, error: null };
+          const defaultGroupAvatars = getConversationAvatar({
+            currentParticipant: currentParticipant.userId,
+            allParticipants: participants as ExtendedParticipant[],
+          });
+
+          const formatedConversation = new ExtendedConversation(
+            conversation,
+            defaultGroupAvatars
+          );
+
+          return {
+            conversation: formatedConversation,
+            participants,
+            messages,
+          };
+        }
+      );
+
+      return { data: { data: response }, error: null };
     } catch (error) {
       this.logger.error(error.message);
       return {

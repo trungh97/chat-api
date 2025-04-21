@@ -1,4 +1,4 @@
-import { ParticipantWithNameDTO } from "@domain/dtos/participant";
+import { ExtendedParticipant } from "@domain/dtos/participant";
 import { Participant } from "@domain/entities";
 import { RepositoryResponse } from "@shared/responses";
 
@@ -11,7 +11,7 @@ export interface IParticipantRepository {
    */
   createParticipant(
     participant: Participant
-  ): Promise<RepositoryResponse<ParticipantWithNameDTO, Error>>;
+  ): Promise<RepositoryResponse<ExtendedParticipant, Error>>;
 
   /**
    * Checks if a participant exists in a conversation.
