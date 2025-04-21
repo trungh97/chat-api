@@ -1,6 +1,11 @@
-import { getConversationTitle } from "@application/utils";
-import { IConversationResponseDTO } from "@domain/dtos/conversation";
-import { ParticipantWithNameDTO } from "@domain/dtos/participant";
+import {
+  getConversationAvatar,
+  getConversationTitle,
+} from "@application/utils";
+import {
+  ExtendedConversation,
+  IConversationResponseDTO,
+} from "@domain/dtos/conversation";
 import { IConversationRepository } from "@domain/repositories";
 import { IFindConversationByIdUseCase } from "@domain/usecases/conversation";
 import { TYPES } from "@infrastructure/external/di/inversify";
@@ -28,7 +33,7 @@ class FindConversationByIdUseCase implements IFindConversationByIdUseCase {
         };
       }
 
-      const { conversation, participants } = result.value;
+      const { conversation, participants, messages } = result.value;
 
       const isParticipant = participants.some(
         (participant) => participant.userId === userId
@@ -45,15 +50,27 @@ class FindConversationByIdUseCase implements IFindConversationByIdUseCase {
         (participant) => participant.userId === userId
       );
 
-      const conversationTitle = getConversationTitle({
+      conversation.title = getConversationTitle({
         currentParticipant,
-        allParticipants: participants as ParticipantWithNameDTO[],
+        allParticipants: participants,
       });
 
-      conversation.title = conversationTitle;
+      const defaultGroupAvatars = getConversationAvatar({
+        currentParticipant: currentParticipant.userId,
+        allParticipants: participants,
+        customGroupAvatar: conversation.avatar,
+      });
+
+      const res = new ExtendedConversation(conversation, defaultGroupAvatars);
+
+      result.value.conversation = res;
 
       return {
-        data: result.value,
+        data: {
+          conversation: res,
+          participants,
+          messages,
+        },
       };
     } catch (error) {
       return {
@@ -65,3 +82,4 @@ class FindConversationByIdUseCase implements IFindConversationByIdUseCase {
 }
 
 export { FindConversationByIdUseCase };
+

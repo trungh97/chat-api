@@ -1,7 +1,7 @@
-import { ParticipantWithNameDTO } from "@domain/dtos/participant";
+import { ExtendedParticipant } from "@domain/dtos/participant";
 import { Participant } from "@domain/entities";
 
-type ShortParticipantType = Pick<ParticipantWithNameDTO, "id" | "name">;
+type ShortParticipantType = Pick<ExtendedParticipant, "id" | "name">;
 
 /**
  * Generates a default conversation title based on the names of the participants.
@@ -41,16 +41,16 @@ export const buildDefaultConversationTitle = (options: {
  * If the current participant has set a custom title, returns that.
  * Otherwise, returns the default title generated using buildDefaultConversationTitle.
  *
- * @param {{ currentParticipant: Participant; allParticipants: ParticipantWithNameDTO[]; customGroupTitle?: string }} options
+ * @param {{ currentParticipant: Participant; allParticipants: ExtendedParticipant[]; customGroupTitle?: string }} options
  * @param {Participant} options.currentParticipant - The current participant.
- * @param {ParticipantWithNameDTO[]} options.allParticipants - An array of all participants in the conversation.
+ * @param {ExtendedParticipant[]} options.allParticipants - An array of all participants in the conversation.
  * @param {string} [options.customGroupTitle] - An optional custom group title.
  *
  * @returns {string} The title of the conversation.
  */
 export function getConversationTitle(options: {
   currentParticipant: Participant;
-  allParticipants: ParticipantWithNameDTO[];
+  allParticipants: ExtendedParticipant[];
   customGroupTitle?: string;
 }): string {
   const { currentParticipant, allParticipants, customGroupTitle } = options;
