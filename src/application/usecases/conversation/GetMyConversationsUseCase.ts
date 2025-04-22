@@ -66,6 +66,7 @@ class GetMyConversationsUseCase implements IGetMyConversationsUsecase {
           const defaultGroupAvatars = getConversationAvatar({
             currentParticipant: currentParticipant.userId,
             allParticipants: participants as ExtendedParticipant[],
+            customGroupAvatar: conversation.groupAvatar,
           });
 
           const formatedConversation = new ExtendedConversation(

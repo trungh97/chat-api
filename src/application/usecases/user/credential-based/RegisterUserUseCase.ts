@@ -1,5 +1,6 @@
 import { inject, injectable } from "inversify";
 
+import { getAvatarColors } from "@application/utils";
 import { ICreateUserRequestDTO } from "@domain/dtos/user";
 import { User } from "@domain/entities";
 import { IUserRepository } from "@domain/repositories";
@@ -7,6 +8,7 @@ import { IRegisterCredentialBasedUserUseCase } from "@domain/usecases/user/crede
 import { TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
 import { UseCaseResponse } from "@shared/responses";
+import queryString from "query-string";
 
 @injectable()
 export class RegisterCredentialBasedUserUseCase
@@ -23,7 +25,15 @@ export class RegisterCredentialBasedUserUseCase
     const user = await User.create(request);
 
     if (!request.avatar) {
-      user.avatar = `https://ui-avatars.com/api/?name=${user.firstName}+${user.lastName}&background=F9F5FF&color=7F56D9&bold=true`;
+      const name = `${user.firstName} ${user.lastName}`;
+      const { background, text } = getAvatarColors(name);
+      const query = queryString.stringify({
+        name,
+        background,
+        color: text,
+        bold: true,
+      });
+      user.avatar = `https://ui-avatars.com/api/?${query}`;
     }
 
     const result = await this.userRepository.createCredentialBasedUser(user);

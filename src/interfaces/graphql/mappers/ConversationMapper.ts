@@ -1,32 +1,53 @@
 import { Conversation, Message, Participant } from "@domain/entities";
-import { FullConversationDTO } from "../DTOs";
+import { ExtendConversationDTO, ConversationDTO } from "../DTOs";
 import { IConversationResponseDTO } from "@domain/dtos/conversation";
 
 export class ConversationMapper {
   /**
-   * Maps a domain Conversation entity to a DTO.
-   * @param conversation The conversation entity to be mapped.
-   * @returns The mapped ConversationDTO.
+   * Converts an IConversationResponseDTO to a FullConversationDTO.
+   *
+   * @param options - The IConversationResponseDTO containing the conversation details,
+   *                  including conversation data, participants, and messages.
+   * @returns A FullConversationDTO with mapped fields for conversation details,
+   *          participants, and messages.
    */
-  static toDTO(options: IConversationResponseDTO): FullConversationDTO {
-    const { conversation, participants = [], messages = [] } = options;
-    const { id, title, creatorId, deletedAt, isArchived, type, avatar } =
-      conversation;
-    return {
+  static toFullConversationDTO(
+    options: IConversationResponseDTO
+  ): ExtendConversationDTO {
+    const {
+      conversation,
+      participants: participantDTOS = [],
+      messages: messageDTOS = [],
+    } = options;
+    const {
       id,
       title,
-      avatar,
       creatorId,
       deletedAt,
       isArchived,
       type,
-      participants: participants.map(
-        (participant) => new Participant(participant)
+      groupAvatar,
+      defaultGroupAvatar,
+    } = conversation;
+
+    return {
+      id,
+      title,
+      groupAvatar,
+      creatorId,
+      deletedAt,
+      isArchived,
+      type,
+      defaultGroupAvatar,
+      participants: participantDTOS.map(
+        (participantDTO) => new Participant(participantDTO)
       ),
-      messages: messages.map((message) => {
-        return new Message(message);
-      }),
+      messages: messageDTOS.map((messageDTO) => new Message(messageDTO)),
     };
+  }
+
+  static toConversationDTO(conversation: Conversation): ConversationDTO {
+    return conversation;
   }
 
   /**
@@ -34,13 +55,13 @@ export class ConversationMapper {
    * @param conversationDTO The ConversationDTO to be mapped.
    * @returns The mapped Conversation entity.
    */
-  static toEntity(conversationDTO: FullConversationDTO): Conversation {
-    const { id, title, creatorId, deletedAt, isArchived, type, avatar } =
+  static toEntity(conversationDTO: ExtendConversationDTO): Conversation {
+    const { id, title, creatorId, deletedAt, isArchived, type, groupAvatar } =
       conversationDTO;
     return new Conversation({
       id,
       title,
-      avatar,
+      groupAvatar,
       creatorId,
       deletedAt,
       isArchived,
