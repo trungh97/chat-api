@@ -6,7 +6,6 @@ import {
   ExtendedConversation,
   IConversationResponseDTO,
 } from "@domain/dtos/conversation";
-import { ExtendedParticipant } from "@domain/dtos/participant";
 import {
   ICursorBasedPaginationParams,
   ICursorBasedPaginationResponse,
@@ -60,22 +59,22 @@ class GetMyConversationsUseCase implements IGetMyConversationsUsecase {
             conversation.title ||
             getConversationTitle({
               currentParticipant,
-              allParticipants: participants as ExtendedParticipant[],
+              allParticipants: participants,
             });
 
           const defaultGroupAvatars = getConversationAvatar({
             currentParticipant: currentParticipant.userId,
-            allParticipants: participants as ExtendedParticipant[],
+            allParticipants: participants,
             customGroupAvatar: conversation.groupAvatar,
           });
 
-          const formatedConversation = new ExtendedConversation(
+          const extendedConversation = new ExtendedConversation(
             conversation,
             defaultGroupAvatars
           );
 
           return {
-            conversation: formatedConversation,
+            conversation: extendedConversation,
             participants,
             messages,
           };

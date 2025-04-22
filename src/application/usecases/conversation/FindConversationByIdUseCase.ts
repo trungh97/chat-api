@@ -61,13 +61,14 @@ class FindConversationByIdUseCase implements IFindConversationByIdUseCase {
         customGroupAvatar: conversation.groupAvatar,
       });
 
-      const res = new ExtendedConversation(conversation, defaultGroupAvatars);
-
-      result.value.conversation = res;
+      const extendedConversation = new ExtendedConversation(
+        conversation,
+        defaultGroupAvatars
+      );
 
       return {
         data: {
-          conversation: res,
+          conversation: extendedConversation,
           participants,
           messages,
         },
