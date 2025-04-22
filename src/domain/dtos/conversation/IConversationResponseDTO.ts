@@ -20,7 +20,7 @@ export class ExtendedConversation extends Conversation {
 }
 
 export interface IConversationResponseDTO {
-  conversation: ExtendedConversation | Conversation;
+  conversation: ExtendedConversation;
   participants?: ExtendedParticipant[];
   messages?: Message[];
 }

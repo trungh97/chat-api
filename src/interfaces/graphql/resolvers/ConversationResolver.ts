@@ -12,20 +12,27 @@ import { GlobalResponse } from "@shared/responses";
 import { StatusCodes } from "http-status-codes";
 import { Arg, Ctx, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import { Context } from "types";
-import { FullConversationDTO } from "../DTOs";
+import { ConversationDTO, ExtendConversationDTO } from "../DTOs";
 import { ConversationMapper } from "../mappers";
 import { ConversationCreateMutationRequest } from "../types/conversation";
 import { CursorBasedPaginationParams } from "../types/pagination";
 
-const ConversationResponse = GlobalResponse(FullConversationDTO);
-const ConversationListResponse = GlobalResponse(FullConversationDTO, true);
+const ExtendConversationResponse = GlobalResponse(ExtendConversationDTO);
+const ExtendConversationListResponse = GlobalResponse(
+  ExtendConversationDTO,
+  true
+);
+const ConversationResponse = GlobalResponse(ConversationDTO);
 const ConversationDeleteResponse = GlobalResponse(Boolean);
 
 @ObjectType()
 class ConversationGlobalResponse extends ConversationResponse {}
 
 @ObjectType()
-class ConversationListGlobalResponse extends ConversationListResponse {}
+class ExtendConversationGlobalResponse extends ExtendConversationResponse {}
+
+@ObjectType()
+class ExtendConversationListGlobalResponse extends ExtendConversationListResponse {}
 
 @ObjectType()
 class ConversationDeleteGlobalResponse extends ConversationDeleteResponse {}
@@ -55,7 +62,7 @@ export class ConversationResolver {
     this.logger = container.get<ILogger>(TYPES.WinstonLogger);
   }
 
-  @Query(() => ConversationListGlobalResponse)
+  @Query(() => ExtendConversationListGlobalResponse)
   async getMyConversations(
     @Arg("options", () => CursorBasedPaginationParams)
     options: ICursorBasedPaginationParams,
@@ -65,7 +72,7 @@ export class ConversationResolver {
         session: { userId },
       },
     }: Context
-  ): Promise<ConversationListGlobalResponse> {
+  ): Promise<ExtendConversationListGlobalResponse> {
     try {
       const result = await this.getMyConversationsUseCase.execute(
         userId,
@@ -84,7 +91,7 @@ export class ConversationResolver {
       return {
         statusCode: StatusCodes.OK,
         message: "Get conversations successfully!",
-        data: data.data.map(ConversationMapper.toDTO),
+        data: data.data.map(ConversationMapper.toFullConversationDTO),
       };
     } catch (error) {
       this.logger.error(`Error getting my conversations: ${error.message}`);
@@ -130,7 +137,7 @@ export class ConversationResolver {
       return {
         statusCode: StatusCodes.CREATED,
         message: "Conversation created successfully!",
-        data: ConversationMapper.toDTO({ conversation: result.data }),
+        data: ConversationMapper.toConversationDTO(result.data),
       };
     } catch (error) {
       this.logger.error(`Error creating conversation: ${error.message}`);
@@ -202,7 +209,7 @@ export class ConversationResolver {
     }
   }
 
-  @Query(() => ConversationGlobalResponse)
+  @Query(() => ExtendConversationGlobalResponse)
   async getConversationById(
     @Arg("conversationId", () => String) conversationId: string,
     @Ctx()
@@ -211,7 +218,7 @@ export class ConversationResolver {
         session: { userId },
       },
     }: Context
-  ): Promise<ConversationGlobalResponse> {
+  ): Promise<ExtendConversationGlobalResponse> {
     try {
       if (!userId) {
         return {
@@ -236,7 +243,7 @@ export class ConversationResolver {
       return {
         statusCode: StatusCodes.OK,
         message: "Get conversation successfully!",
-        data: ConversationMapper.toDTO(data),
+        data: ConversationMapper.toFullConversationDTO(data),
       };
     } catch (error) {
       this.logger.error(`Error getting conversation by ID: ${error.message}`);

@@ -58,7 +58,7 @@ class FindConversationByIdUseCase implements IFindConversationByIdUseCase {
       const defaultGroupAvatars = getConversationAvatar({
         currentParticipant: currentParticipant.userId,
         allParticipants: participants,
-        customGroupAvatar: conversation.avatar,
+        customGroupAvatar: conversation.groupAvatar,
       });
 
       const res = new ExtendedConversation(conversation, defaultGroupAvatars);
@@ -82,4 +82,3 @@ class FindConversationByIdUseCase implements IFindConversationByIdUseCase {
 }
 
 export { FindConversationByIdUseCase };
-

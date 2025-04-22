@@ -1,7 +1,4 @@
 import { ExtendedParticipant } from "@domain/dtos/participant";
-import { Participant } from "@domain/entities";
-
-type ShortParticipantType = Pick<ExtendedParticipant, "id" | "avatar">;
 
 /**
  * Returns an array of avatar urls of the conversation, based on the participants.
@@ -17,12 +14,12 @@ type ShortParticipantType = Pick<ExtendedParticipant, "id" | "avatar">;
  */
 export const getDefaultConversationAvatar = (options: {
   currentParticipant: string;
-  allParticipants: ShortParticipantType[];
+  allParticipants: ExtendedParticipant[];
 }): string[] => {
   const { currentParticipant, allParticipants } = options;
 
   const otherAvatars = allParticipants
-    .filter((p) => p.id !== currentParticipant)
+    .filter((p) => p.userId !== currentParticipant)
     .map((p) => p.avatar);
 
   return otherAvatars.slice(0, 2);
@@ -43,13 +40,13 @@ export const getDefaultConversationAvatar = (options: {
  */
 export const getConversationAvatar = (options: {
   currentParticipant: string;
-  allParticipants: ShortParticipantType[];
+  allParticipants: ExtendedParticipant[];
   customGroupAvatar?: string;
 }): string[] => {
   const { currentParticipant, allParticipants, customGroupAvatar } = options;
 
   // If the group conversation has a custom avatar, use that
-  if (customGroupAvatar) return [customGroupAvatar];
+  if (customGroupAvatar) return [];
 
   const otherAvatars = getDefaultConversationAvatar({
     currentParticipant,

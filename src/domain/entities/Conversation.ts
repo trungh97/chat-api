@@ -9,7 +9,7 @@ export interface ConversationProps {
   isArchived: boolean;
   deletedAt: Date;
   type: ConversationType;
-  avatar?: string;
+  groupAvatar?: string;
 }
 
 export class Conversation {
@@ -19,7 +19,7 @@ export class Conversation {
   private _isArchived: boolean;
   private _deletedAt: Date;
   private _type: ConversationType;
-  private _avatar?: string;
+  private _groupAvatar?: string;
 
   constructor(props: ConversationProps) {
     this._id = props.id;
@@ -28,7 +28,7 @@ export class Conversation {
     this._isArchived = props.isArchived;
     this._deletedAt = props.deletedAt;
     this._type = props.type;
-    this._avatar = props.avatar;
+    this._groupAvatar = props.groupAvatar;
   }
 
   get id(): string {
@@ -77,12 +77,12 @@ export class Conversation {
     this._type = type;
   }
 
-  get avatar(): string | undefined {
-    return this._avatar;
+  get groupAvatar(): string | undefined {
+    return this._groupAvatar;
   }
 
-  set avatar(avatar: string | undefined) {
-    this._avatar = avatar;
+  set groupAvatar(groupAvatar: string | undefined) {
+    this._groupAvatar = groupAvatar;
   }
 
   static async create(

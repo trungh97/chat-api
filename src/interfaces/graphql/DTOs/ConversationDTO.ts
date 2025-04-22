@@ -10,7 +10,7 @@ registerEnumType(ConversationType, {
 });
 
 @ObjectType()
-export class FullConversationDTO {
+export class ConversationDTO {
   @Field(() => ID)
   id: string;
 
@@ -18,7 +18,7 @@ export class FullConversationDTO {
   title?: string;
 
   @Field(() => String, { nullable: true })
-  avatar?: string;
+  groupAvatar?: string;
 
   @Field(() => String)
   creatorId: string;
@@ -31,10 +31,16 @@ export class FullConversationDTO {
 
   @Field(() => ConversationType)
   type: ConversationType;
+}
 
+@ObjectType()
+export class ExtendConversationDTO extends ConversationDTO {
   @Field(() => [ParticipantDTO])
   participants: Participant[];
 
   @Field(() => [MessageDTO])
   messages: Message[];
+
+  @Field(() => [String], { nullable: true })
+  defaultGroupAvatar?: string[];
 }
