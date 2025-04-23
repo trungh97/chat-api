@@ -1,6 +1,7 @@
-import { Conversation, Message, Participant } from "@domain/entities";
-import { ExtendConversationDTO, ConversationDTO } from "../DTOs";
 import { IConversationResponseDTO } from "@domain/dtos/conversation";
+import { ExtendedParticipant } from "@domain/dtos/participant";
+import { Conversation, Message } from "@domain/entities";
+import { ConversationDTO, ExtendConversationDTO } from "../DTOs";
 
 export class ConversationMapper {
   /**
@@ -40,7 +41,12 @@ export class ConversationMapper {
       type,
       defaultGroupAvatar,
       participants: participantDTOS.map(
-        (participantDTO) => new Participant(participantDTO)
+        (participantDTO) =>
+          new ExtendedParticipant(
+            participantDTO,
+            participantDTO.name,
+            participantDTO.avatar
+          )
       ),
       messages: messageDTOS.map((messageDTO) => new Message(messageDTO)),
     };

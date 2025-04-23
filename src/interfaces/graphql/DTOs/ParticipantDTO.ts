@@ -20,3 +20,12 @@ export class ParticipantDTO {
   @Field(() => ParticipantType)
   type: keyof typeof ParticipantType;
 }
+
+@ObjectType()
+export class ExtendedParticipantDTO extends ParticipantDTO {
+  @Field(() => String)
+  name: string;
+
+  @Field(() => String)
+  avatar: string;
+}
