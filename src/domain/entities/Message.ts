@@ -34,6 +34,7 @@ export class Message {
     extra,
     messageType,
     replyToMessageId,
+    createdAt
   }: MessageProps) {
     this._id = id;
     this._senderId = senderId;
@@ -42,7 +43,7 @@ export class Message {
     this._extra = extra;
     this._messageType = messageType;
     this._replyToMessageId = replyToMessageId;
-    this._createdAt = new Date();
+    this._createdAt = createdAt;
   }
 
   get id(): string {

@@ -18,7 +18,7 @@ export class MessageDTO {
   messageType!: keyof typeof MessageType;
 
   @Field(() => String, { nullable: true })
-  senderId: string;
+  senderId?: string;
 
   @Field(() => String, { nullable: true })
   extra?: string;
