@@ -134,15 +134,16 @@ model Message {
 }
 
 model Conversation {
-  id          String           @id @default(uuid())
-  title       String?
-  creatorId   String           @map("creator_id")
-  createdAt   DateTime         @default(now()) @map("created_at")
-  updatedAt   DateTime         @updatedAt @map("updated_at")
-  isArchived  Boolean          @default(false) @map("is_archived")
-  deletedAt   DateTime?        @map("deleted_at")
-  type        ConversationType @default(PRIVATE) @map("type")
-  groupAvatar String?          @map("group_avatar")
+  id            String           @id @default(uuid())
+  title         String?
+  creatorId     String           @map("creator_id")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+  isArchived    Boolean          @default(false) @map("is_archived")
+  deletedAt     DateTime?        @map("deleted_at")
+  type          ConversationType @default(PRIVATE) @map("type")
+  groupAvatar   String?          @map("group_avatar")
+  lastMessageAt DateTime?        @map("last_message_at")
 
   creator User @relation("Creator", fields: [creatorId], references: [id])
 
