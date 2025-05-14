@@ -104,8 +104,13 @@ class ConversationPrismaRepository implements IConversationRepository {
       const { cursor, limit = PAGE_LIMIT } = pagination;
       const conversations = await this.prisma.conversation.findMany({
         take: limit + 1,
-        cursor: cursor ? { id: cursor } : undefined,
-        where: { conversationParticipants: { some: { userId } } },
+        skip: cursor ? 1 : 0,
+        where: {
+          conversationParticipants: { some: { userId } },
+          ...(cursor && {
+            lastMessageAt: { lt: new Date(cursor) },
+          }),
+        },
         include: {
           messages: {
             where: { messageType: { not: MessageType.SYSTEM } },
@@ -124,9 +129,7 @@ class ConversationPrismaRepository implements IConversationRepository {
             },
           },
         },
-        orderBy: {
-          createdAt: "desc",
-        },
+        orderBy: [{ lastMessageAt: "desc" }, { id: "desc" }],
       });
 
       const nextCursor =
@@ -276,16 +279,14 @@ class ConversationPrismaRepository implements IConversationRepository {
 
   async updateConversation(
     id: string,
-    { title, creatorId, isArchived, deletedAt }: Conversation
+    { title, lastMessageAt }: Conversation
   ): Promise<RepositoryResponse<Conversation, Error>> {
     try {
       const updatedConversation = await this.prisma.conversation.update({
         where: { id },
         data: {
           title,
-          creatorId,
-          isArchived,
-          deletedAt,
+          lastMessageAt,
         },
       });
 

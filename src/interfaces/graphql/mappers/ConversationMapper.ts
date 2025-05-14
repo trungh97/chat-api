@@ -29,6 +29,7 @@ export class ConversationMapper {
       type,
       groupAvatar,
       defaultGroupAvatar,
+      lastMessageAt,
     } = conversation;
 
     return {
@@ -40,6 +41,7 @@ export class ConversationMapper {
       isArchived,
       type,
       defaultGroupAvatar,
+      lastMessageAt,
       participants: participantDTOS.map(
         (participantDTO) =>
           new ExtendedParticipant(
@@ -62,8 +64,16 @@ export class ConversationMapper {
    * @returns The mapped Conversation entity.
    */
   static toEntity(conversationDTO: ExtendConversationDTO): Conversation {
-    const { id, title, creatorId, deletedAt, isArchived, type, groupAvatar } =
-      conversationDTO;
+    const {
+      id,
+      title,
+      creatorId,
+      deletedAt,
+      isArchived,
+      type,
+      groupAvatar,
+      lastMessageAt,
+    } = conversationDTO;
     return new Conversation({
       id,
       title,
@@ -72,6 +82,7 @@ export class ConversationMapper {
       deletedAt,
       isArchived,
       type,
+      lastMessageAt,
     });
   }
 }

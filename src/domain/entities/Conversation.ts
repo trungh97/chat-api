@@ -10,6 +10,7 @@ export interface ConversationProps {
   deletedAt: Date;
   type: ConversationType;
   groupAvatar?: string;
+  lastMessageAt?: Date;
 }
 
 export class Conversation {
@@ -20,6 +21,7 @@ export class Conversation {
   private _deletedAt: Date;
   private _type: ConversationType;
   private _groupAvatar?: string;
+  private _lastMessageAt?: Date;
 
   constructor(props: ConversationProps) {
     this._id = props.id;
@@ -29,6 +31,7 @@ export class Conversation {
     this._deletedAt = props.deletedAt;
     this._type = props.type;
     this._groupAvatar = props.groupAvatar;
+    this._lastMessageAt = props.lastMessageAt;
   }
 
   get id(): string {
@@ -85,6 +88,14 @@ export class Conversation {
     this._groupAvatar = groupAvatar;
   }
 
+  get lastMessageAt(): Date | undefined {
+    return this._lastMessageAt;
+  }
+
+  set lastMessageAt(lastMessageAt: Date | undefined) {
+    this._lastMessageAt = lastMessageAt;
+  }
+
   static async create(
     userId: string,
     request: ICreateConversationRequestDTO
@@ -96,6 +107,7 @@ export class Conversation {
       isArchived: false,
       deletedAt: null,
       type: ConversationType.PRIVATE,
+      lastMessageAt: request.lastMessageAt || null,
     };
 
     return new Conversation(newConversation);

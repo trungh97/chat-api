@@ -32,6 +32,9 @@ export class ConversationDTO {
 
   @Field(() => ConversationType)
   type: ConversationType;
+
+  @Field(() => Date, { nullable: true })
+  lastMessageAt?: Date;
 }
 
 @ObjectType()
