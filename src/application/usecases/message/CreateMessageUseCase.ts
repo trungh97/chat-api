@@ -1,5 +1,5 @@
 import { ICreateMessageRequestDTO } from "@domain/dtos/message";
-import { Message } from "@domain/entities";
+import { Conversation, Message } from "@domain/entities";
 import {
   IConversationRepository,
   IMessageRepository,
@@ -47,6 +47,8 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
         };
       }
 
+      let currentConversation: Conversation = null;
+
       if (isNull(request.conversationId)) {
         // Create a new conversation in case this is the first message.
         const { data: newConversation, error: newConversationError } =
@@ -60,6 +62,8 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
             error: `Error starting conversation: ${newConversationError}`,
           };
         }
+
+        currentConversation = newConversation;
 
         request.conversationId = newConversation.id;
       } else {
@@ -77,6 +81,8 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
             error: `Conversation with ID ${request.conversationId} does not exist.`,
           };
         }
+
+        currentConversation = conversation;
 
         const isMember = participants.some(
           (participant) => participant.userId === currentUserId
@@ -98,6 +104,23 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
         this.logger.error(`Error creating message: ${response.error.message}`);
         return { data: null, error: response.error.message };
       }
+
+      // Update the field `lastMessage` in the conversation.
+      currentConversation.lastMessageAt = response.value.createdAt;
+
+      const { error: updateError } =
+        await this.conversationRepository.updateConversation(
+          request.conversationId,
+          currentConversation
+        );
+
+      if (updateError) {
+        this.logger.error(
+          `Error updating last message time for the conversation: ${updateError.message}`
+        );
+        return { data: null, error: updateError.message };
+      }
+
       return { data: response.value };
     } catch (error) {
       this.logger.error(

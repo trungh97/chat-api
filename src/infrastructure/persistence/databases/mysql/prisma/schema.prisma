@@ -150,6 +150,8 @@ model Conversation {
   conversationParticipants Participant[]
   deletedConversations     DeletedConversation[]
   messages                 Message[]
+
+  @@unique([lastMessageAt, id])
 }
 
 model Participant {
