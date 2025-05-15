@@ -81,7 +81,10 @@ class GetMyConversationsUseCase implements IGetMyConversationsUsecase {
         }
       );
 
-      return { data: { data: response }, error: null };
+      return {
+        data: { data: response, nextCursor: value.nextCursor },
+        error: null,
+      };
     } catch (error) {
       this.logger.error(error.message);
       return {

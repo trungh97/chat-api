@@ -133,7 +133,9 @@ class ConversationPrismaRepository implements IConversationRepository {
       });
 
       const nextCursor =
-        conversations.length > limit ? conversations[limit].id : undefined;
+        conversations.length > limit
+          ? conversations[limit].lastMessageAt.toISOString()
+          : undefined;
 
       return {
         value: {

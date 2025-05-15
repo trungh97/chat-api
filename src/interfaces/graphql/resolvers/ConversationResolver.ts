@@ -8,7 +8,7 @@ import {
 } from "@domain/usecases/conversation";
 import { container, TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
-import { GlobalResponse } from "@shared/responses";
+import { CursorBasedPaginationDTO, GlobalResponse } from "@shared/responses";
 import { StatusCodes } from "http-status-codes";
 import { Arg, Ctx, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import { Context } from "types";
@@ -17,11 +17,12 @@ import { ConversationMapper } from "../mappers";
 import { ConversationCreateMutationRequest } from "../types/conversation";
 import { CursorBasedPaginationParams } from "../types/pagination";
 
+@ObjectType()
+class PaginatedConversationListResponse extends CursorBasedPaginationDTO(
+  ExtendConversationDTO
+) {}
+
 const ExtendConversationResponse = GlobalResponse(ExtendConversationDTO);
-const ExtendConversationListResponse = GlobalResponse(
-  ExtendConversationDTO,
-  true
-);
 const ConversationResponse = GlobalResponse(ConversationDTO);
 const ConversationDeleteResponse = GlobalResponse(Boolean);
 
@@ -32,7 +33,9 @@ class ConversationGlobalResponse extends ConversationResponse {}
 class ExtendConversationGlobalResponse extends ExtendConversationResponse {}
 
 @ObjectType()
-class ExtendConversationListGlobalResponse extends ExtendConversationListResponse {}
+class ExtendConversationListGlobalResponse extends GlobalResponse(
+  PaginatedConversationListResponse
+) {}
 
 @ObjectType()
 class ConversationDeleteGlobalResponse extends ConversationDeleteResponse {}
@@ -91,7 +94,10 @@ export class ConversationResolver {
       return {
         statusCode: StatusCodes.OK,
         message: "Get conversations successfully!",
-        data: data.data.map(ConversationMapper.toFullConversationDTO),
+        data: {
+          items: data.data.map(ConversationMapper.toFullConversationDTO),
+          nextCursor: data.nextCursor,
+        },
       };
     } catch (error) {
       this.logger.error(`Error getting my conversations: ${error.message}`);

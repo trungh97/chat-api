@@ -30,16 +30,6 @@ export function GlobalResponse<T, IsArray extends boolean = false>(
   @ObjectType({ implements: IResponse })
   abstract class Response extends IResponse {
     /**
-     * The HTTP status code (optional).
-     */
-    statusCode?: number;
-
-    /**
-     * A message associated with the response (optional).
-     */
-    message?: string;
-
-    /**
      * The data associated with the response (optional).
      */
     @Field(() => (isArray ? [TClass] : TClass), { nullable: true })
@@ -54,3 +44,4 @@ export function GlobalResponse<T, IsArray extends boolean = false>(
 
   return Response;
 }
+
