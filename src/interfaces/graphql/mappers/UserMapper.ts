@@ -1,5 +1,5 @@
 import { User } from "@domain/entities";
-import { UserDTO } from "../DTOs";
+import { UserDTO } from "../dtos";
 
 export class UserMapper {
   /**

@@ -1,6 +1,6 @@
-import { IContactResponseDTO } from "@domain/dtos/contact";
+import { IContactResponseDTO } from "@application/usecases/contact/types";
 import { Contact } from "@domain/entities";
-import { ContactDTO } from "../DTOs";
+import { ContactDTO } from "../dtos";
 
 /**
  * Mapper class for converting between Contact entities and ContactDTOs.

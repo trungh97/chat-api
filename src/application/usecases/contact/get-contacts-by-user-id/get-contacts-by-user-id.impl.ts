@@ -2,8 +2,9 @@ import { IContactRepository, IUserRepository } from "@domain/repositories";
 import { TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
-import { GetContactsByUserIdResponse, IContactResponseDTO } from "./get-contacts-by-user-id.response";
+import { GetContactsByUserIdResponse } from "./get-contacts-by-user-id.response";
 import { IGetContactsByUserIdUseCase } from "./get-contacts-by-user-id.usecase";
+import { IContactResponseDTO } from "../types";
 
 @injectable()
 export class GetContactsByUserIdUseCase implements IGetContactsByUserIdUseCase {

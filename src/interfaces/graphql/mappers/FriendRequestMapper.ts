@@ -1,5 +1,5 @@
 import { FriendRequest } from "@domain/entities";
-import { FriendRequestDTO } from "../DTOs/FriendRequestDTO";
+import { FriendRequestDTO } from "../dtos/FriendRequestDTO";
 
 /**
  * Mapper class for converting between FriendRequest entities and FriendRequestDTOs.

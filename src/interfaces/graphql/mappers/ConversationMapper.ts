@@ -1,19 +1,19 @@
-import { IConversationResponseDTO } from "@domain/dtos/conversation";
-import { ExtendedParticipant } from "@domain/dtos/participant";
+import { ConversationUseCaseResponse } from "@application/usecases/conversation/types";
+import { ExtendedParticipant } from "@application/usecases/participant/types";
 import { Conversation, Message } from "@domain/entities";
-import { ConversationDTO, ExtendConversationDTO } from "../DTOs";
+import { ConversationDTO, ExtendConversationDTO } from "../dtos";
 
 export class ConversationMapper {
   /**
-   * Converts an IConversationResponseDTO to a FullConversationDTO.
+   * Converts an ConversationUseCaseResponse to a FullConversationDTO.
    *
-   * @param options - The IConversationResponseDTO containing the conversation details,
+   * @param options - The ConversationUseCaseResponse containing the conversation details,
    *                  including conversation data, participants, and messages.
    * @returns A FullConversationDTO with mapped fields for conversation details,
    *          participants, and messages.
    */
   static toFullConversationDTO(
-    options: IConversationResponseDTO
+    options: ConversationUseCaseResponse
   ): ExtendConversationDTO {
     const {
       conversation,

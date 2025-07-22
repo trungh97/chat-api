@@ -1,18 +1,18 @@
-import { ICreateConversationRequestDTO } from "@domain/dtos/conversation";
-import { ICursorBasedPaginationParams } from "@domain/interfaces/pagination/CursorBasedPagination";
 import {
+  CreateConversationRequest,
   ICreateConversationUsecase,
   IDeleteConversationUsecase,
   IFindConversationByIdUseCase,
   IGetMyConversationsUsecase,
-} from "@domain/usecases/conversation";
+} from "@application/usecases/conversation";
+import { ICursorBasedPaginationParams } from "@domain/interfaces/pagination/CursorBasedPagination";
 import { container, TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
 import { CursorBasedPaginationDTO, GlobalResponse } from "@shared/responses";
 import { StatusCodes } from "http-status-codes";
 import { Arg, Ctx, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import { Context } from "types";
-import { ConversationDTO, ExtendConversationDTO } from "../DTOs";
+import { ConversationDTO, ExtendConversationDTO } from "../dtos";
 import { ConversationMapper } from "../mappers";
 import { ConversationCreateMutationRequest } from "../types/conversation";
 import { CursorBasedPaginationParams } from "../types/pagination";
@@ -111,7 +111,7 @@ export class ConversationResolver {
   @Mutation(() => ConversationGlobalResponse)
   async createConversation(
     @Arg("conversation", () => ConversationCreateMutationRequest)
-    conversation: ICreateConversationRequestDTO,
+    conversation: CreateConversationRequest,
     @Ctx()
     {
       req: {

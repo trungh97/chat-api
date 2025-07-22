@@ -5,11 +5,11 @@ import { ILogger } from "@shared/logger";
 import { UseCaseResponse } from "@shared/responses";
 import { inject, injectable } from "inversify";
 import { ICreateContactRequestDTO } from "./create-contact.request";
-import { IContactResponseDTO } from "./create-contact.response";
 import { ICreateContactUseCase } from "./create-contact.usecase";
+import { IContactResponseDTO } from "../types";
 
 @injectable()
-class CreateContactUseCase implements ICreateContactUseCase {
+export class CreateContactUseCase implements ICreateContactUseCase {
   constructor(
     @inject(TYPES.ContactPrismaRepository)
     private contactRepository: IContactRepository,
@@ -82,5 +82,3 @@ class CreateContactUseCase implements ICreateContactUseCase {
     }
   }
 }
-
-export { CreateContactUseCase };

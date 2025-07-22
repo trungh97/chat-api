@@ -1,6 +1,5 @@
-import { ICreateMessageRequestDTO } from "@domain/dtos/message";
+import { ICreateMessageRequestDTO, ICreateMessageUseCase } from "@application/usecases/message";
 import { MessageProps } from "@domain/entities";
-import { ICreateMessageUseCase } from "@domain/usecases/message";
 import { container, TYPES } from "@infrastructure/external/di/inversify";
 import { pubSub } from "@infrastructure/persistence/websocket/connection";
 import { Topic } from "@infrastructure/persistence/websocket/topics";
@@ -18,7 +17,7 @@ import {
   Subscription,
 } from "type-graphql";
 import { Context } from "types";
-import { MessageDTO } from "../DTOs";
+import { MessageDTO } from "../dtos";
 import { MessageMapper } from "../mappers";
 import { MessageCreateMutationRequest } from "../types/message";
 

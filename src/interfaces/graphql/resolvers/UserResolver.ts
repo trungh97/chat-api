@@ -1,21 +1,19 @@
-import { StatusCodes } from "http-status-codes";
-import { Arg, Ctx, Mutation, ObjectType, Query, Resolver } from "type-graphql";
-
-import { ICreateUserRequestDTO } from "@domain/dtos/user";
-import { IGetUserByIdUsecase } from "@domain/usecases/user";
 import {
-  ILoginCredentialBasedUserRequestDTO,
+  ICreateUserRequestDTO,
+  IGetUserByIdUsecase,
   ILoginCredentialBasedUserUseCase,
+  ILoginGoogleUserUseCase,
   IRegisterCredentialBasedUserUseCase,
-} from "@domain/usecases/user/credential-based";
-import { ILoginGoogleUserUseCase } from "@domain/usecases/user/federated-credential";
+  LoginCredentialBasedUserRequest,
+} from "@application/usecases/user";
 import { container, TYPES } from "@infrastructure/external/di/inversify";
 import { COOKIE_NAME } from "@shared/constants";
 import { ILogger } from "@shared/logger";
 import { GlobalResponse } from "@shared/responses";
-
+import { StatusCodes } from "http-status-codes";
+import { Arg, Ctx, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import { Context } from "types";
-import { UserDTO } from "../DTOs";
+import { UserDTO } from "../dtos";
 import { UserMapper } from "../mappers/UserMapper";
 import { UserCreateMutationRequest, UserLoginInput } from "../types/user";
 
@@ -59,7 +57,7 @@ export class UserResolver {
     @Arg("id", () => String) id: string
   ): Promise<UserGlobalResponse> {
     try {
-      const result = await this.getUserByIdUseCase.execute(id);
+      const result = await this.getUserByIdUseCase.execute({ id });
 
       if (result.error) {
         this.logger.error(result.error);
@@ -116,7 +114,7 @@ export class UserResolver {
     @Ctx() { req }: Context
   ): Promise<UserGlobalResponse> {
     try {
-      const result = await this.loginGoogleUserUseCase.execute(code);
+      const result = await this.loginGoogleUserUseCase.execute({ code });
 
       if (!result.data) {
         this.logger.error(result.error);
@@ -145,7 +143,7 @@ export class UserResolver {
   @Mutation(() => UserGlobalResponse)
   async loginCredentialBasedUser(
     @Arg("request", () => UserLoginInput)
-    request: ILoginCredentialBasedUserRequestDTO,
+    request: LoginCredentialBasedUserRequest,
     @Ctx() { req }: Context
   ): Promise<UserGlobalResponse> {
     try {
@@ -188,7 +186,9 @@ export class UserResolver {
       };
     }
 
-    const result = await this.getUserByIdUseCase.execute(req.session.userId);
+    const result = await this.getUserByIdUseCase.execute({
+      id: req.session.userId,
+    });
 
     if (result.error) {
       return {

@@ -11,7 +11,6 @@ import {
   FriendRequestResolver,
   MessageResolver,
   ParticipantResolver,
-  PostResolver,
   UserResolver,
 } from "@interfaces/graphql/resolvers";
 import { COOKIE_NAME } from "@shared/constants";
@@ -40,7 +39,6 @@ const main = async () => {
 
   const schema = await buildSchema({
     resolvers: [
-      PostResolver,
       UserResolver,
       ConversationResolver,
       ContactResolver,

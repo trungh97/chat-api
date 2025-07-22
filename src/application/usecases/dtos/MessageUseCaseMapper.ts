@@ -15,6 +15,7 @@ export class MessageUseCaseMapper {
       messageType: repoDto.messageType,
       replyToMessageId: repoDto.replyToMessageId,
       createdAt: repoDto.createdAt,
+      conversationId: repoDto.conversationId,
     };
   }
 }
