@@ -1,10 +1,9 @@
-import { Contact } from "@domain/entities";
 import { IContactRepository } from "@domain/repositories";
-import { IFindContactByIdUseCase } from "@domain/usecases/contact";
 import { TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
-import { UseCaseResponse } from "@shared/responses";
 import { inject, injectable } from "inversify";
+import { FindContactByIdResponse } from "./find-contact-by-id.response";
+import { IFindContactByIdUseCase } from "./find-contact-by-id.usecase";
 
 @injectable()
 export class FindContactByIdUseCase implements IFindContactByIdUseCase {
@@ -16,7 +15,7 @@ export class FindContactByIdUseCase implements IFindContactByIdUseCase {
     private logger: ILogger
   ) {}
 
-  async execute(id: string): Promise<UseCaseResponse<Contact>> {
+  async execute(id: string): Promise<FindContactByIdResponse> {
     try {
       const result = await this.contactRepository.getContactById(id);
 

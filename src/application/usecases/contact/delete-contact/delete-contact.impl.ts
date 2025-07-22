@@ -1,9 +1,9 @@
 import { IContactRepository } from "@domain/repositories";
-import { IDeleteContactUseCase } from "@domain/usecases/contact";
 import { TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
 import { DeleteContactResponse } from "./delete-contact.response";
+import { IDeleteContactUseCase } from "./delete-contact.usecase";
 
 @injectable()
 export class DeleteContactUseCase implements IDeleteContactUseCase {
