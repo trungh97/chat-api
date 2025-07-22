@@ -4,6 +4,7 @@ import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
 import { GetFriendRequestByUsersResponse } from "./get-friend-request-by-users.response";
 import { IGetFriendRequestByUsersUseCase } from "./get-friend-request-by-users.usecase";
+import { GetFriendRequestByUsersRequest } from "./get-friend-request-by-users.request";
 
 /**
  * Implementation of the GetFriendRequestByUsersUseCase.
@@ -20,10 +21,10 @@ export class GetFriendRequestByUsersUseCase
     private logger: ILogger
   ) {}
 
-  async execute(
-    senderId: string,
-    receiverId: string
-  ): Promise<GetFriendRequestByUsersResponse> {
+  async execute({
+    senderId,
+    receiverId,
+  }: GetFriendRequestByUsersRequest): Promise<GetFriendRequestByUsersResponse> {
     if (senderId === receiverId) {
       const errorMessage = "Sender and receiver cannot be the same.";
       this.logger.error(errorMessage);

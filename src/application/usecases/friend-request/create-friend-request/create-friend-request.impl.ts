@@ -3,7 +3,7 @@ import { IFriendRequestRepository } from "@domain/repositories";
 import { TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
-import { ICreateFriendRequest } from "./create-friend-request.request";
+import { CreateFriendRequestRequest } from "./create-friend-request.request";
 import { CreateFriendRequestResponse } from "./create-friend-request.response";
 import { ICreateFriendRequestUseCase } from "./create-friend-request.usecase";
 
@@ -18,7 +18,7 @@ export class CreateFriendRequestUseCase implements ICreateFriendRequestUseCase {
   ) {}
 
   async execute(
-    request: ICreateFriendRequest
+    request: CreateFriendRequestRequest
   ): Promise<CreateFriendRequestResponse> {
     try {
       const { senderId, receiverId } = request;

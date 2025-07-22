@@ -1,9 +1,8 @@
-import { Message } from "@domain/entities";
+import { UpdateMessageRequest } from "./update-message.request";
 import { UpdateMessageResponse } from "./update-message.response";
 
 export interface IUpdateMessageUseCase {
   execute(
-    id: string,
-    updates: Partial<Message>
+    request: UpdateMessageRequest
   ): Promise<UpdateMessageResponse>;
 }

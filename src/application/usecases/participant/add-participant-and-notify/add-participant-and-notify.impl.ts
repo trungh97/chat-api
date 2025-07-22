@@ -11,7 +11,9 @@ import {
 import { TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
-import { ICreateParticipantRequestDTO } from "./add-participant-and-notify.request";
+import {
+  AddParticipantAndNotifyRequest
+} from "./add-participant-and-notify.request";
 import { AddParticipantAndNotifyResponse } from "./add-participant-and-notify.response";
 import { IAddingParticipantAndNotifyUseCase } from "./add-participant-and-notify.usecase";
 
@@ -34,8 +36,7 @@ export class AddParticipantAndNotifyUseCase
   ) {}
 
   async execute(
-    request: ICreateParticipantRequestDTO,
-    currentUserId: string
+    request: AddParticipantAndNotifyRequest
   ): Promise<AddParticipantAndNotifyResponse> {
     try {
       // check if the conversation existed
@@ -66,16 +67,16 @@ export class AddParticipantAndNotifyUseCase
 
       // check if the current user is a member of the conversation
       const isConversationMember = conversationParticipants.find(
-        (participant) => participant.userId === currentUserId
+        (participant) => participant.userId === request.currentUserId
       );
 
       if (!isConversationMember) {
         this.logger.error(
-          `User ${currentUserId} is not authorized to create a participant for conversation ${request.conversationId}`
+          `User ${request.currentUserId} is not authorized to create a participant for conversation ${request.conversationId}`
         );
         return {
           data: null,
-          error: `User ${currentUserId} is not authorized to create a participant for conversation ${request.conversationId}`,
+          error: `User ${request.currentUserId} is not authorized to create a participant for conversation ${request.conversationId}`,
         };
       }
 

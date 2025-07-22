@@ -1,4 +1,4 @@
-import { ICreateMessageRequestDTO } from "./create-message.request";
+import { CreateMessageRequest } from "./create-message.request";
 import { CreateMessageResponse } from "./create-message.response";
 
 export interface ICreateMessageUseCase {
@@ -10,8 +10,5 @@ export interface ICreateMessageUseCase {
    * @param {ICreateMessageRequestDTO} request - The message to create.
    * @returns {Promise<CreateMessageResponse>} The response data.
    */
-  execute(
-    currentUserId: string,
-    request: ICreateMessageRequestDTO
-  ): Promise<CreateMessageResponse>;
+  execute(request: CreateMessageRequest): Promise<CreateMessageResponse>;
 }

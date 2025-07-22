@@ -160,9 +160,9 @@ export class FriendRequestResolver {
         };
       }
 
-      const result = await this.getFriendRequestsByUserIdUseCase.execute(
-        userId
-      );
+      const result = await this.getFriendRequestsByUserIdUseCase.execute({
+        userId,
+      });
 
       if (result.error) {
         return {
@@ -206,7 +206,7 @@ export class FriendRequestResolver {
         };
       }
 
-      const response = await this.getFriendRequestByIdUseCase.execute(id);
+      const response = await this.getFriendRequestByIdUseCase.execute({ id });
 
       if (response.error || !response.data) {
         this.logger.error(`Error fetching friend request: ${response.error}`);
@@ -255,10 +255,10 @@ export class FriendRequestResolver {
         };
       }
 
-      const response = await this.getFriendRequestByUsersUseCase.execute(
+      const response = await this.getFriendRequestByUsersUseCase.execute({
         senderId,
-        receiverId
-      );
+        receiverId,
+      });
 
       if (response.error || !response.data) {
         this.logger.error(`Error fetching friend request: ${response.error}`);
@@ -300,11 +300,11 @@ export class FriendRequestResolver {
         };
       }
 
-      const response = await this.changeFriendRequestStatusUseCase.execute(
+      const response = await this.changeFriendRequestStatusUseCase.execute({
         id,
         status,
-        userId
-      );
+        currentUserId: userId,
+      });
       if (response.error || !response.data) {
         this.logger.error(
           `Error changing friend request status: ${response.error}`
@@ -363,7 +363,9 @@ export class FriendRequestResolver {
         return false;
       }
 
-      const friendRequest = await this.getFriendRequestByIdUseCase.execute(id);
+      const friendRequest = await this.getFriendRequestByIdUseCase.execute({
+        id,
+      });
 
       if (friendRequest.data.senderId !== userId) {
         return false;

@@ -9,7 +9,10 @@ import { TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
 import isNull from "lodash/isNull";
-import { ICreateMessageRequestDTO } from "./create-message.request";
+import {
+  CreateMessageRequest,
+  ICreateMessageRequestDTO,
+} from "./create-message.request";
 import { CreateMessageResponse } from "./create-message.response";
 import { ICreateMessageUseCase } from "./create-message.usecase";
 
@@ -29,19 +32,24 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
     private logger: ILogger
   ) {}
 
-  async execute(
-    currentUserId: string,
-    request: ICreateMessageRequestDTO
-  ): Promise<CreateMessageResponse> {
+  async execute({
+    content,
+    conversationId,
+    receivers,
+    extra,
+    messageType,
+    replyToMessageId,
+    currentUserId,
+  }: CreateMessageRequest): Promise<CreateMessageResponse> {
     try {
-      if (!request.content.trim()) {
+      if (!content.trim()) {
         return {
           data: null,
           error: "Message content cannot be empty",
         };
       }
 
-      if (request.content.trim().length > 1000) {
+      if (content.trim().length > 1000) {
         return {
           data: null,
           error: "Message content cannot be longer than 1000 characters",
@@ -50,11 +58,11 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
 
       let currentConversation: Conversation = null;
 
-      if (isNull(request.conversationId)) {
+      if (isNull(conversationId)) {
         // Create a new conversation in case this is the first message.
         const { data: newConversation, error: newConversationError } =
           await this.createConversationUseCase.execute(currentUserId, {
-            participants: request.receivers,
+            participants: receivers,
           });
 
         if (newConversationError) {
@@ -66,20 +74,20 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
 
         currentConversation = newConversation;
 
-        request.conversationId = newConversation.id;
+        conversationId = newConversation.id;
       } else {
         // Check if the conversation exists and if the user is a participant.
         const {
           value: { conversation, participants },
           error: conversationError,
         } = await this.conversationRepository.getConversationById(
-          request.conversationId
+          conversationId
         );
 
         if (conversationError || !conversation.id) {
           return {
             data: null,
-            error: `Conversation with ID ${request.conversationId} does not exist.`,
+            error: `Conversation with ID ${conversationId} does not exist.`,
           };
         }
 
@@ -97,7 +105,17 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
         }
       }
 
-      const messageData = await Message.create(request, currentUserId);
+      const messageData = await Message.create(
+        {
+          content,
+          conversationId,
+          receivers,
+          extra,
+          messageType,
+          replyToMessageId,
+        },
+        currentUserId
+      );
 
       const response = await this.messageRepository.createMessage(messageData);
 
@@ -111,7 +129,7 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
 
       const { error: updateError } =
         await this.conversationRepository.updateConversation(
-          request.conversationId,
+          conversationId,
           currentConversation
         );
 

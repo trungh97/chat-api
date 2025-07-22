@@ -1,3 +1,4 @@
+import { DeleteExpiredFriendRequestsRequest } from "./delete-expired-friend-requests.request";
 import { DeleteExpiredFriendRequestsResponse } from "./delete-expired-friend-requests.response";
 
 /**
@@ -10,5 +11,7 @@ export interface IDeleteExpiredFriendRequestsUseCase {
    * @param {number} days - The number of days to look back.
    * @returns {Promise<DeleteExpiredFriendRequestsResponse>} The response object.
    */
-  execute(days: number): Promise<DeleteExpiredFriendRequestsResponse>;
+  execute(
+    request: DeleteExpiredFriendRequestsRequest
+  ): Promise<DeleteExpiredFriendRequestsResponse>;
 }
