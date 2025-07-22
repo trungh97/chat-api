@@ -1,5 +1,5 @@
-import { Contact, ContactProps } from "@domain/entities";
 import { UseCaseResponse } from "@shared/responses";
+import { Contact, ContactProps } from "@domain/entities";
 
 export class IContactResponseDTO extends Contact {
   private _contactName: string;
@@ -23,4 +23,6 @@ export class IContactResponseDTO extends Contact {
   }
 }
 
-export type CreateContactResponse = UseCaseResponse<IContactResponseDTO>;
+export type GetContactsByUserIdResponse = UseCaseResponse<
+  IContactResponseDTO[]
+>;

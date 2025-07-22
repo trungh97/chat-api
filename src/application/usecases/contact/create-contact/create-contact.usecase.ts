@@ -1,8 +1,5 @@
-import {
-  IContactResponseDTO,
-  ICreateContactRequestDTO,
-} from "@domain/dtos/contact";
-import { UseCaseResponse } from "@shared/responses";
+import { ICreateContactRequestDTO } from "./create-contact.request";
+import { CreateContactResponse } from "./create-contact.response";
 /**
  * Interface for the use case that creates a contact.
  *
@@ -14,9 +11,9 @@ export interface ICreateContactUseCase {
    *
    * @async
    * @param {ICreateContactRequestDTO} request - The request data.
-   * @returns {Promise<UseCaseResponse<IContactResponseDTO>>} The response data.
+   * @returns {Promise<CreateContactResponse>} The response data.
    */
   execute(
     request: ICreateContactRequestDTO
-  ): Promise<UseCaseResponse<IContactResponseDTO>>;
+  ): Promise<CreateContactResponse>;
 }

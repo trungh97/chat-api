@@ -1,14 +1,12 @@
-import {
-  IContactResponseDTO,
-  ICreateContactRequestDTO,
-} from "@domain/dtos/contact";
 import { Contact } from "@domain/entities";
 import { IContactRepository, IUserRepository } from "@domain/repositories";
-import { ICreateContactUseCase } from "@domain/usecases/contact";
 import { TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
 import { UseCaseResponse } from "@shared/responses";
 import { inject, injectable } from "inversify";
+import { ICreateContactRequestDTO } from "./create-contact.request";
+import { IContactResponseDTO } from "./create-contact.response";
+import { ICreateContactUseCase } from "./create-contact.usecase";
 
 @injectable()
 class CreateContactUseCase implements ICreateContactUseCase {

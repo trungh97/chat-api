@@ -1,6 +1,5 @@
-import { UseCaseResponse } from "@shared/responses";
-import { Contact } from "@domain/entities";
+import { FindContactByIdResponse } from "./find-contact-by-id.response";
 
 export interface IFindContactByIdUseCase {
-  execute(id: string): Promise<UseCaseResponse<Contact>>;
+  execute(id: string): Promise<FindContactByIdResponse>;
 }
