@@ -23,12 +23,18 @@ export class MessageDTO {
   @Field(() => String, { nullable: true })
   extra?: string;
 
-  @Field(() => String)
-  conversationId!: string;
+  @Field(() => String, { nullable: true })
+  conversationId: string;
 
   @Field(() => String, { nullable: true })
   replyToMessageId?: string;
 
   @Field(() => Date)
   createdAt: Date;
+
+  @Field(() => String, { nullable: true })
+  senderName?: string;
+
+  @Field(() => String, { nullable: true })
+  senderAvatar?: string | null;
 }

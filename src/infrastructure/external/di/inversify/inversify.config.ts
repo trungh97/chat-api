@@ -8,12 +8,20 @@ import {
   DeleteContactUseCase,
   FindContactByIdUseCase,
   GetContactsByUserIdUseCase,
+  ICreateContactUseCase,
+  IDeleteContactUseCase,
+  IFindContactByIdUseCase,
+  IGetContactsByUserIdUseCase,
 } from "@application/usecases/contact";
 import {
   CreateConversationUseCase,
   DeleteConversationUseCase,
   FindConversationByIdUseCase,
   GetMyConversationsUseCase,
+  ICreateConversationUsecase,
+  IDeleteConversationUsecase,
+  IFindConversationByIdUseCase,
+  IGetMyConversationsUsecase,
 } from "@application/usecases/conversation";
 import {
   ChangeFriendRequestStatusUseCase,
@@ -23,12 +31,40 @@ import {
   GetFriendRequestByIdUseCase,
   GetFriendRequestByUsersUseCase,
   GetFriendRequestsByUserIdUseCase,
+  IChangeFriendRequestStatusUseCase,
+  ICreateFriendRequestUseCase,
+  IDeleteExpiredFriendRequestsUseCase,
+  IDeleteFriendRequestUseCase,
+  IGetFriendRequestByIdUseCase,
+  IGetFriendRequestByUsersUseCase,
+  IGetFriendRequestsByUserIdUseCase,
 } from "@application/usecases/friend-request";
-import { FindPostByIDUseCase } from "@application/usecases/post";
-import { GetUserByIdUsecase } from "@application/usecases/user";
-import { RegisterCredentialBasedUserUseCase } from "@application/usecases/user/credential-based";
-import { LoginCredentialBasedUserUseCase } from "@application/usecases/user/credential-based/LoginUserUseCase";
-import { LoginGoogleUserUseCase } from "@application/usecases/user/federated-credential/LoginGoogleUserUseCase";
+import {
+  CreateMessageUseCase,
+  CreateSystemMessageUseCase,
+  ICreateMessageUseCase,
+  ICreateSystemMessageUseCase,
+} from "@application/usecases/message";
+import {
+  AddParticipantAndNotifyUseCase,
+  IAddingParticipantAndNotifyUseCase,
+} from "@application/usecases/participant";
+import {
+  GetUserByIdUsecase,
+  IGetUserByIdUsecase,
+} from "@application/usecases/user";
+import {
+  ILoginCredentialBasedUserUseCase,
+  LoginCredentialBasedUserUseCase,
+} from "@application/usecases/user/credential-based/login-user";
+import {
+  IRegisterCredentialBasedUserUseCase,
+  RegisterCredentialBasedUserUseCase,
+} from "@application/usecases/user/credential-based/register-user";
+import {
+  ILoginGoogleUserUseCase,
+  LoginGoogleUserUseCase,
+} from "@application/usecases/user/federated-credential/login-google-user";
 import {
   IContactRepository,
   IConversationRepository,
@@ -38,40 +74,14 @@ import {
   IPostRepository,
   IUserRepository,
 } from "@domain/repositories";
-import {
-  ICreateContactUseCase,
-  IDeleteContactUseCase,
-  IFindContactByIdUseCase,
-  IGetContactsByUserIdUseCase,
-} from "@domain/usecases/contact";
-import {
-  ICreateConversationUsecase,
-  IDeleteConversationUsecase,
-  IFindConversationByIdUseCase,
-  IGetMyConversationsUsecase,
-} from "@domain/usecases/conversation";
-import {
-  IChangeFriendRequestStatusUseCase,
-  ICreateFriendRequestUseCase,
-  IDeleteFriendRequestUseCase,
-  IDeleteExpiredFriendRequestsUseCase,
-  IGetFriendRequestByIdUseCase,
-  IGetFriendRequestByUsersUseCase,
-  IGetFriendRequestsByUserIdUseCase,
-} from "@domain/usecases/friend-request";
-import { IFindPostByIDUseCase } from "@domain/usecases/post";
-import { IGetUserByIdUsecase } from "@domain/usecases/user";
-import {
-  ILoginCredentialBasedUserUseCase,
-  IRegisterCredentialBasedUserUseCase,
-} from "@domain/usecases/user/credential-based";
-import { ILoginGoogleUserUseCase } from "@domain/usecases/user/federated-credential";
 import { googleOAuth2Client } from "@infrastructure/external/auth/google";
 import { prismaClient } from "@infrastructure/persistence/databases/mysql/connection";
 import { redisClient } from "@infrastructure/persistence/databases/redis/connection";
 import { ContactPrismaRepository } from "@infrastructure/persistence/repositories/contact";
 import { ConversationPrismaRepository } from "@infrastructure/persistence/repositories/conversation";
 import { FriendRequestPrismaRepository } from "@infrastructure/persistence/repositories/friendRequest";
+import { MessagePrismaRepository } from "@infrastructure/persistence/repositories/message";
+import { ParticipantPrismaRepository } from "@infrastructure/persistence/repositories/participant";
 import { PostPrismaRepository } from "@infrastructure/persistence/repositories/post/PostPrismaRepository";
 import { UserPrismaRepository } from "@infrastructure/persistence/repositories/user";
 import {
@@ -79,18 +89,6 @@ import {
   UserRedisRepository,
 } from "@infrastructure/persistence/repositories/user/UserRedisRepository";
 import { ILogger, WinstonLogger } from "@shared/logger";
-import { MessagePrismaRepository } from "@infrastructure/persistence/repositories/message";
-import {
-  ICreateMessageUseCase,
-  ICreateSystemMessageUseCase,
-} from "@domain/usecases/message";
-import {
-  CreateMessageUseCase,
-  CreateSystemMessageUseCase,
-} from "@application/usecases/message";
-import { ParticipantPrismaRepository } from "@infrastructure/persistence/repositories/participant";
-import { IAddingParticipantAndNotifyUseCase } from "@domain/usecases/participant";
-import { AddParticipantAndNotifyUseCase } from "@application/usecases/participant";
 
 const container = new Container();
 
@@ -231,9 +229,5 @@ container
   .bind<IPostRepository>(TYPES.PostPrismaRepository)
   .to(PostPrismaRepository);
 
-/** -------------- POST USECASES --------------- */
-container
-  .bind<IFindPostByIDUseCase>(TYPES.FindPostByIDUseCase)
-  .to(FindPostByIDUseCase);
-
 export { container };
+

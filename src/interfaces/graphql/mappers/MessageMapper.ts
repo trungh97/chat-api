@@ -1,5 +1,6 @@
+import { IMessageUseCaseDTO } from "@application/usecases/message";
 import { Message } from "@domain/entities";
-import { MessageDTO } from "../DTOs";
+import { MessageDTO } from "../dtos";
 
 /**
  * Mapper class for converting between Message entities and MessageDTOs.
@@ -8,7 +9,7 @@ export class MessageMapper {
   /**
    * Converts a Message entity to a MessageDTO.
    *
-   * @param {Message} message - The Message entity to be converted.
+   * @param {IMessageUseCaseDTO} message - The Message entity to be converted.
    * @returns {MessageDTO} - The resulting MessageDTO.
    */
   static toDTO({
@@ -20,7 +21,8 @@ export class MessageMapper {
     extra,
     replyToMessageId,
     createdAt,
-  }: Message): MessageDTO {
+    sender,
+  }: IMessageUseCaseDTO): MessageDTO {
     return {
       id,
       content,
@@ -30,6 +32,8 @@ export class MessageMapper {
       extra: JSON.stringify(extra),
       replyToMessageId,
       createdAt,
+      senderName: sender.name,
+      senderAvatar: sender.avatar,
     };
   }
 

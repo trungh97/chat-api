@@ -1,17 +1,16 @@
-import { Contact } from "@domain/entities";
 import {
   ICreateContactUseCase,
   IDeleteContactUseCase,
   IFindContactByIdUseCase,
   IGetContactsByUserIdUseCase,
-} from "@domain/usecases/contact";
+} from "@application/usecases/contact";
 import { container, TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
 import { GlobalResponse } from "@shared/responses";
 import { StatusCodes } from "http-status-codes";
 import { Arg, Ctx, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import { Context } from "types";
-import { ContactDTO } from "../DTOs";
+import { ContactDTO } from "../dtos";
 import { ContactMapper } from "../mappers";
 import { ContactCreateMutationRequest } from "../types/contact";
 

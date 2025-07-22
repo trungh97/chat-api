@@ -1,5 +1,4 @@
-import { FriendRequestStatus } from "@domain/enums";
-import { ICreateContactUseCase } from "@domain/usecases/contact";
+import { ICreateContactUseCase } from "@application/usecases/contact";
 import {
   IChangeFriendRequestStatusUseCase,
   ICreateFriendRequestUseCase,
@@ -7,17 +6,18 @@ import {
   IGetFriendRequestByIdUseCase,
   IGetFriendRequestByUsersUseCase,
   IGetFriendRequestsByUserIdUseCase,
-} from "@domain/usecases/friend-request";
+} from "@application/usecases/friend-request";
+import { IGetUserByIdUsecase } from "@application/usecases/user";
+import { FriendRequestStatus } from "@domain/enums";
 import { container, TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
 import { GlobalResponse } from "@shared/responses";
 import { StatusCodes } from "http-status-codes";
 import { Arg, Ctx, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import { Context } from "types";
-import { FriendRequestDTO } from "../DTOs";
+import { FriendRequestDTO } from "../dtos";
 import { FriendRequestMapper } from "../mappers";
 import { FriendRequestCreateMutationRequest } from "../types/friend-request";
-import { IGetUserByIdUsecase } from "@domain/usecases/user";
 
 const FriendRequestResponseObjectType = GlobalResponse(FriendRequestDTO);
 const FriendRequestListResponseObjectType = GlobalResponse(
@@ -104,9 +104,9 @@ export class FriendRequestResolver {
       }
 
       // Validate receiverId
-      const receiverResponse = await this.getUserByIdUseCase.execute(
-        request.receiverId
-      );
+      const receiverResponse = await this.getUserByIdUseCase.execute({
+        id: request.receiverId,
+      });
       if (receiverResponse.error || !receiverResponse.data.id) {
         return {
           statusCode: StatusCodes.NOT_FOUND,
@@ -119,7 +119,7 @@ export class FriendRequestResolver {
         senderId: userId,
       });
 
-      if (friendRequest.error || !friendRequest.value) {
+      if (friendRequest.error || !friendRequest.data) {
         this.logger.error(
           `Error creating friend request: ${friendRequest.error}`
         );
@@ -132,7 +132,7 @@ export class FriendRequestResolver {
       return {
         statusCode: StatusCodes.CREATED,
         message: "Friend request created successfully!",
-        data: FriendRequestMapper.toDTO(friendRequest.value),
+        data: FriendRequestMapper.toDTO(friendRequest.data),
       };
     } catch (error) {
       this.logger.error(`Error creating friend request: ${error.message}`);
@@ -171,7 +171,7 @@ export class FriendRequestResolver {
         };
       }
 
-      const { value: friendRequests } = result;
+      const { data: friendRequests } = result;
 
       return {
         statusCode: StatusCodes.OK,
@@ -208,7 +208,7 @@ export class FriendRequestResolver {
 
       const response = await this.getFriendRequestByIdUseCase.execute(id);
 
-      if (response.error || !response.value) {
+      if (response.error || !response.data) {
         this.logger.error(`Error fetching friend request: ${response.error}`);
         return {
           statusCode: StatusCodes.NOT_FOUND,
@@ -218,7 +218,7 @@ export class FriendRequestResolver {
 
       return {
         statusCode: StatusCodes.OK,
-        data: FriendRequestMapper.toDTO(response.value),
+        data: FriendRequestMapper.toDTO(response.data),
       };
     } catch (error) {
       this.logger.error(`Error fetching friend request: ${error.message}`);
@@ -260,7 +260,7 @@ export class FriendRequestResolver {
         receiverId
       );
 
-      if (response.error || !response.value) {
+      if (response.error || !response.data) {
         this.logger.error(`Error fetching friend request: ${response.error}`);
         return {
           statusCode: StatusCodes.NOT_FOUND,
@@ -270,7 +270,7 @@ export class FriendRequestResolver {
 
       return {
         statusCode: StatusCodes.OK,
-        data: FriendRequestMapper.toDTO(response.value),
+        data: FriendRequestMapper.toDTO(response.data),
       };
     } catch (error) {
       this.logger.error(`Error fetching friend request: ${error.message}`);
@@ -305,7 +305,7 @@ export class FriendRequestResolver {
         status,
         userId
       );
-      if (response.error || !response.value) {
+      if (response.error || !response.data) {
         this.logger.error(
           `Error changing friend request status: ${response.error}`
         );
@@ -317,7 +317,7 @@ export class FriendRequestResolver {
 
       // If status is ACCEPTED, add new contact
       if (status === FriendRequestStatus.ACCEPTED) {
-        const friendRequest = response.value;
+        const friendRequest = response.data;
         const contactResponse = await this.createContactUseCase.execute({
           userId: friendRequest.senderId,
           contactId: friendRequest.receiverId,
@@ -335,7 +335,7 @@ export class FriendRequestResolver {
       return {
         statusCode: StatusCodes.OK,
         message: "New friend added!",
-        data: FriendRequestMapper.toDTO(response.value),
+        data: FriendRequestMapper.toDTO(response.data),
       };
     } catch (error) {
       this.logger.error(
@@ -365,7 +365,7 @@ export class FriendRequestResolver {
 
       const friendRequest = await this.getFriendRequestByIdUseCase.execute(id);
 
-      if (friendRequest.value.senderId !== userId) {
+      if (friendRequest.data.senderId !== userId) {
         return false;
       }
 

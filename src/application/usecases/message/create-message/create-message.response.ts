@@ -13,6 +13,7 @@ export interface IMessageUseCaseDTO {
   messageType: keyof typeof MessageType;
   replyToMessageId?: string;
   createdAt: Date;
+  conversationId: string;
 }
 
 export type CreateMessageResponse = UseCaseResponse<IMessageUseCaseDTO>;

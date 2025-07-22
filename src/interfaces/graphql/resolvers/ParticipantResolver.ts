@@ -1,12 +1,14 @@
-import { ICreateParticipantRequestDTO } from "@domain/dtos/participant";
-import { IAddingParticipantAndNotifyUseCase } from "@domain/usecases/participant";
+import {
+  IAddingParticipantAndNotifyUseCase,
+  ICreateParticipantRequestDTO,
+} from "@application/usecases/participant";
 import { container, TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
 import { GlobalResponse } from "@shared/responses";
 import { StatusCodes } from "http-status-codes";
 import { Arg, Ctx, Mutation, ObjectType, Resolver } from "type-graphql";
 import { Context } from "types";
-import { ParticipantDTO } from "../DTOs";
+import { ParticipantDTO } from "../dtos";
 import { ParticipantMapper } from "../mappers";
 import { ParticipantCreateMutationRequest } from "../types/participant";
 
