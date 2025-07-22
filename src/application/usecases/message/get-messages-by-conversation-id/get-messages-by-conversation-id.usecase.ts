@@ -1,9 +1,8 @@
+import { GetMessagesByConversationIdRequest } from "./get-messages-by-conversation-id.request";
 import { GetMessagesByConversationIdResponse } from "./get-messages-by-conversation-id.response";
 
 export interface IGetMessagesByConversationIdUseCase {
   execute(
-    conversationId: string,
-    cursor?: string,
-    limit?: number
+    request: GetMessagesByConversationIdRequest
   ): Promise<GetMessagesByConversationIdResponse>;
 }

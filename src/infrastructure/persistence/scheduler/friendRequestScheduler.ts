@@ -1,4 +1,4 @@
-import { IDeleteExpiredFriendRequestsUseCase } from "@domain/usecases/friend-request";
+import { IDeleteExpiredFriendRequestsUseCase } from "@application/usecases/friend-request";
 import { container, TYPES } from "@infrastructure/external/di/inversify";
 import cron from "node-cron";
 

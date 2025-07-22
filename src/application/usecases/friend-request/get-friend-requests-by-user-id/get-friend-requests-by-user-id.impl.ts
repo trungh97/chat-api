@@ -4,6 +4,7 @@ import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
 import { GetFriendRequestsByUserIdResponse } from "./get-friend-requests-by-user-id.response";
 import { IGetFriendRequestsByUserIdUseCase } from "./get-friend-requests-by-user-id.usecase";
+import { GetFriendRequestsByUserIdRequest } from "./get-friend-requests-by-user-id.request";
 
 /**
  * Implementation of the GetFriendRequestsByUserIdUseCase.
@@ -20,7 +21,9 @@ export class GetFriendRequestsByUserIdUseCase
     private logger: ILogger
   ) {}
 
-  async execute(userId: string): Promise<GetFriendRequestsByUserIdResponse> {
+  async execute({
+    userId,
+  }: GetFriendRequestsByUserIdRequest): Promise<GetFriendRequestsByUserIdResponse> {
     try {
       const friendRequestsResponse =
         await this.friendRequestRepository.getFriendRequestsByUserId(userId);

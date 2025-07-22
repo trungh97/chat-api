@@ -6,6 +6,7 @@ import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
 import { ChangeFriendRequestStatusResponse } from "./change-friend-request-status.response";
 import { IChangeFriendRequestStatusUseCase } from "./change-friend-request-status.usecase";
+import { ChangeFriendRequestStatusRequest } from "./change-friend-request-status.request";
 
 @injectable()
 export class ChangeFriendRequestStatusUseCase
@@ -19,11 +20,11 @@ export class ChangeFriendRequestStatusUseCase
     private logger: ILogger
   ) {}
 
-  async execute(
-    id: string,
-    status: FriendRequestStatus,
-    currentUserId: User["id"]
-  ): Promise<ChangeFriendRequestStatusResponse> {
+  async execute({
+    id,
+    status,
+    currentUserId,
+  }: ChangeFriendRequestStatusRequest): Promise<ChangeFriendRequestStatusResponse> {
     try {
       const friendRequestResponse =
         await this.friendRequestRepository.getFriendRequestById(id);

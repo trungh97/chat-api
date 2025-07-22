@@ -1,4 +1,7 @@
-import { ICreateMessageRequestDTO, ICreateMessageUseCase } from "@application/usecases/message";
+import {
+  ICreateMessageRequestDTO,
+  ICreateMessageUseCase,
+} from "@application/usecases/message";
 import { MessageProps } from "@domain/entities";
 import { container, TYPES } from "@infrastructure/external/di/inversify";
 import { pubSub } from "@infrastructure/persistence/websocket/connection";
@@ -50,10 +53,10 @@ export class MessageResolver {
     }: Context
   ): Promise<MessageResponse> {
     try {
-      const { data, error } = await this.createMessageUseCase.execute(
-        userId,
-        request
-      );
+      const { data, error } = await this.createMessageUseCase.execute({
+        ...request,
+        currentUserId: userId,
+      });
 
       if (error) {
         this.logger.error(`Error creating message: ${error}`);

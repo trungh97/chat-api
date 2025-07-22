@@ -49,10 +49,10 @@ export class ParticipantResolver {
         };
       }
 
-      const participant = await this.addParticipantAndNotifyUseCase.execute(
-        request,
-        userId
-      );
+      const participant = await this.addParticipantAndNotifyUseCase.execute({
+        ...request,
+        currentUserId: userId,
+      });
 
       if (participant.error || !participant.data) {
         this.logger.error(`Error adding participant: ${participant.error}`);

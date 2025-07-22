@@ -7,7 +7,6 @@ export interface ICreateParticipantRequestDTO {
   customTitle?: string;
 }
 
-export type AddParticipantAndNotifyRequest = {
-  request: ICreateParticipantRequestDTO;
+export type AddParticipantAndNotifyRequest = ICreateParticipantRequestDTO & {
   currentUserId: string;
 };

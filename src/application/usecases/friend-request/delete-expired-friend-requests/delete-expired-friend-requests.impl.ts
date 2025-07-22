@@ -4,6 +4,7 @@ import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
 import { DeleteExpiredFriendRequestsResponse } from "./delete-expired-friend-requests.response";
 import { IDeleteExpiredFriendRequestsUseCase } from "./delete-expired-friend-requests.usecase";
+import { DeleteExpiredFriendRequestsRequest } from "./delete-expired-friend-requests.request";
 
 /**
  * Implementation of the DeleteExpiredFriendRequestsUseCase.
@@ -20,7 +21,9 @@ export class DeleteExpiredFriendRequestsUseCase
     private logger: ILogger
   ) {}
 
-  async execute(days: number): Promise<DeleteExpiredFriendRequestsResponse> {
+  async execute({
+    days,
+  }: DeleteExpiredFriendRequestsRequest): Promise<DeleteExpiredFriendRequestsResponse> {
     try {
       const response =
         await this.friendRequestRepository.findDeclinedFriendRequestsOlderThan(

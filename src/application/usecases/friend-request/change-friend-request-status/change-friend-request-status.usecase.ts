@@ -1,11 +1,8 @@
-import { User } from "@domain/entities";
-import { FriendRequestStatus } from "@domain/enums";
+import { ChangeFriendRequestStatusRequest } from "./change-friend-request-status.request";
 import { ChangeFriendRequestStatusResponse } from "./change-friend-request-status.response";
 
 export interface IChangeFriendRequestStatusUseCase {
   execute(
-    id: string,
-    status: FriendRequestStatus,
-    currentUserId: User["id"]
+    request: ChangeFriendRequestStatusRequest
   ): Promise<ChangeFriendRequestStatusResponse>;
 }

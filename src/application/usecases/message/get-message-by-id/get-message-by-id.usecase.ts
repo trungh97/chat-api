@@ -1,5 +1,6 @@
+import { GetMessageByIdRequest } from "./get-message-by-id.request";
 import { GetMessageByIdResponse } from "./get-message-by-id.response";
 
 export interface IGetMessageByIdUseCase {
-  execute(id: string): Promise<GetMessageByIdResponse>;
+  execute(request: GetMessageByIdRequest): Promise<GetMessageByIdResponse>;
 }
