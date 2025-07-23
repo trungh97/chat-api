@@ -42,8 +42,10 @@ import {
 import {
   CreateMessageUseCase,
   CreateSystemMessageUseCase,
+  GetMessagesByConversationIdUseCase,
   ICreateMessageUseCase,
   ICreateSystemMessageUseCase,
+  IGetMessagesByConversationIdUseCase,
 } from "@application/usecases/message";
 import {
   AddParticipantAndNotifyUseCase,
@@ -192,6 +194,11 @@ container
 container
   .bind<ICreateSystemMessageUseCase>(TYPES.CreateSystemMessageUseCase)
   .to(CreateSystemMessageUseCase);
+container
+  .bind<IGetMessagesByConversationIdUseCase>(
+    TYPES.GetMessagesByConversationIdUseCase
+  )
+  .to(GetMessagesByConversationIdUseCase);
 
 /** -------------- PARTICIPANT REPOSITORIES --------------- */
 container
