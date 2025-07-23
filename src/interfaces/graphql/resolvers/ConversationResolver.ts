@@ -77,10 +77,10 @@ export class ConversationResolver {
     }: Context
   ): Promise<ExtendConversationListGlobalResponse> {
     try {
-      const result = await this.getMyConversationsUseCase.execute(
+      const result = await this.getMyConversationsUseCase.execute({
         userId,
-        options
-      );
+        pagination: options,
+      });
 
       const { data, error } = result;
 
@@ -127,10 +127,10 @@ export class ConversationResolver {
         };
       }
 
-      const result = await this.createConversationUseCase.execute(
+      const result = await this.createConversationUseCase.execute({
         userId,
-        conversation
-      );
+        ...conversation,
+      });
 
       if (result.error) {
         this.logger.error(result.error);
@@ -169,10 +169,10 @@ export class ConversationResolver {
 
       // Check if the conversation exists
       const { data: conversationData, error } =
-        await this.findConversationByIdUseCase.execute(
-          conversationId,
-          req.session.userId
-        );
+        await this.findConversationByIdUseCase.execute({
+          id: conversationId,
+          userId: req.session.userId,
+        });
 
       if (!conversationData || error) {
         return {
@@ -233,10 +233,10 @@ export class ConversationResolver {
         };
       }
 
-      const { data, error } = await this.findConversationByIdUseCase.execute(
-        conversationId,
-        userId
-      );
+      const { data, error } = await this.findConversationByIdUseCase.execute({
+        id: conversationId,
+        userId,
+      });
 
       if (error) {
         this.logger.error(error);

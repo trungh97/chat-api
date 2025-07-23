@@ -125,7 +125,6 @@ export class ContactPrismaRepository implements IContactRepository {
     contact: Contact
   ): Promise<RepositoryResponse<Contact, Error>> {
     try {
-      console.log(contact);
       const newContact = await this.prisma.contact.create({
         data: {
           id: contact.id,
@@ -133,12 +132,10 @@ export class ContactPrismaRepository implements IContactRepository {
           contactId: contact.contactId,
         },
       });
-      console.log(newContact);
       return {
         value: this.toDomainFromPersistence(newContact),
       };
     } catch (e) {
-      console.log(e);
       this.logger.error(`Error creating contact: ${e.message}`);
       return {
         value: null,

@@ -24,10 +24,10 @@ export class CreateConversationUseCase implements ICreateConversationUsecase {
     @inject(TYPES.WinstonLogger) private logger: ILogger
   ) {}
 
-  async execute(
-    userId: string,
-    conversation: CreateConversationRequest
-  ): Promise<CreateConversationResponse> {
+  async execute({
+    userId,
+    ...conversation
+  }: CreateConversationRequest): Promise<CreateConversationResponse> {
     try {
       const participants = compact(uniq(conversation.participants));
       if (!participants.includes(userId)) {
