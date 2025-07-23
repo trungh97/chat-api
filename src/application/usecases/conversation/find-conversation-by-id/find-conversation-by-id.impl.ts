@@ -8,6 +8,7 @@ import { inject, injectable } from "inversify";
 import { ExtendedConversation } from "../types";
 import { FindConversationByIdResponse } from "./find-conversation-by-id.response";
 import { IFindConversationByIdUseCase } from "./find-conversation-by-id.usecase";
+import { FindConversationByIdRequest } from "./find-conversation-by-id.request";
 
 @injectable()
 export class FindConversationByIdUseCase
@@ -18,10 +19,10 @@ export class FindConversationByIdUseCase
     private conversationRepository: IConversationRepository
   ) {}
 
-  async execute(
-    id: string,
-    userId: string
-  ): Promise<FindConversationByIdResponse> {
+  async execute({
+    id,
+    userId,
+  }: FindConversationByIdRequest): Promise<FindConversationByIdResponse> {
     try {
       const result = await this.conversationRepository.getConversationById(id);
 

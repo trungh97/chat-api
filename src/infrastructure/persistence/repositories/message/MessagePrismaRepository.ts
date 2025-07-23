@@ -1,9 +1,10 @@
+import { IMessageRepositoryDTO } from "@domain/dtos/message";
 import { Message } from "@domain/entities";
-import { MessageType } from "@domain/enums";
 import { ICursorBasedPaginationResponse } from "@domain/interfaces/pagination/CursorBasedPagination";
 import { IMessageRepository } from "@domain/repositories";
 import { TYPES } from "@infrastructure/external/di/inversify";
-import { Message as MessagePrismaModel, PrismaClient } from "@prisma/client";
+import { MessagePrismaMapper } from "@infrastructure/persistence/mappers";
+import { PrismaClient } from "@prisma/client";
 import { PAGE_LIMIT } from "@shared/constants";
 import { ILogger } from "@shared/logger";
 import { RepositoryResponse } from "@shared/responses";
@@ -16,22 +17,9 @@ export class MessagePrismaRepository implements IMessageRepository {
     @inject(TYPES.WinstonLogger) private logger: ILogger
   ) {}
 
-  private toDomainFromPersistence(message: MessagePrismaModel): Message {
-    return new Message({
-      id: message.id,
-      senderId: message.senderId,
-      conversationId: message.conversationId,
-      content: message.content,
-      extra: message.extra,
-      messageType: message.messageType as MessageType,
-      replyToMessageId: message.replyToMessageId,
-      createdAt: message.createdAt,
-    });
-  }
-
   async createMessage(
     message: Message
-  ): Promise<RepositoryResponse<Message, Error>> {
+  ): Promise<RepositoryResponse<IMessageRepositoryDTO, Error>> {
     try {
       const createdMessage = await this.prisma.message.create({
         data: {
@@ -50,8 +38,9 @@ export class MessagePrismaRepository implements IMessageRepository {
           }),
         },
       });
+      console.log(createdMessage);
       return {
-        value: this.toDomainFromPersistence(createdMessage),
+        value: MessagePrismaMapper.fromPrismaModelToDTO(createdMessage),
       };
     } catch (error) {
       this.logger.error(`Error creating message: ${error.message}`);
@@ -64,7 +53,7 @@ export class MessagePrismaRepository implements IMessageRepository {
 
   async getMessageById(
     id: string
-  ): Promise<RepositoryResponse<Message, Error>> {
+  ): Promise<RepositoryResponse<IMessageRepositoryDTO, Error>> {
     try {
       const message = await this.prisma.message.findUnique({
         where: { id },
@@ -78,7 +67,7 @@ export class MessagePrismaRepository implements IMessageRepository {
       }
 
       return {
-        value: this.toDomainFromPersistence(message),
+        value: MessagePrismaMapper.fromPrismaModelToDTO(message),
       };
     } catch (error) {
       this.logger.error(`Error fetching message by id ${id}: ${error.message}`);
@@ -94,7 +83,7 @@ export class MessagePrismaRepository implements IMessageRepository {
   async updateMessage(
     id: string,
     updates: Partial<Message>
-  ): Promise<RepositoryResponse<Message, Error>> {
+  ): Promise<RepositoryResponse<IMessageRepositoryDTO, Error>> {
     try {
       const updatedMessage = await this.prisma.message.update({
         where: { id },
@@ -104,7 +93,7 @@ export class MessagePrismaRepository implements IMessageRepository {
       });
 
       return {
-        value: this.toDomainFromPersistence(updatedMessage),
+        value: MessagePrismaMapper.fromPrismaModelToDTO(updatedMessage),
       };
     } catch (error) {
       this.logger.error(
@@ -146,12 +135,18 @@ export class MessagePrismaRepository implements IMessageRepository {
     cursor?: string,
     limit: number = PAGE_LIMIT
   ): Promise<
-    RepositoryResponse<ICursorBasedPaginationResponse<Message>, Error>
+    RepositoryResponse<
+      ICursorBasedPaginationResponse<IMessageRepositoryDTO>,
+      Error
+    >
   > {
     try {
       const messages = await this.prisma.message.findMany({
         where: { conversationId },
         orderBy: { createdAt: "desc" },
+        include: {
+          sender: true,
+        },
         take: limit + 1,
         ...(cursor && { cursor: { id: cursor } }),
       });
@@ -161,7 +156,11 @@ export class MessagePrismaRepository implements IMessageRepository {
 
       return {
         value: {
-          data: messages.slice(0, limit).map(this.toDomainFromPersistence),
+          data: messages
+            .slice(0, limit)
+            .map((message) =>
+              MessagePrismaMapper.fromPrismaModelToDTO(message)
+            ),
           nextCursor,
         },
       };
@@ -180,7 +179,7 @@ export class MessagePrismaRepository implements IMessageRepository {
 
   async getLastMessageByConversationId(
     conversationId: string
-  ): Promise<RepositoryResponse<Message, Error>> {
+  ): Promise<RepositoryResponse<IMessageRepositoryDTO, Error>> {
     try {
       const message = await this.prisma.message.findFirst({
         where: { conversationId },
@@ -197,7 +196,7 @@ export class MessagePrismaRepository implements IMessageRepository {
       }
 
       return {
-        value: this.toDomainFromPersistence(message),
+        value: MessagePrismaMapper.fromPrismaModelToDTO(message),
       };
     } catch (error) {
       this.logger.error(

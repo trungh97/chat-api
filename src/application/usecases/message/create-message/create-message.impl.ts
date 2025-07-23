@@ -8,11 +8,8 @@ import {
 import { TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
-import isNull from "lodash/isNull";
-import {
-  CreateMessageRequest,
-  ICreateMessageRequestDTO,
-} from "./create-message.request";
+import isNil from "lodash/isNil";
+import { CreateMessageRequest } from "./create-message.request";
 import { CreateMessageResponse } from "./create-message.response";
 import { ICreateMessageUseCase } from "./create-message.usecase";
 
@@ -58,11 +55,12 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
 
       let currentConversation: Conversation = null;
 
-      if (isNull(conversationId)) {
+      if (isNil(conversationId)) {
         // Create a new conversation in case this is the first message.
         const { data: newConversation, error: newConversationError } =
-          await this.createConversationUseCase.execute(currentUserId, {
+          await this.createConversationUseCase.execute({
             participants: receivers,
+            userId: currentUserId,
           });
 
         if (newConversationError) {

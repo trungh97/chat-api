@@ -2,14 +2,12 @@ import {
   getConversationAvatar,
   getConversationTitle,
 } from "@application/utils";
-import {
-  ICursorBasedPaginationParams
-} from "@domain/interfaces/pagination/CursorBasedPagination";
 import { IConversationRepository } from "@domain/repositories";
 import { TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
 import { ConversationUseCaseResponse, ExtendedConversation } from "../types";
+import { GetMyConversationsRequest } from "./get-my-conversations.request";
 import { GetMyConversationsResponse } from "./get-my-conversations.response";
 import { IGetMyConversationsUsecase } from "./get-my-conversations.usecase";
 
@@ -20,10 +18,10 @@ export class GetMyConversationsUseCase implements IGetMyConversationsUsecase {
     private conversationRepository: IConversationRepository,
     @inject(TYPES.WinstonLogger) private logger: ILogger
   ) {}
-  async execute(
-    userId: string,
-    pagination: ICursorBasedPaginationParams
-  ): Promise<GetMyConversationsResponse> {
+  async execute({
+    userId,
+    pagination,
+  }: GetMyConversationsRequest): Promise<GetMyConversationsResponse> {
     try {
       const { value, error } =
         await this.conversationRepository.getMyConversations(
