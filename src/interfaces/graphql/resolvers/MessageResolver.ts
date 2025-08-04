@@ -1,15 +1,22 @@
 import {
   ICreateMessageRequestDTO,
   ICreateMessageUseCase,
+  IDeleteMessageUseCase,
+  IGetMessageByIdUseCase,
   IGetMessagesByConversationIdUseCase,
+  IUpdateMessageRequestDTO,
+  IUpdateMessageUseCase,
 } from "@application/usecases/message";
-import { MessageProps } from "@domain/entities";
 import { ICursorBasedPaginationParams } from "@domain/interfaces/pagination/CursorBasedPagination";
 import { container, TYPES } from "@infrastructure/external/di/inversify";
 import { pubSub } from "@infrastructure/persistence/websocket/connection";
 import { Topic } from "@infrastructure/persistence/websocket/topics";
 import { ILogger } from "@shared/logger";
-import { CursorBasedPaginationDTO, GlobalResponse } from "@shared/responses";
+import {
+  CursorBasedPaginationDTO,
+  GlobalResponse,
+  UnauthorizedResponse,
+} from "@shared/responses";
 import { StatusCodes } from "http-status-codes";
 import isNil from "lodash/isNil";
 import {
@@ -23,9 +30,12 @@ import {
   Subscription,
 } from "type-graphql";
 import { Context } from "types";
-import { MessageDTO } from "../dtos";
+import { MessageDTO, MessageWithSenderDTO } from "../dtos";
 import { MessageMapper } from "../mappers";
-import { MessageCreateMutationRequest } from "../types/message";
+import {
+  MessageCreateMutationRequest,
+  MessageUpdateMutationRequest,
+} from "../types/message";
 import { CursorBasedPaginationParams } from "../types/pagination";
 
 const MessageResponseObjectType = GlobalResponse(MessageDTO);
@@ -35,7 +45,7 @@ class MessageResponse extends MessageResponseObjectType {}
 
 @ObjectType()
 class PaginatedMessageListResponse extends CursorBasedPaginationDTO(
-  MessageDTO
+  MessageWithSenderDTO
 ) {}
 
 @ObjectType()
@@ -47,6 +57,9 @@ class MessageListGlobalResponse extends GlobalResponse(
 export class MessageResolver {
   private createMessageUseCase: ICreateMessageUseCase;
   private getMessagesByConversationIdUseCase: IGetMessagesByConversationIdUseCase;
+  private updateMessageUseCase: IUpdateMessageUseCase;
+  private getMessageByIdUseCase: IGetMessageByIdUseCase;
+  private deleteMessageUseCase: IDeleteMessageUseCase;
   private logger: ILogger;
 
   constructor() {
@@ -57,7 +70,150 @@ export class MessageResolver {
       container.get<IGetMessagesByConversationIdUseCase>(
         TYPES.GetMessagesByConversationIdUseCase
       );
+    this.updateMessageUseCase = container.get<IUpdateMessageUseCase>(
+      TYPES.UpdateMessageUseCase
+    );
+    this.getMessageByIdUseCase = container.get<IGetMessageByIdUseCase>(
+      TYPES.GetMessageByIdUseCase
+    );
+    this.deleteMessageUseCase = container.get<IDeleteMessageUseCase>(
+      TYPES.DeleteMessageUseCase
+    );
     this.logger = container.get<ILogger>(TYPES.WinstonLogger);
+  }
+
+  @Mutation(() => MessageResponse)
+  async updateMessage(
+    @Arg("request", () => MessageUpdateMutationRequest)
+    request: IUpdateMessageRequestDTO,
+    @Ctx()
+    {
+      req: {
+        session: { userId },
+      },
+    }: Context
+  ): Promise<MessageResponse> {
+    if (!userId) return UnauthorizedResponse;
+
+    try {
+      const { data, error } = await this.updateMessageUseCase.execute({
+        id: request.id,
+        updates: request.updates,
+        userId,
+      });
+
+      if (error || !data) {
+        this.logger.error(`Error updating message: ${error}`);
+        return {
+          statusCode: StatusCodes.BAD_REQUEST,
+          message: error,
+          data: null,
+          error,
+        };
+      }
+
+      return {
+        statusCode: StatusCodes.OK,
+        message: "Message updated successfully",
+        data: MessageMapper.toDTOWithSender(data),
+      };
+    } catch (error) {
+      this.logger.error(`Error updating message: ${error.message}`);
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        message: "Failed to update message",
+        data: null,
+        error: error.message,
+      };
+    }
+  }
+
+  @Query(() => MessageResponse)
+  async getMessageById(
+    @Arg("id", () => String) id: string,
+    @Ctx()
+    {
+      req: {
+        session: { userId },
+      },
+    }: Context
+  ): Promise<MessageResponse> {
+    if (!userId) return UnauthorizedResponse;
+
+    try {
+      const { data, error } = await this.getMessageByIdUseCase.execute({
+        id,
+        userId,
+      });
+
+      if (error || !data) {
+        this.logger.error(`Error getting message by id: ${error}`);
+        return {
+          statusCode: StatusCodes.BAD_REQUEST,
+          message: error,
+          data: null,
+          error,
+        };
+      }
+
+      return {
+        statusCode: StatusCodes.OK,
+        message: "Message fetched successfully",
+        data: MessageMapper.toDTOWithSender(data),
+      };
+    } catch (error) {
+      this.logger.error(`Error getting message by id: ${error.message}`);
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        message: "Failed to get message by id",
+        data: null,
+        error: error.message,
+      };
+    }
+  }
+
+  @Mutation(() => MessageResponse)
+  async deleteMessage(
+    @Arg("id", () => String)
+    id: string,
+    @Ctx()
+    {
+      req: {
+        session: { userId },
+      },
+    }: Context
+  ): Promise<MessageResponse> {
+    if (!userId) return UnauthorizedResponse;
+
+    try {
+      const { data, error } = await this.deleteMessageUseCase.execute({
+        id,
+        userId,
+      });
+
+      if (error || !data) {
+        this.logger.error(`Error deleting message: ${error}`);
+        return {
+          statusCode: StatusCodes.BAD_REQUEST,
+          message: error,
+          data: null,
+          error,
+        };
+      }
+
+      return {
+        statusCode: StatusCodes.OK,
+        message: "Message deleted successfully",
+      };
+    } catch (error) {
+      this.logger.error(`Error deleting message: ${error.message}`);
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        message: "Failed to delete message",
+        data: null,
+        error: error.message,
+      };
+    }
   }
 
   @Mutation(() => MessageResponse)
@@ -72,6 +228,8 @@ export class MessageResolver {
     }: Context
   ): Promise<MessageResponse> {
     try {
+      if (!userId) return UnauthorizedResponse;
+
       const { data, error } = await this.createMessageUseCase.execute({
         ...request,
         currentUserId: userId,
@@ -90,7 +248,10 @@ export class MessageResolver {
       const finalResult = MessageMapper.toDTO(data);
 
       // Publish the new message to the WebSocket channel
-      await pubSub.publish(Topic.NEW_MESSAGE, finalResult);
+      await pubSub.publish(
+        Topic.NEW_MESSAGE,
+        MessageMapper.toDTOWithSender(data)
+      );
 
       return {
         statusCode: StatusCodes.CREATED,
@@ -112,8 +273,16 @@ export class MessageResolver {
   async getMessagesByConversationId(
     @Arg("conversationId", () => String) conversationId: string,
     @Arg("options", () => CursorBasedPaginationParams)
-    options: ICursorBasedPaginationParams
+    options: ICursorBasedPaginationParams,
+    @Ctx()
+    {
+      req: {
+        session: { userId },
+      },
+    }: Context
   ): Promise<MessageListGlobalResponse> {
+    if (!userId) return UnauthorizedResponse;
+
     try {
       const { data, error } =
         await this.getMessagesByConversationIdUseCase.execute({
@@ -131,7 +300,7 @@ export class MessageResolver {
         statusCode: StatusCodes.OK,
         message: "Messages fetched successfully",
         data: {
-          items: data.data.map(MessageMapper.toDTO),
+          items: data.data.map(MessageMapper.toDTOWithSender),
           nextCursor: data.nextCursor,
         },
       };
@@ -144,8 +313,8 @@ export class MessageResolver {
     }
   }
 
-  @Subscription(() => MessageDTO, { topics: Topic.NEW_MESSAGE })
-  newMessageAdded(@Root() message: MessageProps): MessageDTO {
+  @Subscription(() => MessageWithSenderDTO, { topics: Topic.NEW_MESSAGE })
+  newMessageAdded(@Root() message: MessageWithSenderDTO): MessageWithSenderDTO {
     return {
       ...message,
       extra: isNil(message.extra) ? null : JSON.stringify(message.extra),

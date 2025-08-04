@@ -23,7 +23,7 @@ export class MessageDTO {
   @Field(() => String, { nullable: true })
   extra?: string;
 
-  @Field(() => String, { nullable: true })
+  @Field(() => String)
   conversationId: string;
 
   @Field(() => String, { nullable: true })
@@ -31,7 +31,10 @@ export class MessageDTO {
 
   @Field(() => Date)
   createdAt: Date;
+}
 
+@ObjectType()
+export class MessageWithSenderDTO extends MessageDTO {
   @Field(() => String, { nullable: true })
   senderName?: string;
 

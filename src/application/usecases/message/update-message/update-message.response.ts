@@ -1,4 +1,4 @@
-import { Message } from "@domain/entities";
 import { UseCaseResponse } from "@shared/responses";
+import { IMessageUseCaseDTO } from "../types";
 
-export type UpdateMessageResponse = UseCaseResponse<Message>;
+export type UpdateMessageResponse = UseCaseResponse<IMessageUseCaseDTO>;

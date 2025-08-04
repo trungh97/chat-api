@@ -37,8 +37,11 @@ export class MessagePrismaRepository implements IMessageRepository {
             replyToMessage: { connect: { id: message.replyToMessageId } },
           }),
         },
+        include: {
+          sender: true,
+        },
       });
-      console.log(createdMessage);
+
       return {
         value: MessagePrismaMapper.fromPrismaModelToDTO(createdMessage),
       };
@@ -110,9 +113,34 @@ export class MessagePrismaRepository implements IMessageRepository {
 
   async deleteMessage(id: string): Promise<RepositoryResponse<boolean, Error>> {
     try {
-      await this.prisma.message.delete({
+      const result = await this.prisma.message.update({
         where: { id },
+        data: { deletedAt: new Date() }, // Soft delete
       });
+
+      if (!result) {
+        return {
+          value: false,
+          error: new Error(`Message with id ${id} not found`),
+        };
+      }
+
+      if (result.deletedAt) {
+        const deletedMessage = await this.prisma.deletedMessage.create({
+          data: {
+            messageId: result.id,
+            userId: result.senderId,
+            createdAt: result.deletedAt,
+          },
+        });
+
+        if (!deletedMessage) {
+          return {
+            value: false,
+            error: new Error(`Failed to log deleted message record`),
+          };
+        }
+      }
 
       return {
         value: true,
@@ -142,7 +170,7 @@ export class MessagePrismaRepository implements IMessageRepository {
   > {
     try {
       const messages = await this.prisma.message.findMany({
-        where: { conversationId },
+        where: { conversationId, deletedAt: null },
         orderBy: { createdAt: "desc" },
         include: {
           sender: true,
