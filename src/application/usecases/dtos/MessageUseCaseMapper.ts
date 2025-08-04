@@ -1,5 +1,5 @@
 import { IMessageRepositoryDTO } from "@domain/dtos/message/IMessageRepositoryDTO";
-import { IMessageUseCaseDTO } from "../message/create-message/create-message.response";
+import { IMessageUseCaseDTO } from "../message";
 
 export class MessageUseCaseMapper {
   static toUseCaseDTO(repoDto: IMessageRepositoryDTO): IMessageUseCaseDTO {

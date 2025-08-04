@@ -87,6 +87,7 @@ export class ConversationResolver {
       if (error) {
         this.logger.error(error);
         return {
+          statusCode: StatusCodes.BAD_REQUEST,
           error,
         };
       }

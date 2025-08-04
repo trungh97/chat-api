@@ -1,4 +1,4 @@
 import { UseCaseResponse } from "@shared/responses";
-import { IMessageUseCaseDTO } from "../create-message";
+import { IMessageUseCaseDTO } from "../types";
 
 export type CreateSystemMessageResponse = UseCaseResponse<IMessageUseCaseDTO>;
