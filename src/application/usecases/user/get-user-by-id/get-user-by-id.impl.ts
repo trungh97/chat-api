@@ -1,5 +1,5 @@
 import { IUserRepository } from "@domain/repositories";
-import { TYPES } from "@infrastructure/external/di/inversify";
+import { TYPES } from "@infrastructure/external/di/inversify/types";
 import {
   IUserRedisRepository,
   UserRedisRepository,

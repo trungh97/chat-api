@@ -1,6 +1,6 @@
 import { FriendRequest } from "@domain/entities";
 import { IFriendRequestRepository } from "@domain/repositories";
-import { TYPES } from "@infrastructure/external/di/inversify";
+import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
 import { CreateFriendRequestRequest } from "./create-friend-request.request";

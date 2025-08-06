@@ -8,7 +8,7 @@ import {
   IUpdateMessageUseCase,
 } from "@application/usecases/message";
 import { ICursorBasedPaginationParams } from "@domain/interfaces/pagination/CursorBasedPagination";
-import { container, TYPES } from "@infrastructure/external/di/inversify";
+import { container, TYPES } from "@infrastructure/external/di/inversify/types";
 import { pubSub } from "@infrastructure/persistence/websocket/connection";
 import { Topic } from "@infrastructure/persistence/websocket/topics";
 import { ILogger } from "@shared/logger";

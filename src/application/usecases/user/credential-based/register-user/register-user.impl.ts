@@ -1,7 +1,7 @@
 import { getAvatarColors } from "@application/utils";
 import { User } from "@domain/entities";
 import { IUserRepository } from "@domain/repositories";
-import { TYPES } from "@infrastructure/external/di/inversify";
+import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
 import queryString from "query-string";

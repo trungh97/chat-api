@@ -2,7 +2,7 @@ import { IMessageRepositoryDTO } from "@domain/dtos/message";
 import { Message } from "@domain/entities";
 import { ICursorBasedPaginationResponse } from "@domain/interfaces/pagination/CursorBasedPagination";
 import { IMessageRepository } from "@domain/repositories";
-import { TYPES } from "@infrastructure/external/di/inversify";
+import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { MessagePrismaMapper } from "@infrastructure/persistence/mappers";
 import { PrismaClient } from "@prisma/client";
 import { PAGE_LIMIT } from "@shared/constants";
@@ -113,6 +113,8 @@ export class MessagePrismaRepository implements IMessageRepository {
 
   async deleteMessage(id: string): Promise<RepositoryResponse<boolean, Error>> {
     try {
+      if (!id) throw new Error("Message id is required");
+
       const result = await this.prisma.message.update({
         where: { id },
         data: { deletedAt: new Date() }, // Soft delete

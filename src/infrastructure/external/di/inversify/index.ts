@@ -1,2 +1,2 @@
-export { container } from "./inversify.config";
-export { TYPES } from "./types";
+export * from "./inversify.config";
+export * from "./types";

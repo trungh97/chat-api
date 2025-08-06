@@ -1,7 +1,7 @@
 import { Contact } from "@domain/entities";
 import { ICursorBasedPaginationResponse } from "@domain/interfaces/pagination/CursorBasedPagination";
 import { IContactRepository } from "@domain/repositories";
-import { TYPES } from "@infrastructure/external/di/inversify";
+import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { Contact as ContactPrismaModel, PrismaClient } from "@prisma/client";
 import { PAGE_LIMIT } from "@shared/constants";
 import { ILogger } from "@shared/logger";

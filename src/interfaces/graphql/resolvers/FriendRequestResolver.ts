@@ -9,7 +9,7 @@ import {
 } from "@application/usecases/friend-request";
 import { IGetUserByIdUsecase } from "@application/usecases/user";
 import { FriendRequestStatus } from "@domain/enums";
-import { container, TYPES } from "@infrastructure/external/di/inversify";
+import { container, TYPES } from "@infrastructure/external/di/inversify/types";
 import { ILogger } from "@shared/logger";
 import { GlobalResponse } from "@shared/responses";
 import { StatusCodes } from "http-status-codes";

@@ -2,7 +2,7 @@ import { ExtendedParticipant } from "@domain/dtos/participant";
 import { Participant } from "@domain/entities";
 import { ParticipantType } from "@domain/enums";
 import { IParticipantRepository } from "@domain/repositories";
-import { TYPES } from "@infrastructure/external/di/inversify";
+import { TYPES } from "@infrastructure/external/di/inversify/types";
 import {
   Participant as ParticipantPrismaModel,
   PrismaClient,

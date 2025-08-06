@@ -1,7 +1,7 @@
 import { User } from "@domain/entities";
 import { IUserRepository } from "@domain/repositories";
 import { verifyIdTokenAndGetPayload } from "@infrastructure/external/auth/google";
-import { TYPES } from "@infrastructure/external/di/inversify";
+import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { IUserRedisRepository } from "@infrastructure/persistence/repositories/user";
 import { ILogger } from "@shared/logger";
 import { OAuth2Client } from "google-auth-library";

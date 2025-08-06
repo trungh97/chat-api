@@ -5,7 +5,7 @@ import {
 import { Conversation } from "@domain/entities";
 import { ConversationType } from "@domain/enums";
 import { IConversationRepository, IUserRepository } from "@domain/repositories";
-import { TYPES } from "@infrastructure/external/di/inversify";
+import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { ParticipantType } from "@prisma/client";
 import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";

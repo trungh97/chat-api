@@ -1,7 +1,7 @@
 import { inject, injectable } from "inversify";
 import { RedisClientType } from "redis";
 
-import { TYPES } from "@infrastructure/external/di/inversify";
+import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { User } from "@domain/entities";
 import { RepositoryResponse } from "@shared/responses";
 
