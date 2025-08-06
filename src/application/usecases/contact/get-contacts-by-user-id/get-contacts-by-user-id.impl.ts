@@ -1,5 +1,5 @@
 import { IContactRepository, IUserRepository } from "@domain/repositories";
-import { TYPES } from "@infrastructure/external/di/inversify";
+import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
 import { GetContactsByUserIdResponse } from "./get-contacts-by-user-id.response";

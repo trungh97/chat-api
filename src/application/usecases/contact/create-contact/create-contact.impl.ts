@@ -1,6 +1,6 @@
 import { Contact } from "@domain/entities";
 import { IContactRepository, IUserRepository } from "@domain/repositories";
-import { TYPES } from "@infrastructure/external/di/inversify";
+import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { ILogger } from "@shared/logger";
 import { UseCaseResponse } from "@shared/responses";
 import { inject, injectable } from "inversify";
@@ -13,10 +13,10 @@ export class CreateContactUseCase implements ICreateContactUseCase {
   constructor(
     @inject(TYPES.ContactPrismaRepository)
     private contactRepository: IContactRepository,
-
+    
     @inject(TYPES.UserPrismaRepository)
     private userRepository: IUserRepository,
-
+    
     @inject(TYPES.WinstonLogger)
     private logger: ILogger
   ) {}

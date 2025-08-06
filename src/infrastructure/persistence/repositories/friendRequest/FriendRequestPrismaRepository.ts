@@ -1,7 +1,7 @@
 import { FriendRequest } from "@domain/entities";
 import { FriendRequestStatus } from "@domain/enums";
 import { IFriendRequestRepository } from "@domain/repositories";
-import { TYPES } from "@infrastructure/external/di/inversify";
+import { TYPES } from "@infrastructure/external/di/inversify/types";
 import {
   FriendRequest as FriendRequestPrismaModel,
   PrismaClient,

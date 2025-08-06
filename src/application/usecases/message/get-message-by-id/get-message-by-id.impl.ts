@@ -1,6 +1,6 @@
 import { MessageUseCaseMapper } from "@application/usecases/dtos";
 import { IMessageRepository } from "@domain/repositories";
-import { TYPES } from "@infrastructure/external/di/inversify";
+import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
 import { GetMessageByIdRequest } from "./get-message-by-id.request";

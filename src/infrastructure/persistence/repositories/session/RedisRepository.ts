@@ -3,7 +3,7 @@ import { RedisClientType } from "redis";
 
 import config from "@config/index";
 import { Session } from "@domain/entities";
-import { TYPES } from "@infrastructure/external/di/inversify";
+import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { RepositoryResponse } from "@shared/responses";
 
 interface IRedisRepository {

@@ -9,7 +9,7 @@
     "moduleResolution": "bundler",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "types": ["node"],
+    "types": ["node", "jest"],
     "paths": {
       "@domain/*": ["./domain/*"],
       "@application/*": ["./application/*"],

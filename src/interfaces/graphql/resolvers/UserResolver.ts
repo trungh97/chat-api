@@ -6,7 +6,7 @@ import {
   IRegisterCredentialBasedUserUseCase,
   LoginCredentialBasedUserRequest,
 } from "@application/usecases/user";
-import { container, TYPES } from "@infrastructure/external/di/inversify";
+import { container, TYPES } from "@infrastructure/external/di/inversify/types";
 import { COOKIE_NAME } from "@shared/constants";
 import { ILogger } from "@shared/logger";
 import { GlobalResponse } from "@shared/responses";

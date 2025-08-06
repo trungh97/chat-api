@@ -3,7 +3,7 @@ import {
   getConversationTitle,
 } from "@application/utils";
 import { IConversationRepository } from "@domain/repositories";
-import { TYPES } from "@infrastructure/external/di/inversify";
+import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { inject, injectable } from "inversify";
 import { ExtendedConversation } from "../types";
 import { FindConversationByIdResponse } from "./find-conversation-by-id.response";

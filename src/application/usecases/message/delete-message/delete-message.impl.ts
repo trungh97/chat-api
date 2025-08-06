@@ -3,7 +3,7 @@ import { DeleteMessageRequest } from "./delete-message.request";
 import { DeleteMessageResponse } from "./delete-message.response";
 import { IMessageRepository } from "@domain/repositories";
 import { inject, injectable } from "inversify";
-import { TYPES } from "@infrastructure/external/di/inversify";
+import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { ILogger } from "@shared/logger";
 
 @injectable()
@@ -21,6 +21,8 @@ export class DeleteMessageUseCase implements IDeleteMessageUseCase {
     userId,
   }: DeleteMessageRequest): Promise<DeleteMessageResponse> {
     try {
+      if (!userId) throw new Error("User id is required");
+
       // Check if the message exists and belongs to the user
       const { value: message, error: messageError } =
         await this.messageRepository.getMessageById(id);

@@ -6,7 +6,7 @@ import {
   IGetMyConversationsUsecase,
 } from "@application/usecases/conversation";
 import { ICursorBasedPaginationParams } from "@domain/interfaces/pagination/CursorBasedPagination";
-import { container, TYPES } from "@infrastructure/external/di/inversify";
+import { container, TYPES } from "@infrastructure/external/di/inversify/types";
 import { ILogger } from "@shared/logger";
 import { CursorBasedPaginationDTO, GlobalResponse } from "@shared/responses";
 import { StatusCodes } from "http-status-codes";

@@ -1,5 +1,5 @@
 import { IDeleteExpiredFriendRequestsUseCase } from "@application/usecases/friend-request";
-import { container, TYPES } from "@infrastructure/external/di/inversify";
+import { container, TYPES } from "@infrastructure/external/di/inversify/types";
 import cron from "node-cron";
 
 const deletedExpiredFriendRequestUseCase =

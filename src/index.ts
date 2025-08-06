@@ -1,3 +1,5 @@
+import "reflect-metadata";
+
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
@@ -22,7 +24,6 @@ import express from "express";
 import session from "express-session";
 import { useServer } from "graphql-ws/use/ws";
 import http from "http";
-import "reflect-metadata";
 import { buildSchema } from "type-graphql";
 import { Context } from "types";
 import { WebSocketServer } from "ws";

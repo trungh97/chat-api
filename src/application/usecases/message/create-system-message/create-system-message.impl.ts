@@ -5,7 +5,7 @@ import {
   IConversationRepository,
   IMessageRepository,
 } from "@domain/repositories";
-import { TYPES } from "@infrastructure/external/di/inversify";
+import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { MessageType } from "@prisma/client";
 import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";

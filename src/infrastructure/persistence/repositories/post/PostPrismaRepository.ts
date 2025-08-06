@@ -1,6 +1,6 @@
 import { Post } from "@domain/entities";
 import { IPostRepository } from "@domain/repositories/PostRepository";
-import { TYPES } from "@infrastructure/external/di/inversify";
+import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { ILogger } from "@shared/logger";
 import { Post as PostPrismaModel, PrismaClient } from "@prisma/client";
 import { RepositoryResponse } from "@shared/responses";

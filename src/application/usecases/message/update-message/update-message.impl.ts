@@ -1,6 +1,6 @@
 import { MessageUseCaseMapper } from "@application/usecases/dtos";
 import { IMessageRepository } from "@domain/repositories";
-import { TYPES } from "@infrastructure/external/di/inversify";
+import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
 import { UpdateMessageRequest } from "./update-message.request";
@@ -23,10 +23,7 @@ export class UpdateMessageUseCase implements IUpdateMessageUseCase {
     try {
       // Validate the request
       if (!id || !updates.content) {
-        return {
-          data: null,
-          error: "Invalid request: id and content are required",
-        };
+        throw new Error("Invalid request: id and updates are required");
       }
 
       // Check if the message exists and belongs to the user
