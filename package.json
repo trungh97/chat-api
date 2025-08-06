@@ -11,7 +11,8 @@
     "coverage": "jest --coverage",
     "dev": "tsx watch src/index.ts",
     "migrate:dev": "npx prisma migrate dev",
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node prisma/seed.ts",
+    "prepare": "husky"
   },
   "keywords": [],
   "author": "",
@@ -63,6 +64,7 @@
     "@types/node-cron": "^3.0.11",
     "@types/sanitize-html": "^2.15.0",
     "@types/ws": "^8.5.14",
+    "husky": "^9.1.7",
     "jest": "^30.0.5",
     "jest-environment-jsdom": "^30.0.5",
     "prisma": "^5.21.1",
