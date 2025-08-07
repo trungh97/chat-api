@@ -4,7 +4,8 @@ import {
   IFindContactByIdUseCase,
   IGetContactsByUserIdUseCase,
 } from "@application/usecases/contact";
-import { container, TYPES } from "@infrastructure/external/di/inversify/types";
+import { container } from "@infrastructure/external/di/inversify/inversify.config";
+import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { ILogger } from "@shared/logger";
 import { GlobalResponse } from "@shared/responses";
 import { StatusCodes } from "http-status-codes";

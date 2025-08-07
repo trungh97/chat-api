@@ -1,5 +1,6 @@
 import { IDeleteExpiredFriendRequestsUseCase } from "@application/usecases/friend-request";
-import { container, TYPES } from "@infrastructure/external/di/inversify/types";
+import { container } from "@infrastructure/external/di/inversify";
+import { TYPES } from "@infrastructure/external/di/inversify/types";
 import cron from "node-cron";
 
 const deletedExpiredFriendRequestUseCase =
@@ -12,6 +13,6 @@ export function scheduleDeleteExpiredFriendRequests() {
     console.log(
       "[Scheduler] Running job to clean up expired friend requests..."
     );
-    await deletedExpiredFriendRequestUseCase.execute(1);
+    await deletedExpiredFriendRequestUseCase.execute({ days: 1 });
   });
 }
