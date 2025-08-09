@@ -46,13 +46,6 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
         };
       }
 
-      if (content.trim().length > 1000) {
-        return {
-          data: null,
-          error: "Message content cannot be longer than 1000 characters",
-        };
-      }
-
       let currentConversation: Conversation = null;
 
       if (isNil(conversationId)) {
