@@ -10,6 +10,9 @@ export const TYPES = {
   MessagePrismaRepository: Symbol.for("MessagePrismaRepository"),
   ParticipantPrismaRepository: Symbol.for("ParticipantPrismaRepository"),
 
+  // PUBLISHERS
+  MessagePublisher: Symbol.for("MessagePublisher"),
+
   /* USE CASES DEFINITION - BEGIN */
 
   /* Post */

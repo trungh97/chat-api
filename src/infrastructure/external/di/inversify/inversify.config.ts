@@ -1,8 +1,9 @@
-import "reflect-metadata";
 import { PrismaClient } from "@prisma/client";
 import { Container } from "inversify";
+import "reflect-metadata";
 import { TYPES } from "./types";
 
+import { IMessagePublisher } from "@application/ports";
 import {
   CreateContactUseCase,
   DeleteContactUseCase,
@@ -79,8 +80,7 @@ import {
   IFriendRequestRepository,
   IMessageRepository,
   IParticipantRepository,
-  IPostRepository,
-  IUserRepository,
+  IUserRepository
 } from "@domain/repositories";
 import { googleOAuth2Client } from "@infrastructure/external/auth/google";
 import { prismaClient } from "@infrastructure/persistence/databases/mysql/connection";
@@ -90,12 +90,12 @@ import { ConversationPrismaRepository } from "@infrastructure/persistence/reposi
 import { FriendRequestPrismaRepository } from "@infrastructure/persistence/repositories/friendRequest";
 import { MessagePrismaRepository } from "@infrastructure/persistence/repositories/message";
 import { ParticipantPrismaRepository } from "@infrastructure/persistence/repositories/participant";
-import { PostPrismaRepository } from "@infrastructure/persistence/repositories/post/PostPrismaRepository";
 import { UserPrismaRepository } from "@infrastructure/persistence/repositories/user";
 import {
   IUserRedisRepository,
   UserRedisRepository,
 } from "@infrastructure/persistence/repositories/user/UserRedisRepository";
+import { RedisMessagePublisher } from "@infrastructure/persistence/websocket";
 import { ILogger, WinstonLogger } from "@shared/logger";
 
 const container = new Container();
@@ -246,10 +246,10 @@ container
   .bind<IFindContactByIdUseCase>(TYPES.FindContactByIdUseCase)
   .to(FindContactByIdUseCase);
 
-/** -------------- POST REPOSITORIES --------------- */
+/** -------------- PUBLISHERS --------------- */
 container
-  .bind<IPostRepository>(TYPES.PostPrismaRepository)
-  .to(PostPrismaRepository);
+  .bind<IMessagePublisher>(TYPES.MessagePublisher)
+  .to(RedisMessagePublisher);
 
 export { container };
 
