@@ -8,8 +8,8 @@ export interface IMessagePublisher {
    * @param conversation The conversation to publish the message to.
    * @returns A Promise that resolves when the message has been published.
    */
-  publishNewMessage(
-    message: Message,
-    conversation: Conversation
-  ): Promise<void>;
+  publishNewMessage(payload: {
+    message: Message;
+    conversation: Conversation;
+  }): Promise<void>;
 }
