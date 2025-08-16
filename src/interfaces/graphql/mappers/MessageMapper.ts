@@ -1,8 +1,9 @@
 import {
-  MessageWithConversationUseCaseDTO,
-  MessageWithSenderUseCaseDTO,
-} from "@application/usecases/message/types";
+  IMessageWithConversationUseCaseDTO,
+  IMessageWithSenderUseCaseDTO,
+} from "@application/usecases/message";
 import { Message } from "@domain/entities";
+import { MessageWithConversation } from "@infrastructure/persistence/websocket";
 import {
   MessageDTO,
   MessageWithConversationDTO,
@@ -16,11 +17,11 @@ export class MessageMapper {
   /**
    * Converts a Message entity to a MessageDTO.
    *
-   * @param {MessageWithSenderUseCaseDTO} message - The Message entity to be converted.
+   * @param {IMessageWithSenderUseCaseDTO} message - The Message entity to be converted.
    * @returns {MessageDTO} - The resulting MessageDTO.
    */
   static fromMessageWithSenderToDTO(
-    message: MessageWithSenderUseCaseDTO
+    message: IMessageWithSenderUseCaseDTO
   ): MessageDTO {
     return {
       id: message.id,
@@ -37,25 +38,15 @@ export class MessageMapper {
   /**
    * Converts a Message entity to a MessageWithSenderDTO.
    *
-   * @param {MessageWithSenderUseCaseDTO} message - The Message entity to be converted.
+   * @param {IMessageWithSenderUseCaseDTO} message - The Message entity to be converted.
    * @returns {MessageWithSenderDTO} - The resulting MessageWithSenderDTO.
    */
   static toDTOWithSender(
-    data: MessageWithSenderUseCaseDTO
+    data: IMessageWithSenderUseCaseDTO
   ): MessageWithSenderDTO {
-    const sender = data.sender;
-
     return {
-      id: data.id,
-      content: data.content,
-      messageType: data.messageType,
-      senderId: data.senderId,
-      conversationId: data.conversationId,
-      replyToMessageId: data.replyToMessageId,
-      createdAt: data.createdAt,
-      extra: data.extra ? JSON.stringify(data.extra) : null,
-      senderName: sender.name,
-      senderAvatar: sender.avatar,
+      ...data,
+      extra: typeof data.extra === "object" ? JSON.stringify(data.extra) : null,
     };
   }
 
@@ -71,18 +62,29 @@ export class MessageMapper {
   }
 
   static toDTOWithConversation(
-    dto: MessageWithConversationUseCaseDTO
+    dto: IMessageWithConversationUseCaseDTO
   ): MessageWithConversationDTO {
     return {
-      id: dto.id,
-      content: dto.content,
-      messageType: dto.messageType,
-      senderId: dto.senderId,
-      conversationId: dto.conversationId,
-      replyToMessageId: dto.replyToMessageId,
-      createdAt: dto.createdAt,
+      ...dto,
       extra: typeof dto.extra === "object" ? JSON.stringify(dto.extra) : null,
-      conversation: dto.conversation,
+    };
+  }
+
+  static fromNewMessagePubSubToDTO(
+    data: MessageWithConversation
+  ): MessageWithConversationDTO {
+    return {
+      id: data.id,
+      content: data.content,
+      messageType: data.messageType,
+      senderId: data.senderId,
+      conversationId: data.conversationId,
+      replyToMessageId: data.replyToMessageId,
+      createdAt: data.createdAt,
+      conversation: data.conversation,
+      senderAvatar: data.senderAvatar,
+      senderName: data.senderName,
+      extra: typeof data.extra === "object" ? JSON.stringify(data.extra) : null,
     };
   }
 }

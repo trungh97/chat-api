@@ -46,5 +46,5 @@ export class ExtendConversationDTO extends ConversationDTO {
   messages: Message[];
 
   @Field(() => [String], { nullable: true })
-  defaultGroupAvatar?: string[];
+  defaultGroupAvatars?: string[];
 }

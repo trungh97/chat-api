@@ -1,36 +1,20 @@
-import { Conversation, Message } from "@domain/entities";
+import { Conversation } from "@domain/entities";
+import { MessageType } from "@domain/enums";
 
-type SenderProps = {
-  name: string;
-  avatar?: string | null;
-};
-
-export class MessageWithSenderUseCaseDTO extends Message {
-  private _sender: SenderProps;
-
-  get sender(): SenderProps {
-    return this._sender;
-  }
-
-  set sender(sender: SenderProps) {
-    this._sender = sender;
-  }
-
-  constructor(message: Message, sender: SenderProps) {
-    super(message);
-    this.sender = sender;
-  }
+export interface IMessageWithSenderUseCaseDTO {
+  id: string;
+  content: string;
+  messageType: keyof typeof MessageType;
+  senderId: string;
+  conversationId: string;
+  replyToMessageId?: string;
+  createdAt: Date;
+  extra?: string;
+  senderName: string;
+  senderAvatar: string | null;
 }
 
-export class MessageWithConversationUseCaseDTO extends Message {
-  private _conversation: Conversation;
-
-  get conversation(): Conversation {
-    return this._conversation;
-  }
-
-  constructor(message: Message, conversation: Conversation) {
-    super(message);
-    this._conversation = conversation;
-  }
+export interface IMessageWithConversationUseCaseDTO
+  extends IMessageWithSenderUseCaseDTO {
+  conversation: Conversation;
 }
