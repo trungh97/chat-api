@@ -1,12 +1,10 @@
-import { ExtendedParticipant } from "@domain/dtos/participant";
+import { IDetailedParticipantDTO } from "@domain/dtos";
 import { Participant } from "@domain/entities";
 import { ParticipantType } from "@domain/enums";
 import { IParticipantRepository } from "@domain/repositories";
 import { TYPES } from "@infrastructure/external/di/inversify/types";
-import {
-  Participant as ParticipantPrismaModel,
-  PrismaClient,
-} from "@prisma/client";
+import { ParticipantPrismaMapper } from "@infrastructure/persistence/mappers";
+import { PrismaClient } from "@prisma/client";
 import { ILogger } from "@shared/logger";
 import { RepositoryResponse } from "@shared/responses";
 import { inject, injectable } from "inversify";
@@ -18,20 +16,11 @@ export class ParticipantPrismaRepository implements IParticipantRepository {
     @inject(TYPES.WinstonLogger) private logger: ILogger
   ) {}
 
-  private toDomainFromPersistence(
-    participant: ParticipantPrismaModel
-  ): Participant {
-    return new Participant({
-      ...participant,
-      type: participant.type,
-    });
-  }
-
   async createParticipant({
     conversationId,
     userId,
     type,
-  }: Participant): Promise<RepositoryResponse<ExtendedParticipant, Error>> {
+  }: Participant): Promise<RepositoryResponse<IDetailedParticipantDTO, Error>> {
     try {
       const createdParticipant = await this.prisma.participant.create({
         data: {
@@ -50,16 +39,11 @@ export class ParticipantPrismaRepository implements IParticipantRepository {
         },
       });
 
-      const result = new ExtendedParticipant(
-        new Participant({
-          ...createdParticipant,
-          type: createdParticipant.type,
-        }),
-        `${createdParticipant.user.firstName} ${createdParticipant.user.lastName}`
-      );
-
       return {
-        value: result,
+        value:
+          ParticipantPrismaMapper.fromPrismaModelToDetailDTO(
+            createdParticipant
+          ),
       };
     } catch (error) {
       this.logger.error(`Error creating participant: ${error.message}`);
@@ -87,7 +71,7 @@ export class ParticipantPrismaRepository implements IParticipantRepository {
       }
 
       return {
-        value: this.toDomainFromPersistence(participant),
+        value: ParticipantPrismaMapper.fromPrismaModelToEntity(participant),
       };
     } catch (error) {
       this.logger.error(`Error fetching participant: ${error.message}`);
@@ -107,7 +91,9 @@ export class ParticipantPrismaRepository implements IParticipantRepository {
       });
 
       return {
-        value: participants.map(this.toDomainFromPersistence),
+        value: participants.map(
+          ParticipantPrismaMapper.fromPrismaModelToEntity
+        ),
       };
     } catch (error) {
       this.logger.error(
@@ -133,7 +119,8 @@ export class ParticipantPrismaRepository implements IParticipantRepository {
       });
 
       return {
-        value: this.toDomainFromPersistence(updatedParticipant),
+        value:
+          ParticipantPrismaMapper.fromPrismaModelToEntity(updatedParticipant),
       };
     } catch (error) {
       this.logger.error(
