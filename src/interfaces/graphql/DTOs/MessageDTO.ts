@@ -45,7 +45,7 @@ export class MessageWithSenderDTO extends MessageDTO {
 }
 
 @ObjectType()
-export class MessageWithConversationDTO extends MessageDTO {
+export class MessageWithConversationDTO extends MessageWithSenderDTO {
   @Field(() => ConversationDTO)
   conversation: Conversation;
 }

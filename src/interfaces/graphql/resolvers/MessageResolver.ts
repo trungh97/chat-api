@@ -6,7 +6,7 @@ import {
   IGetMessagesByConversationIdUseCase,
   IUpdateMessageRequestDTO,
   IUpdateMessageUseCase,
-  MessageWithConversationUseCaseDTO,
+  IMessageWithConversationUseCaseDTO,
 } from "@application/usecases/message";
 import { Conversation } from "@domain/entities";
 import { ICursorBasedPaginationParams } from "@domain/interfaces/pagination/CursorBasedPagination";
@@ -42,6 +42,7 @@ import {
   MessageUpdateMutationRequest,
 } from "../types/message";
 import { CursorBasedPaginationParams } from "../types/pagination";
+import { MessageWithConversation } from "@infrastructure/persistence/websocket";
 
 const MessageResponseObjectType = GlobalResponse(MessageDTO);
 
@@ -316,22 +317,13 @@ export class MessageResolver {
     topics: Topic.NEW_MESSAGE,
   })
   newMessageAdded(
-    @Root() message: MessageWithConversationUseCaseDTO
+    @Root() message: MessageWithConversation
   ): MessageWithConversationDTO {
     try {
-      // Rehydrate instance
-      Object.setPrototypeOf(
-        message,
-        MessageWithConversationUseCaseDTO.prototype
-      );
+      Object.setPrototypeOf(message, MessageWithConversation.prototype);
       Object.setPrototypeOf(message.conversation, Conversation.prototype);
 
-      const payload = new MessageWithConversationUseCaseDTO(
-        message,
-        message.conversation
-      );
-
-      return MessageMapper.toDTOWithConversation(payload);
+      return MessageMapper.fromNewMessagePubSubToDTO(message);
     } catch (error) {
       this.logger.error(`Error parsing message extra: ${error.message}`);
       return null;

@@ -142,6 +142,10 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
       // Publish the new message to the websocket
       await this.messagePublisher.publishNewMessage({
         message: MessageUseCaseMapper.toEntity(response.value),
+        sender: {
+          name: data.senderName,
+          avatar: data.senderAvatar,
+        },
         conversation: currentConversation,
       });
 

@@ -10,6 +10,10 @@ export interface IMessagePublisher {
    */
   publishNewMessage(payload: {
     message: Message;
+    sender: {
+      name: string;
+      avatar: string;
+    };
     conversation: Conversation;
   }): Promise<void>;
 }

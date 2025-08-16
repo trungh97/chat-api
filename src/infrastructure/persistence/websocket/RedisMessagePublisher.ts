@@ -13,12 +13,19 @@ export class RedisMessagePublisher implements IMessagePublisher {
 
   async publishNewMessage(payload: {
     message: Message;
+    sender: {
+      name: string;
+      avatar: string;
+    };
     conversation: Conversation;
   }): Promise<void> {
     try {
+      const { message, sender, conversation } = payload;
       const data = new MessageWithConversation(
-        payload.message,
-        payload.conversation
+        message,
+        conversation,
+        sender.name,
+        sender.avatar
       );
 
       await pubSub.publish(Topic.NEW_MESSAGE, data);
