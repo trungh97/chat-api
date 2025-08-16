@@ -1,10 +1,8 @@
-import {
-  buildDefaultConversationTitle,
-  guessConversationType,
-} from "@application/utils";
+import { guessConversationType } from "@application/utils";
 import { Conversation } from "@domain/entities";
 import { ConversationType } from "@domain/enums";
 import { IConversationRepository, IUserRepository } from "@domain/repositories";
+import { IConversationTitleService } from "@domain/services";
 import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { ParticipantType } from "@prisma/client";
 import { ILogger } from "@shared/logger";
@@ -21,7 +19,9 @@ export class CreateConversationUseCase implements ICreateConversationUsecase {
     @inject(TYPES.ConversationPrismaRepository)
     private conversationRepository: IConversationRepository,
     @inject(TYPES.UserPrismaRepository) private userRepository: IUserRepository,
-    @inject(TYPES.WinstonLogger) private logger: ILogger
+    @inject(TYPES.WinstonLogger) private logger: ILogger,
+    @inject(TYPES.ConversationTitleService)
+    private conversationTitleService: IConversationTitleService
   ) {}
 
   async execute({
@@ -65,10 +65,14 @@ export class CreateConversationUseCase implements ICreateConversationUsecase {
           id === userId && conversationType === ConversationType.GROUP
             ? ParticipantType.ADMIN
             : ParticipantType.MEMBER,
-        customTitle: buildDefaultConversationTitle({
-          currentParticipant: id,
-          allParticipants: participantIdAndNames,
-        }),
+        customTitle:
+          this.conversationTitleService.buildDefaultConversationTitle({
+            currentParticipant: {
+              id,
+              customTitle: undefined,
+            },
+            participantList: participantIdAndNames,
+          }),
       }));
 
       const conversationData = await Conversation.create(userId, conversation);
@@ -85,7 +89,10 @@ export class CreateConversationUseCase implements ICreateConversationUsecase {
         return { data: null, error: error.message };
       }
 
-      return { data: value, error: null };
+      return {
+        data: value,
+        error: null,
+      };
     } catch (error) {
       this.logger.error(`Failed to create conversation: ${error.message}`);
       return { data: null, error: "Failed to create conversation." };

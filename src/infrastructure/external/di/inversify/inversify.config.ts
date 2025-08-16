@@ -80,8 +80,9 @@ import {
   IFriendRequestRepository,
   IMessageRepository,
   IParticipantRepository,
-  IUserRepository
+  IUserRepository,
 } from "@domain/repositories";
+import { ConversationTitleService, IConversationTitleService } from "@domain/services";
 import { googleOAuth2Client } from "@infrastructure/external/auth/google";
 import { prismaClient } from "@infrastructure/persistence/databases/mysql/connection";
 import { redisClient } from "@infrastructure/persistence/databases/redis/connection";
@@ -250,6 +251,9 @@ container
 container
   .bind<IMessagePublisher>(TYPES.MessagePublisher)
   .to(RedisMessagePublisher);
+
+/** -------------- SERVICES --------------- */
+container.bind<IConversationTitleService>(TYPES.ConversationTitleService).to(ConversationTitleService);
 
 export { container };
 

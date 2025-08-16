@@ -1,12 +1,11 @@
-import {
-  getConversationAvatar,
-  getConversationTitle,
-} from "@application/utils";
+import { ConversationUseCaseMapper } from "@application/usecases/dtos";
+import { getConversationAvatar } from "@application/utils";
 import { IConversationRepository } from "@domain/repositories";
+import { ConversationTitleService } from "@domain/services";
 import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
-import { ConversationUseCaseResponse, ExtendedConversation } from "../types";
+import { ConversationUseCaseResponse } from "../types";
 import { GetMyConversationsRequest } from "./get-my-conversations.request";
 import { GetMyConversationsResponse } from "./get-my-conversations.response";
 import { IGetMyConversationsUsecase } from "./get-my-conversations.usecase";
@@ -16,7 +15,9 @@ export class GetMyConversationsUseCase implements IGetMyConversationsUsecase {
   constructor(
     @inject(TYPES.ConversationPrismaRepository)
     private conversationRepository: IConversationRepository,
-    @inject(TYPES.WinstonLogger) private logger: ILogger
+    @inject(TYPES.WinstonLogger) private logger: ILogger,
+    @inject(TYPES.ConversationTitleService)
+    private conversationTitleService: ConversationTitleService
   ) {}
   async execute({
     userId,
@@ -46,13 +47,16 @@ export class GetMyConversationsUseCase implements IGetMyConversationsUsecase {
             (participant) => participant.userId === userId
           );
 
-          // Get the corresponding conversation title
-          conversation.title =
-            conversation.title ||
-            getConversationTitle({
-              currentParticipant,
-              allParticipants: participants,
+          const conversationTitle =
+            this.conversationTitleService.buildConversationTitle({
+              currentParticipant: {
+                id: currentParticipant.userId,
+                customTitle: currentParticipant.customTitle,
+              },
+              participantList: participants,
             });
+
+          conversation.title = conversation.title || conversationTitle;
 
           const defaultGroupAvatars = getConversationAvatar({
             currentParticipant: currentParticipant.userId,
@@ -60,13 +64,12 @@ export class GetMyConversationsUseCase implements IGetMyConversationsUsecase {
             customGroupAvatar: conversation.groupAvatar,
           });
 
-          const extendedConversation = new ExtendedConversation(
-            conversation,
-            defaultGroupAvatars
-          );
-
           return {
-            conversation: extendedConversation,
+            conversation:
+              ConversationUseCaseMapper.fromEntityToDetailUseCaseDTO(
+                conversation,
+                defaultGroupAvatars
+              ),
             participants,
             messages,
           };

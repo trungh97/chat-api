@@ -71,6 +71,9 @@ export const TYPES = {
 
   /* USE CASES DEFINITION - END */
 
+  /* SERVICES */
+  ConversationTitleService: Symbol.for("ConversationTitleService"),
+
   // OTHERS
   PrismaClient: Symbol.for("PrismaClient"),
   WinstonLogger: Symbol.for("WinstonLogger"),
