@@ -1,16 +1,10 @@
-import { ExtendedParticipant } from "@domain/dtos/participant";
-import { Conversation, Message, Participant } from "@domain/entities";
+import { IDetailConversationRepositoryDTO } from "@domain/dtos";
+import { Conversation, Participant } from "@domain/entities";
 import {
   ICursorBasedPaginationParams,
   ICursorBasedPaginationResponse,
 } from "@domain/interfaces/pagination/CursorBasedPagination";
 import { RepositoryResponse } from "@shared/responses";
-
-export interface IExtendedConversationRepositoryResponse {
-  conversation: Conversation;
-  participants?: ExtendedParticipant[];
-  messages?: Message[];
-}
 
 export interface IConversationRepository {
   /**
@@ -22,7 +16,7 @@ export interface IConversationRepository {
     pagination: ICursorBasedPaginationParams
   ): Promise<
     RepositoryResponse<
-      ICursorBasedPaginationResponse<IExtendedConversationRepositoryResponse>,
+      ICursorBasedPaginationResponse<IDetailConversationRepositoryDTO>,
       Error
     >
   >;
@@ -34,9 +28,7 @@ export interface IConversationRepository {
    */
   getConversationById(
     id: string
-  ): Promise<
-    RepositoryResponse<IExtendedConversationRepositoryResponse, Error>
-  >;
+  ): Promise<RepositoryResponse<IDetailConversationRepositoryDTO, Error>>;
 
   /**
    * Creates a new conversation.

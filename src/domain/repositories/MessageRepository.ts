@@ -1,4 +1,4 @@
-import { IMessageRepositoryDTO } from "@domain/dtos/message";
+import { IDetailedMessageRepositoryDTO } from "@domain/dtos";
 import { Message } from "@domain/entities";
 import { ICursorBasedPaginationResponse } from "@domain/interfaces/pagination/CursorBasedPagination";
 import { RepositoryResponse } from "@shared/responses";
@@ -8,33 +8,33 @@ export interface IMessageRepository {
    * Creates a new message.
    *
    * @param {Message} message - The message to be created.
-   * @returns {Promise<RepositoryResponse<IMessageRepositoryDTO, Error>>} The response object.
+   * @returns {Promise<RepositoryResponse<IDetailedMessageRepositoryDTO, Error>>} The response object.
    */
   createMessage(
     message: Message
-  ): Promise<RepositoryResponse<IMessageRepositoryDTO, Error>>;
+  ): Promise<RepositoryResponse<IDetailedMessageRepositoryDTO, Error>>;
 
   /**
    * Retrieves a message by its ID.
    *
    * @param {string} id - The ID of the message.
-   * @returns {Promise<RepositoryResponse<IMessageRepositoryDTO, Error>>} The response object.
+   * @returns {Promise<RepositoryResponse<IDetailedMessageRepositoryDTO, Error>>} The response object.
    */
   getMessageById(
     id: string
-  ): Promise<RepositoryResponse<IMessageRepositoryDTO, Error>>;
+  ): Promise<RepositoryResponse<IDetailedMessageRepositoryDTO, Error>>;
 
   /**
    * Updates an existing message.
    *
    * @param {string} id - The ID of the message to update.
    * @param {Partial<Message>} updates - The fields to update.
-   * @returns {Promise<RepositoryResponse<IMessageRepositoryDTO, Error>>} The response object.
+   * @returns {Promise<RepositoryResponse<IDetailedMessageRepositoryDTO, Error>>} The response object.
    */
   updateMessage(
     id: string,
     updates: Partial<Message>
-  ): Promise<RepositoryResponse<IMessageRepositoryDTO, Error>>;
+  ): Promise<RepositoryResponse<IDetailedMessageRepositoryDTO, Error>>;
 
   /**
    * Deletes a message by its ID.
@@ -48,7 +48,7 @@ export interface IMessageRepository {
    * Retrieves all messages for a specific conversation.
    *
    * @param {string} conversationId - The ID of the conversation.
-   * @returns {Promise<RepositoryResponse<ICursorBasedPaginationResponse<IMessageRepositoryDTO>, Error>>} The response object.
+   * @returns {Promise<RepositoryResponse<ICursorBasedPaginationResponse<IDetailedMessageRepositoryDTO>, Error>>} The response object.
    */
   getMessagesByConversationId(
     conversationId: string,
@@ -56,7 +56,7 @@ export interface IMessageRepository {
     limit?: number
   ): Promise<
     RepositoryResponse<
-      ICursorBasedPaginationResponse<IMessageRepositoryDTO>,
+      ICursorBasedPaginationResponse<IDetailedMessageRepositoryDTO>,
       Error
     >
   >;
@@ -65,9 +65,9 @@ export interface IMessageRepository {
    * Retrieves the last message of a specific conversation.
    *
    * @param {string} conversationId - The ID of the conversation.
-   * @returns {Promise<RepositoryResponse<IMessageRepositoryDTO, Error>>} The response object.
+   * @returns {Promise<RepositoryResponse<IDetailedMessageRepositoryDTO, Error>>} The response object.
    */
   getLastMessageByConversationId(
     conversationId: string
-  ): Promise<RepositoryResponse<IMessageRepositoryDTO, Error>>;
+  ): Promise<RepositoryResponse<IDetailedMessageRepositoryDTO, Error>>;
 }
