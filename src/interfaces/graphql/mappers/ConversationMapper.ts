@@ -1,5 +1,4 @@
 import { ConversationUseCaseResponse } from "@application/usecases/conversation/types";
-import { ExtendedParticipant } from "@application/usecases/participant/types";
 import { Conversation, Message } from "@domain/entities";
 import { ConversationDTO, ExtendConversationDTO } from "../dtos";
 
@@ -15,42 +14,12 @@ export class ConversationMapper {
   static toFullConversationDTO(
     options: ConversationUseCaseResponse
   ): ExtendConversationDTO {
-    const {
-      conversation,
-      participants: participantDTOS = [],
-      messages: messageDTOS = [],
-    } = options;
-    const {
-      id,
-      title,
-      creatorId,
-      deletedAt,
-      isArchived,
-      type,
-      groupAvatar,
-      defaultGroupAvatar,
-      lastMessageAt,
-    } = conversation;
+    const { conversation, participants, messages } = options;
 
     return {
-      id,
-      title,
-      groupAvatar,
-      creatorId,
-      deletedAt,
-      isArchived,
-      type,
-      defaultGroupAvatar,
-      lastMessageAt,
-      participants: participantDTOS.map(
-        (participantDTO) =>
-          new ExtendedParticipant(
-            participantDTO,
-            participantDTO.name,
-            participantDTO.avatar
-          )
-      ),
-      messages: messageDTOS.map((messageDTO) => new Message(messageDTO)),
+      ...conversation,
+      participants,
+      messages,
     };
   }
 
