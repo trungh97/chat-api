@@ -1,16 +1,15 @@
-import {
-  PrismaClient,
-  User as UserPrismaModel,
-  CredentialBasedAuth as CredentialBasedAuthPrismaModel,
-  FederatedCredential as FederatedCredentialPrismaModel,
-} from "@prisma/client";
-import { inject, injectable } from "inversify";
-
 import { User } from "@domain/entities";
 import { IUserRepository } from "@domain/repositories";
 import { TYPES } from "@infrastructure/external/di/inversify/types";
+import {
+  CredentialBasedAuth as CredentialBasedAuthPrismaModel,
+  FederatedCredential as FederatedCredentialPrismaModel,
+  PrismaClient,
+  User as UserPrismaModel,
+} from "@prisma/client";
 import { ILogger } from "@shared/logger";
 import { RepositoryResponse } from "@shared/responses";
+import { inject, injectable } from "inversify";
 
 @injectable()
 export class UserPrismaRepository implements IUserRepository {
