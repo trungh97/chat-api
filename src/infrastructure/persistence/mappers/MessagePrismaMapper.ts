@@ -1,4 +1,4 @@
-import { IMessageRepositoryDTO } from "@domain/dtos/message";
+import { IDetailedMessageRepositoryDTO } from "@domain/dtos";
 import { Message } from "@domain/entities/Message";
 import {
   Message as MessagePrismaModel,
@@ -12,17 +12,16 @@ export class MessagePrismaMapper {
   /**
    * Maps an IMessageRepositoryDTO to a Message entity.
    */
-  static fromDTOtoEntity(dto: IMessageRepositoryDTO): Message {
-    return new Message({
-      id: dto.id,
-      senderId: dto.senderId,
-      conversationId: "", // You may need to provide this from elsewhere
-      content: dto.content,
-      extra: dto.extra,
-      messageType: dto.messageType,
-      replyToMessageId: dto.replyToMessageId,
-      createdAt: dto.createdAt,
-    });
+  static fromDTOtoEntity(dto: IDetailedMessageRepositoryDTO): Message {
+    return new Message(dto);
+  }
+
+  static fromPrismaModelToEntity(prismaModel: MessagePrismaModel): Message {
+    const extra =
+      typeof prismaModel.extra === "string"
+        ? JSON.parse(prismaModel.extra)
+        : prismaModel.extra;
+    return new Message({ ...prismaModel, extra });
   }
 
   /**
@@ -30,23 +29,22 @@ export class MessagePrismaMapper {
    * @param {MessagePrismaModel} prismaModel - The Prisma model to map.
    * @returns {IMessageRepositoryDTO}
    */
-  static fromPrismaModelToDTO(
+  static fromPrismaModelToDetailDTO(
     prismaModel: MessagePrismaModel & { sender?: UserPrismaModel }
-  ): IMessageRepositoryDTO {
+  ): IDetailedMessageRepositoryDTO {
+    const sender = {
+      firstName: prismaModel.sender?.firstName || "",
+      lastName: prismaModel.sender?.lastName || "",
+      avatar: prismaModel.sender?.avatar ?? null,
+    };
+
     return {
-      id: prismaModel.id,
-      senderId: prismaModel.senderId,
-      sender: {
-        firstName: prismaModel.sender?.firstName || "",
-        lastName: prismaModel.sender?.lastName || "",
-        avatar: prismaModel.sender?.avatar || null,
-      },
-      content: prismaModel.content,
-      extra: prismaModel.extra,
-      messageType: prismaModel.messageType,
-      replyToMessageId: prismaModel.replyToMessageId,
-      createdAt: prismaModel.createdAt,
-      conversationId: prismaModel.conversationId,
+      ...prismaModel,
+      extra:
+        typeof prismaModel.extra === "string"
+          ? JSON.parse(prismaModel.extra)
+          : null,
+      sender,
     };
   }
 }
