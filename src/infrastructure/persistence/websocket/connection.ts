@@ -1,6 +1,6 @@
-import Redis from "ioredis";
-import { createPubSub } from "@graphql-yoga/subscription";
 import { createRedisEventTarget } from "@graphql-yoga/redis-event-target";
+import { createPubSub } from "@graphql-yoga/subscription";
+import Redis from "ioredis";
 import { PubSubProps } from "./types";
 
 const options = {
