@@ -1,21 +1,21 @@
-import { IMessageRepositoryDTO } from "@domain/dtos/message/IMessageRepositoryDTO";
-import { IMessageUseCaseDTO } from "../message";
+import { IDetailedMessageRepositoryDTO } from "@domain/dtos";
+import { Message } from "@domain/entities";
+import { MessageWithSenderUseCaseDTO } from "../message";
 
 export class MessageUseCaseMapper {
-  static toUseCaseDTO(repoDto: IMessageRepositoryDTO): IMessageUseCaseDTO {
-    return {
-      id: repoDto.id,
-      senderId: repoDto.senderId,
-      sender: {
-        name: `${repoDto.sender.firstName} ${repoDto.sender.lastName}`,
-        avatar: repoDto.sender.avatar ?? null,
-      },
-      content: repoDto.content,
-      extra: repoDto.extra,
-      messageType: repoDto.messageType,
-      replyToMessageId: repoDto.replyToMessageId,
-      createdAt: repoDto.createdAt,
-      conversationId: repoDto.conversationId,
+  static toUseCaseDTO(
+    repoDto: IDetailedMessageRepositoryDTO
+  ): MessageWithSenderUseCaseDTO {
+    const senderData = repoDto.sender;
+    const senderPayload = {
+      name: `${senderData.firstName} ${senderData.lastName}`,
+      avatar: senderData.avatar ?? null,
     };
+    const message = new Message(repoDto);
+    return new MessageWithSenderUseCaseDTO(message, senderPayload);
+  }
+
+  static toEntity(repoDto: IDetailedMessageRepositoryDTO): Message {
+    return new Message(repoDto);
   }
 }

@@ -1,3 +1,4 @@
+import { IMessagePublisher } from "@application/ports";
 import { ICreateConversationUsecase } from "@application/usecases/conversation";
 import { MessageUseCaseMapper } from "@application/usecases/dtos";
 import { Conversation, Message } from "@domain/entities";
@@ -22,6 +23,9 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
     @inject(TYPES.ConversationPrismaRepository)
     private conversationRepository: IConversationRepository,
 
+    @inject(TYPES.MessagePublisher)
+    private messagePublisher: IMessagePublisher,
+
     @inject(TYPES.CreateConversationUseCase)
     private createConversationUseCase: ICreateConversationUsecase,
 
@@ -29,16 +33,18 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
     private logger: ILogger
   ) {}
 
-  async execute({
-    content,
-    conversationId,
-    receivers,
-    extra,
-    messageType,
-    replyToMessageId,
-    currentUserId,
-  }: CreateMessageRequest): Promise<CreateMessageResponse> {
+  async execute(request: CreateMessageRequest): Promise<CreateMessageResponse> {
     try {
+      const {
+        content,
+        receivers,
+        extra,
+        messageType,
+        replyToMessageId,
+        currentUserId,
+      } = request;
+      let conversationId = request.conversationId;
+
       if (!content.trim()) {
         return {
           data: null,
@@ -131,7 +137,15 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
         return { data: null, error: updateError.message };
       }
 
-      return { data: MessageUseCaseMapper.toUseCaseDTO(response.value) };
+      const data = MessageUseCaseMapper.toUseCaseDTO(response.value);
+
+      // Publish the new message to the websocket
+      await this.messagePublisher.publishNewMessage({
+        message: MessageUseCaseMapper.toEntity(response.value),
+        conversation: currentConversation,
+      });
+
+      return { data };
     } catch (error) {
       this.logger.error(
         `Error executing create message use case: ${error.message}`

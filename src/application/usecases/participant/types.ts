@@ -1,12 +1,11 @@
-import { Participant } from "@domain/entities";
+import { ParticipantType } from "@domain/enums";
 
-export class ExtendedParticipant extends Participant {
+export interface IDetailedParticipantUseCase {
+  id: string;
+  userId: string;
+  conversationId: string;
+  type: keyof typeof ParticipantType;
+  customTitle?: string;
   name: string;
   avatar: string;
-
-  constructor(participant: Participant, name: string, avatar?: string) {
-    super(participant);
-    this.name = name;
-    this.avatar = avatar;
-  }
 }
