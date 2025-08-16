@@ -1,1 +1,1 @@
-export { ICreateUserRequestDTO } from "./ICreateUserRequestDTO";
+export { ICreateUserRequestDTO } from "./user-request.dto";

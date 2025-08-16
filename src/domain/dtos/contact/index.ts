@@ -1,2 +1,1 @@
-export * from "./ICreateContactRequestDTO";
-export * from "./IContactResponseDTO";
+export * from "./contact-request.dto";
