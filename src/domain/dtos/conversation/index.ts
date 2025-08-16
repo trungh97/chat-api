@@ -1,2 +1,2 @@
-export * from "./ICreateConversationRequestDTO";
-export * from "./IConversationResponseDTO";
+export * from "./conversation-repository.dto";
+export * from "./conversation-request.dto";

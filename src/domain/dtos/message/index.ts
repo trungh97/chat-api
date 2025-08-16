@@ -1,3 +1,2 @@
-export * from "./ICreateMessageRequestDTO";
-export * from "./ICreateSystemMessageRequestDTO";
-export * from "./IMessageRepositoryDTO";
+export * from "./message-request.dto";
+export * from "./message-repository.dto";

@@ -4,7 +4,7 @@ export interface ICreateMessageRequestDTO {
   conversationId: string | null;
   content: string;
   extra?: Object;
-  messageType: MessageType;
+  messageType: keyof typeof MessageType;
   replyToMessageId?: string;
   receivers?: string[];
 }

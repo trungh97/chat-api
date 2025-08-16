@@ -1,6 +1,6 @@
 import { MessageType } from "@domain/enums";
 
-export interface IMessageRepositoryDTO {
+export interface IDetailedMessageRepositoryDTO {
   id: string;
   senderId: string;
   sender: {
