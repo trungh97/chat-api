@@ -6,11 +6,12 @@ import {
   IGetMessagesByConversationIdUseCase,
   IUpdateMessageRequestDTO,
   IUpdateMessageUseCase,
+  MessageWithConversationUseCaseDTO,
 } from "@application/usecases/message";
+import { Conversation } from "@domain/entities";
 import { ICursorBasedPaginationParams } from "@domain/interfaces/pagination/CursorBasedPagination";
 import { container } from "@infrastructure/external/di/inversify/inversify.config";
 import { TYPES } from "@infrastructure/external/di/inversify/types";
-import { pubSub } from "@infrastructure/persistence/websocket/connection";
 import { Topic } from "@infrastructure/persistence/websocket/topics";
 import { ILogger } from "@shared/logger";
 import {
@@ -19,7 +20,6 @@ import {
   UnauthorizedResponse,
 } from "@shared/responses";
 import { StatusCodes } from "http-status-codes";
-import isNil from "lodash/isNil";
 import {
   Arg,
   Ctx,
@@ -31,7 +31,11 @@ import {
   Subscription,
 } from "type-graphql";
 import { Context } from "types";
-import { MessageDTO, MessageWithSenderDTO } from "../dtos";
+import {
+  MessageDTO,
+  MessageWithConversationDTO,
+  MessageWithSenderDTO,
+} from "../dtos";
 import { MessageMapper } from "../mappers";
 import {
   MessageCreateMutationRequest,
@@ -246,13 +250,7 @@ export class MessageResolver {
         };
       }
 
-      const finalResult = MessageMapper.toDTO(data);
-
-      // Publish the new message to the WebSocket channel
-      await pubSub.publish(
-        Topic.NEW_MESSAGE,
-        MessageMapper.toDTOWithSender(data)
-      );
+      const finalResult = MessageMapper.toDTOWithSender(data);
 
       return {
         statusCode: StatusCodes.CREATED,
@@ -314,11 +312,29 @@ export class MessageResolver {
     }
   }
 
-  @Subscription(() => MessageWithSenderDTO, { topics: Topic.NEW_MESSAGE })
-  newMessageAdded(@Root() message: MessageWithSenderDTO): MessageWithSenderDTO {
-    return {
-      ...message,
-      extra: isNil(message.extra) ? null : JSON.stringify(message.extra),
-    };
+  @Subscription(() => MessageWithConversationDTO, {
+    topics: Topic.NEW_MESSAGE,
+  })
+  newMessageAdded(
+    @Root() message: MessageWithConversationUseCaseDTO
+  ): MessageWithConversationDTO {
+    try {
+      // Rehydrate instance
+      Object.setPrototypeOf(
+        message,
+        MessageWithConversationUseCaseDTO.prototype
+      );
+      Object.setPrototypeOf(message.conversation, Conversation.prototype);
+
+      const payload = new MessageWithConversationUseCaseDTO(
+        message,
+        message.conversation
+      );
+
+      return MessageMapper.toDTOWithConversation(payload);
+    } catch (error) {
+      this.logger.error(`Error parsing message extra: ${error.message}`);
+      return null;
+    }
   }
 }
