@@ -1,26 +1,21 @@
-import { Conversation, Message } from "@domain/entities";
-import { ExtendedParticipant } from "../participant/types";
+import { Message } from "@domain/entities";
+import { ConversationType } from "@domain/enums";
+import { IDetailedParticipantUseCase } from "../participant/types";
 
-export class ExtendedConversation extends Conversation {
-  private defaultGroupAvatars?: string[] = [];
-
-  constructor(conversation: Conversation, defaultGroupAvatars?: string[]) {
-    super(conversation);
-
-    this.defaultGroupAvatars = defaultGroupAvatars;
-  }
-
-  get defaultGroupAvatar(): string[] | undefined {
-    return this.defaultGroupAvatars;
-  }
-
-  set defaultGroupAvatar(defaultGroupAvatars: string[] | undefined) {
-    this.defaultGroupAvatars = defaultGroupAvatars;
-  }
+export interface IDetailConversationUseCase {
+  id: string;
+  title: string;
+  creatorId: string;
+  isArchived: boolean;
+  deletedAt: Date;
+  type: keyof typeof ConversationType;
+  groupAvatar?: string;
+  lastMessageAt?: Date;
+  defaultGroupAvatars?: string[];
 }
 
 export type ConversationUseCaseResponse = {
-  conversation: ExtendedConversation;
-  participants?: ExtendedParticipant[];
+  conversation: IDetailConversationUseCase;
+  participants?: IDetailedParticipantUseCase[];
   messages?: Message[];
 };
