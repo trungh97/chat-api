@@ -22,7 +22,7 @@ export class ParticipantDTO {
 }
 
 @ObjectType()
-export class ExtendedParticipantDTO extends ParticipantDTO {
+export class DetailedParticipantDTO extends ParticipantDTO {
   @Field(() => String)
   name: string;
 

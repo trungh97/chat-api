@@ -1,9 +1,9 @@
-import { ExtendedParticipant } from "@domain/dtos/participant";
+import { IDetailedParticipantDTO } from "@domain/dtos/participant";
 import { Message } from "@domain/entities";
 import { ConversationType } from "@domain/enums";
 import { Field, ID, ObjectType, registerEnumType } from "type-graphql";
 import { MessageDTO } from "./MessageDTO";
-import { ExtendedParticipantDTO } from "./ParticipantDTO";
+import { DetailedParticipantDTO } from "./ParticipantDTO";
 
 registerEnumType(ConversationType, {
   name: "ConversationType",
@@ -13,7 +13,7 @@ registerEnumType(ConversationType, {
 @ObjectType()
 export class ConversationDTO {
   @Field(() => ID)
-  id: string;
+  id!: string;
 
   @Field(() => String, { nullable: true })
   title?: string;
@@ -31,7 +31,7 @@ export class ConversationDTO {
   deletedAt: Date;
 
   @Field(() => ConversationType)
-  type: ConversationType;
+  type: keyof typeof ConversationType;
 
   @Field(() => Date, { nullable: true })
   lastMessageAt?: Date;
@@ -39,8 +39,8 @@ export class ConversationDTO {
 
 @ObjectType()
 export class ExtendConversationDTO extends ConversationDTO {
-  @Field(() => [ExtendedParticipantDTO])
-  participants: ExtendedParticipant[];
+  @Field(() => [DetailedParticipantDTO])
+  participants: IDetailedParticipantDTO[];
 
   @Field(() => [MessageDTO])
   messages: Message[];

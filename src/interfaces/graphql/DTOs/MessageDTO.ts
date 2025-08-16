@@ -1,5 +1,7 @@
+import { Conversation } from "@domain/entities";
 import { MessageType } from "@domain/enums";
 import { Field, ID, ObjectType, registerEnumType } from "type-graphql";
+import { ConversationDTO } from "./ConversationDTO";
 
 registerEnumType(MessageType, {
   name: "MessageType",
@@ -8,11 +10,11 @@ registerEnumType(MessageType, {
 
 @ObjectType()
 export class MessageDTO {
-  @Field((type) => ID)
-  id!: string;
+  @Field(() => ID)
+  id: string;
 
   @Field(() => String)
-  content!: string;
+  content: string;
 
   @Field(() => MessageType)
   messageType!: keyof typeof MessageType;
@@ -40,4 +42,10 @@ export class MessageWithSenderDTO extends MessageDTO {
 
   @Field(() => String, { nullable: true })
   senderAvatar?: string | null;
+}
+
+@ObjectType()
+export class MessageWithConversationDTO extends MessageDTO {
+  @Field(() => ConversationDTO)
+  conversation: Conversation;
 }
