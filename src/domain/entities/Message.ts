@@ -1,6 +1,4 @@
-import {
-  ICreateMessageRequestDTO
-} from "@domain/dtos/message";
+import { ICreateMessageRequestDTO } from "@domain/dtos";
 import { MessageType } from "@domain/enums";
 import sanitize from "sanitize-html";
 import { v4 as uuid } from "uuid";
@@ -34,7 +32,7 @@ export class Message {
     extra,
     messageType,
     replyToMessageId,
-    createdAt
+    createdAt,
   }: MessageProps) {
     this._id = id;
     this._senderId = senderId;

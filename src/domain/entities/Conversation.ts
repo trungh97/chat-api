@@ -1,4 +1,4 @@
-import { ICreateConversationRequestDTO } from "@domain/dtos/conversation";
+import { ICreateConversationRequestDTO } from "@domain/dtos";
 import { ConversationType } from "@domain/enums";
 import { v4 as uuid } from "uuid";
 
@@ -8,7 +8,7 @@ export interface ConversationProps {
   creatorId: string;
   isArchived: boolean;
   deletedAt: Date;
-  type: ConversationType;
+  type: keyof typeof ConversationType;
   groupAvatar?: string;
   lastMessageAt?: Date;
 }
@@ -19,7 +19,7 @@ export class Conversation {
   private _creatorId: string;
   private _isArchived: boolean;
   private _deletedAt: Date;
-  private _type: ConversationType;
+  private _type: keyof typeof ConversationType;
   private _groupAvatar?: string;
   private _lastMessageAt?: Date;
 
@@ -72,11 +72,11 @@ export class Conversation {
     this._deletedAt = deletedAt;
   }
 
-  get type(): ConversationType {
+  get type(): keyof typeof ConversationType {
     return this._type;
   }
 
-  set type(type: ConversationType) {
+  set type(type: keyof typeof ConversationType) {
     this._type = type;
   }
 

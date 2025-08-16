@@ -1,4 +1,4 @@
-import { ICreateContactRequestDTO } from "@domain/dtos/contact";
+import { ICreateContactRequestDTO } from "@domain/dtos";
 import { v4 as uuid } from "uuid";
 
 export interface ContactProps {
