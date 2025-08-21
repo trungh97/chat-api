@@ -43,6 +43,7 @@ import {
 } from "../types/message";
 import { CursorBasedPaginationParams } from "../types/pagination";
 import { MessageWithConversation } from "@infrastructure/persistence/websocket";
+import { messageQueue } from "@infrastructure/persistence/queue";
 
 const MessageResponseObjectType = GlobalResponse(MessageDTO);
 
@@ -252,6 +253,8 @@ export class MessageResolver {
       }
 
       const finalResult = MessageMapper.toDTOWithSender(data);
+
+      await messageQueue.add("message", finalResult);
 
       return {
         statusCode: StatusCodes.CREATED,
