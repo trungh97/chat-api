@@ -7,7 +7,7 @@ export const messageWorker = new Worker(
     console.log(`Processing job: ${job.id}`, job.data);
     // TODO: update DB status here
   },
-  { connection: bullConnection }
+  { connection: bullConnection, removeOnComplete: { count: 0 } }
 );
 
 messageWorker.on("completed", (job) => {
