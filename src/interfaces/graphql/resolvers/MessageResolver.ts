@@ -252,14 +252,14 @@ export class MessageResolver {
         };
       }
 
-      const finalResult = MessageMapper.toDTOWithSender(data);
+      const result = MessageMapper.toDTOWithSender(data);
 
-      await messageQueue.add("message", finalResult);
+      await messageQueue.add("message", result, { removeOnComplete: true });
 
       return {
         statusCode: StatusCodes.CREATED,
         message: "Message created successfully",
-        data: finalResult,
+        data: result,
       };
     } catch (error) {
       this.logger.error(`Error creating message: ${error.message}`);
