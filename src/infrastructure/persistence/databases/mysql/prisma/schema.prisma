@@ -54,6 +54,14 @@ enum ConversationType {
   GROUP
 }
 
+enum MessageStatus {
+  SENDING
+  SENT
+  DELIVERED
+  SEEN
+  ERROR
+}
+
 // Models
 model Post {
   id        String   @id @default(uuid())
@@ -114,16 +122,17 @@ model CredentialBasedAuth {
 }
 
 model Message {
-  id               String       @id @default(uuid())
-  senderId         String?      @map("sender_id") @db.VarChar(255)
-  conversationId   String       @map("conversation_id")
-  messageType      MessageType? @map("message_type") // Enum for text, image, video, file
-  replyToMessageId String?      @map("reply_to_message_id")
-  content          String?      @db.LongText
+  id               String         @id @default(uuid())
+  senderId         String?        @map("sender_id") @db.VarChar(255)
+  conversationId   String         @map("conversation_id")
+  messageType      MessageType?   @map("message_type") // Enum for text, image, video, file
+  replyToMessageId String?        @map("reply_to_message_id")
+  content          String?        @db.LongText
   extra            Json?
-  createdAt        DateTime     @default(now()) @map("created_at")
-  updatedAt        DateTime     @updatedAt @map("updated_at")
-  deletedAt        DateTime?    @map("deleted_at")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+  deletedAt        DateTime?      @map("deleted_at")
+  status           MessageStatus? @map("status")
 
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender         User?        @relation("Sender", fields: [senderId], references: [id])
