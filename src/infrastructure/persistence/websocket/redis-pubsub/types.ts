@@ -32,5 +32,6 @@ export class MessageWithConversation extends Message {
 }
 
 export type PubSubProps = {
-  [Topic.NEW_MESSAGE]: [MessageWithConversation];
+  [Topic.NEW_MESSAGE_SENT]: [MessageWithConversation];
+  [Topic.MESSAGE_STATUS_UPDATED]: [Message];
 };

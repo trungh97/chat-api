@@ -5,14 +5,14 @@ import {
   IGetMessageByIdUseCase,
   IGetMessagesByConversationIdUseCase,
   IUpdateMessageRequestDTO,
-  IUpdateMessageUseCase,
-  IMessageWithConversationUseCaseDTO,
+  IUpdateMessageUseCase
 } from "@application/usecases/message";
 import { Conversation } from "@domain/entities";
 import { ICursorBasedPaginationParams } from "@domain/interfaces/pagination/CursorBasedPagination";
 import { container } from "@infrastructure/external/di/inversify/inversify.config";
 import { TYPES } from "@infrastructure/external/di/inversify/types";
-import { Topic } from "@infrastructure/persistence/websocket/topics";
+import { MessageWithConversation } from "@infrastructure/persistence/websocket/redis-pubsub";
+import { Topic } from "@infrastructure/persistence/websocket/redis-pubsub/topics";
 import { ILogger } from "@shared/logger";
 import {
   CursorBasedPaginationDTO,
@@ -42,8 +42,6 @@ import {
   MessageUpdateMutationRequest,
 } from "../types/message";
 import { CursorBasedPaginationParams } from "../types/pagination";
-import { MessageWithConversation } from "@infrastructure/persistence/websocket";
-import { messageQueue } from "@infrastructure/persistence/queue";
 
 const MessageResponseObjectType = GlobalResponse(MessageDTO);
 
@@ -254,8 +252,6 @@ export class MessageResolver {
 
       const result = MessageMapper.toDTOWithSender(data);
 
-      await messageQueue.add("message", result, { removeOnComplete: true });
-
       return {
         statusCode: StatusCodes.CREATED,
         message: "Message created successfully",
@@ -317,7 +313,7 @@ export class MessageResolver {
   }
 
   @Subscription(() => MessageWithConversationDTO, {
-    topics: Topic.NEW_MESSAGE,
+    topics: Topic.NEW_MESSAGE_SENT,
   })
   newMessageAdded(
     @Root() message: MessageWithConversation
