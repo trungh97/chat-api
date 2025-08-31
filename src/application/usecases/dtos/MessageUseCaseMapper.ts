@@ -24,6 +24,16 @@ export class MessageUseCaseMapper {
   }
 
   static toEntity(repoDto: IDetailedMessageRepositoryDTO): Message {
-    return new Message(repoDto);
+    return new Message({
+      id: repoDto.id,
+      senderId: repoDto.senderId,
+      conversationId: repoDto.conversationId,
+      content: repoDto.content,
+      messageType: repoDto.messageType,
+      replyToMessageId: repoDto.replyToMessageId,
+      createdAt: repoDto.createdAt,
+      status: repoDto.status,
+      extra: repoDto.extra,
+    });
   }
 }
