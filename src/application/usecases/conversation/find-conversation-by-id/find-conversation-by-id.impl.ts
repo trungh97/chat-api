@@ -13,7 +13,7 @@ export class FindConversationByIdUseCase
   implements IFindConversationByIdUseCase
 {
   constructor(
-    @inject(TYPES.ConversationPrismaRepository)
+    @inject(TYPES.ConversationRepository)
     private conversationRepository: IConversationRepository,
 
     @inject(TYPES.ConversationTitleService)

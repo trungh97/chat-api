@@ -11,10 +11,10 @@ import { IContactResponseDTO } from "../types";
 @injectable()
 export class CreateContactUseCase implements ICreateContactUseCase {
   constructor(
-    @inject(TYPES.ContactPrismaRepository)
+    @inject(TYPES.ContactRepository)
     private contactRepository: IContactRepository,
     
-    @inject(TYPES.UserPrismaRepository)
+    @inject(TYPES.UserRepository)
     private userRepository: IUserRepository,
     
     @inject(TYPES.WinstonLogger)

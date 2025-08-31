@@ -13,7 +13,7 @@ export class ChangeFriendRequestStatusUseCase
   implements IChangeFriendRequestStatusUseCase
 {
   constructor(
-    @inject(TYPES.FriendRequestPrismaRepository)
+    @inject(TYPES.FriendRequestRepository)
     private friendRequestRepository: IFriendRequestRepository,
 
     @inject(TYPES.WinstonLogger)

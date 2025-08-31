@@ -12,7 +12,7 @@ export class UpdateParticipantTypeUseCase
   implements IUpdateParticipantTypeUseCase
 {
   constructor(
-    @inject(TYPES.ParticipantPrismaRepository)
+    @inject(TYPES.ParticipantRepository)
     private participantRepository: IParticipantRepository,
 
     @inject(TYPES.WinstonLogger)

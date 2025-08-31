@@ -22,10 +22,10 @@ export class AddParticipantAndNotifyUseCase
   implements IAddingParticipantAndNotifyUseCase
 {
   constructor(
-    @inject(TYPES.ParticipantPrismaRepository)
+    @inject(TYPES.ParticipantRepository)
     private participantRepository: IParticipantRepository,
 
-    @inject(TYPES.ConversationPrismaRepository)
+    @inject(TYPES.ConversationRepository)
     private conversationRepository: IConversationRepository,
 
     @inject(TYPES.CreateSystemMessageUseCase)

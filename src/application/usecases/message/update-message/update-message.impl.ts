@@ -10,7 +10,7 @@ import { IUpdateMessageUseCase } from "./update-message.usecase";
 @injectable()
 export class UpdateMessageUseCase implements IUpdateMessageUseCase {
   constructor(
-    @inject(TYPES.MessagePrismaRepository)
+    @inject(TYPES.MessageRepository)
     private readonly messageRepository: IMessageRepository,
 
     @inject(TYPES.WinstonLogger)

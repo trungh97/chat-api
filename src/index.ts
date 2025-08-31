@@ -6,7 +6,7 @@ import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHt
 import config from "@config/config";
 import { redisClient } from "@infrastructure/persistence/databases/redis/connection";
 import { setupAllSchedulers } from "@infrastructure/persistence/scheduler";
-import { pubSub } from "@infrastructure/persistence/websocket/connection";
+import { pubSub } from "@infrastructure/persistence/websocket/redis-pubsub/connection";
 import {
   ContactResolver,
   ConversationResolver,

@@ -16,9 +16,9 @@ import { ICreateConversationUsecase } from "./create-conversation.usecase";
 @injectable()
 export class CreateConversationUseCase implements ICreateConversationUsecase {
   constructor(
-    @inject(TYPES.ConversationPrismaRepository)
+    @inject(TYPES.ConversationRepository)
     private conversationRepository: IConversationRepository,
-    @inject(TYPES.UserPrismaRepository) private userRepository: IUserRepository,
+    @inject(TYPES.UserRepository) private userRepository: IUserRepository,
     @inject(TYPES.WinstonLogger) private logger: ILogger,
     @inject(TYPES.ConversationTitleService)
     private conversationTitleService: IConversationTitleService

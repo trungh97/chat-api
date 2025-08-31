@@ -13,7 +13,7 @@ import { IGetMyConversationsUsecase } from "./get-my-conversations.usecase";
 @injectable()
 export class GetMyConversationsUseCase implements IGetMyConversationsUsecase {
   constructor(
-    @inject(TYPES.ConversationPrismaRepository)
+    @inject(TYPES.ConversationRepository)
     private conversationRepository: IConversationRepository,
     @inject(TYPES.WinstonLogger) private logger: ILogger,
     @inject(TYPES.ConversationTitleService)

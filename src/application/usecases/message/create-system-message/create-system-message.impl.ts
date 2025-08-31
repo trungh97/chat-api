@@ -17,10 +17,10 @@ import { ICreateSystemMessageUseCase } from "./create-system-message.usecase";
 @injectable()
 export class CreateSystemMessageUseCase implements ICreateSystemMessageUseCase {
   constructor(
-    @inject(TYPES.MessagePrismaRepository)
+    @inject(TYPES.MessageRepository)
     private messageRepository: IMessageRepository,
 
-    @inject(TYPES.ConversationPrismaRepository)
+    @inject(TYPES.ConversationRepository)
     private conversationRepository: IConversationRepository,
 
     @inject(TYPES.WinstonLogger)
