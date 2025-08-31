@@ -1,7 +1,7 @@
-import { IMessagePublisher } from "@application/ports";
 import { ICreateConversationUsecase } from "@application/usecases/conversation";
 import { MessageUseCaseMapper } from "@application/usecases/dtos";
 import { Conversation, Message } from "@domain/entities";
+import { IMessageEventPublisher } from "@domain/events";
 import {
   IConversationRepository,
   IMessageRepository,
@@ -17,14 +17,14 @@ import { ICreateMessageUseCase } from "./create-message.usecase";
 @injectable()
 export class CreateMessageUseCase implements ICreateMessageUseCase {
   constructor(
-    @inject(TYPES.MessagePrismaRepository)
+    @inject(TYPES.MessageRepository)
     private messageRepository: IMessageRepository,
 
-    @inject(TYPES.ConversationPrismaRepository)
+    @inject(TYPES.ConversationRepository)
     private conversationRepository: IConversationRepository,
 
     @inject(TYPES.MessagePublisher)
-    private messagePublisher: IMessagePublisher,
+    private messagePublisher: IMessageEventPublisher,
 
     @inject(TYPES.CreateConversationUseCase)
     private createConversationUseCase: ICreateConversationUsecase,
@@ -140,7 +140,7 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
       const data = MessageUseCaseMapper.toUseCaseDTO(response.value);
 
       // Publish the new message to the websocket
-      await this.messagePublisher.publishNewMessage({
+      await this.messagePublisher.publishMessageSent({
         message: MessageUseCaseMapper.toEntity(response.value),
         sender: {
           name: data.senderName,
