@@ -165,13 +165,16 @@ model Conversation {
 }
 
 model Participant {
-  id             String           @id @default(uuid())
-  conversationId String           @map("conversation_id")
-  userId         String           @map("user_id")
-  type           ParticipantType? // Enum for admin, member
-  customTitle    String?          @map("custom_title") // <--- Title visible to *this* participant only
-  createdAt      DateTime         @default(now()) @map("created_at")
-  updatedAt      DateTime         @updatedAt @map("updated_at")
+  id                    String           @id @default(uuid())
+  conversationId        String           @map("conversation_id")
+  userId                String           @map("user_id")
+  type                  ParticipantType? // Enum for admin, member
+  customTitle           String?          @map("custom_title") // <--- Title visible to *this* participant only
+  createdAt             DateTime         @default(now()) @map("created_at")
+  updatedAt             DateTime         @updatedAt @map("updated_at")
+  lastSeenAt            DateTime?        @map("last_seen_at")
+  lastSeenMessageId     String?          @map("last_seen_message_id")
+  lastReceivedMessageId String?          @map("last_received_message_id")
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   user         User         @relation(fields: [userId], references: [id])
