@@ -8,4 +8,7 @@ export interface IDetailedParticipantDTO {
   customTitle?: string;
   name: string;
   avatar: string;
+  lastSeenAt?: Date;
+  lastSeenMessageId?: string;
+  lastReceivedMessageId?: string;
 }

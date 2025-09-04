@@ -200,4 +200,62 @@ export class ParticipantPrismaRepository implements IParticipantRepository {
       };
     }
   }
+
+  async updateLastSeenMessage(
+    messageId: string,
+    participantId: string
+  ): Promise<RepositoryResponse<IDetailedParticipantDTO, Error>> {
+    try {
+      const updatedParticipant = await this.prisma.participant.update({
+        where: { id: participantId },
+        data: { lastSeenMessageId: messageId, lastSeenAt: new Date() },
+      });
+
+      return {
+        value:
+          ParticipantPrismaMapper.fromPrismaModelToDetailDTO(
+            updatedParticipant
+          ),
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error updating last seen message for participant ${participantId}: ${error.message}`
+      );
+      return {
+        value: null,
+        error: new Error(
+          `Error updating last seen message for participant ${participantId}: ${error.message}`
+        ),
+      };
+    }
+  }
+
+  async updateLastReceivedMessage(
+    messageId: string,
+    participantId: string
+  ): Promise<RepositoryResponse<IDetailedParticipantDTO, Error>> {
+    try {
+      const updatedParticipant = await this.prisma.participant.update({
+        where: { id: participantId },
+        data: { lastReceivedMessageId: messageId },
+      });
+
+      return {
+        value:
+          ParticipantPrismaMapper.fromPrismaModelToDetailDTO(
+            updatedParticipant
+          ),
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error updating last received message for participant ${participantId}: ${error.message}`
+      );
+      return {
+        value: null,
+        error: new Error(
+          `Error updating last received message for participant ${participantId}: ${error.message}`
+        ),
+      };
+    }
+  }
 }

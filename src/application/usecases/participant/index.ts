@@ -3,3 +3,4 @@ export * from "./delete-participant-by-id";
 export * from "./get-participant-by-id";
 export * from "./get-participants-by-conversation-id";
 export * from "./update-participant-type";
+export * from "./update-last-seen-message";
