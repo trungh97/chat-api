@@ -4,6 +4,7 @@ import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import config from "@config/config";
+import { container, TYPES } from "@infrastructure/external/di/inversify";
 import { redisClient } from "@infrastructure/persistence/databases/redis/connection";
 import { setupAllSchedulers } from "@infrastructure/persistence/scheduler";
 import { pubSub } from "@infrastructure/persistence/websocket/redis-pubsub/connection";
@@ -113,6 +114,8 @@ const main = async () => {
 
   // Setup cron jobs (background jobs)
   setupAllSchedulers();
+
+  container.get(TYPES.MessageQueueWorker);
 
   await new Promise<void>(() =>
     httpServer.listen({ port }, () => {
