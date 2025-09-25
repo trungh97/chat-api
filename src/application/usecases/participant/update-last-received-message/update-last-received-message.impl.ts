@@ -1,4 +1,5 @@
 import { IGetMessageByIdUseCase } from "@application/usecases/message";
+import { IMessageEventPublisher } from "@domain/events";
 import {
   IMessageRepository,
   IParticipantRepository,
@@ -7,13 +8,13 @@ import { TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
 import { IGetParticipantsByConversationIdUseCase } from "../get-participants-by-conversation-id";
-import { UpdateParticipantLastSeenMessageRequest } from "./update-last-seen-message.request";
-import { UpdateParticipantLastSeenMessageResponse } from "./update-last-seen-message.response";
-import { IUpdateParticipantLastSeenMessageUseCase } from "./update-last-seen-message.usecase";
+import { UpdateParticipantLastReceivedMessageRequest } from "./update-last-received-message.request";
+import { UpdateParticipantLastReceivedMessageResponse } from "./update-last-received-message.response";
+import { IUpdateParticipantLastReceivedMessageUseCase } from "./update-last-received-message.usecase";
 
 @injectable()
-export class UpdateParticipantLastSeenMessageUseCase
-  implements IUpdateParticipantLastSeenMessageUseCase
+export class UpdateParticipantLastReceivedMessageUseCase
+  implements IUpdateParticipantLastReceivedMessageUseCase
 {
   constructor(
     @inject(TYPES.ParticipantRepository)
@@ -28,13 +29,16 @@ export class UpdateParticipantLastSeenMessageUseCase
     @inject(TYPES.GetParticipantsByConversationIdUseCase)
     private getParticipantsByConversationIdUseCase: IGetParticipantsByConversationIdUseCase,
 
+    @inject(TYPES.MessagePublisher)
+    private messagePublisher: IMessageEventPublisher,
+
     @inject(TYPES.WinstonLogger)
     private logger: ILogger
   ) {}
 
   async execute(
-    request: UpdateParticipantLastSeenMessageRequest
-  ): Promise<UpdateParticipantLastSeenMessageResponse> {
+    request: UpdateParticipantLastReceivedMessageRequest
+  ): Promise<UpdateParticipantLastReceivedMessageResponse> {
     try {
       const { participantId, messageId, userId } = request;
 
@@ -67,11 +71,11 @@ export class UpdateParticipantLastSeenMessageUseCase
         };
       }
 
-      const isValidParticipant = participants.find(
+      const isValidPartcipant = participants.find(
         (participant) => participant.id === participantId
       );
 
-      if (!isValidParticipant) {
+      if (!isValidPartcipant) {
         this.logger.error("Participant does not exist.");
         return {
           data: null,
@@ -80,7 +84,7 @@ export class UpdateParticipantLastSeenMessageUseCase
       }
 
       const { value, error } =
-        await this.participantRepository.updateLastSeenMessage(
+        await this.participantRepository.updateLastReceivedMessage(
           messageId,
           participantId
         );
@@ -90,14 +94,23 @@ export class UpdateParticipantLastSeenMessageUseCase
         return { data: null, error: error.message };
       }
 
+      console.log(`value: `, value);
+
+      // Publish event to notify back to the client about the update
+      await this.messagePublisher.publishLastReceivedMessageUpdated({
+        messageId,
+        participantId,
+        conversationId: messageData.conversationId,
+      });
+
       return { data: value };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(
-        `[UpdateParticipantLastSeenMessageUseCase]: Error executing update last seen message use case: ${error.message}`
+        `[UpdateParticipantLastReceivedMessageUseCase]: Error executing update last received message use case: ${error.message}`
       );
       return {
         data: null,
-        error: `Error executing update last seen message use case: ${error.message}`,
+        error: `Error executing update last received message use case: ${error.message}`,
       };
     }
   }
