@@ -1,9 +1,6 @@
 import { IGetMessageByIdUseCase } from "@application/usecases/message";
 import { IMessageEventPublisher } from "@domain/events";
-import {
-  IMessageRepository,
-  IParticipantRepository,
-} from "@domain/repositories";
+import { IParticipantRepository } from "@domain/repositories";
 import { TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
@@ -19,9 +16,6 @@ export class UpdateParticipantLastReceivedMessageUseCase
   constructor(
     @inject(TYPES.ParticipantRepository)
     private participantRepository: IParticipantRepository,
-
-    @inject(TYPES.MessageRepository)
-    private messageRepository: IMessageRepository,
 
     @inject(TYPES.GetMessageByIdUseCase)
     private getMessageByIdUseCase: IGetMessageByIdUseCase,
@@ -93,8 +87,6 @@ export class UpdateParticipantLastReceivedMessageUseCase
         this.logger.error(error.message);
         return { data: null, error: error.message };
       }
-
-      console.log(`value: `, value);
 
       // Publish event to notify back to the client about the update
       await this.messagePublisher.publishLastReceivedMessageUpdated({
