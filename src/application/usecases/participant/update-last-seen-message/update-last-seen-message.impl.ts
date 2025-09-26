@@ -1,8 +1,5 @@
 import { IGetMessageByIdUseCase } from "@application/usecases/message";
-import {
-  IMessageRepository,
-  IParticipantRepository,
-} from "@domain/repositories";
+import { IParticipantRepository } from "@domain/repositories";
 import { TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
@@ -18,9 +15,6 @@ export class UpdateParticipantLastSeenMessageUseCase
   constructor(
     @inject(TYPES.ParticipantRepository)
     private participantRepository: IParticipantRepository,
-
-    @inject(TYPES.MessageRepository)
-    private messageRepository: IMessageRepository,
 
     @inject(TYPES.GetMessageByIdUseCase)
     private getMessageByIdUseCase: IGetMessageByIdUseCase,

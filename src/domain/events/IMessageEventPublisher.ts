@@ -1,4 +1,4 @@
-import { Conversation, Message } from "@domain/entities";
+import { Conversation, Message, Participant } from "@domain/entities";
 
 export type PublishMessageSentPayload = {
   message: Message;
@@ -9,10 +9,14 @@ export type PublishMessageSentPayload = {
   conversation: Conversation;
 };
 
-export type PublishMessageStatusUpdatedPayload = {
+export type PublishLastMessageReceivedPayload = {
   messageId: Message["id"];
-  status: Message["status"];
+  conversationId: Conversation["id"];
+  participantId: Participant["id"];
 };
+
+export type PublishLastMessageSeenPayload =
+  PublishLastMessageReceivedPayload & { lastSeenAt: Date };
 
 export type PublishMessageStatusErrorPayload = {
   status: Message["status"];
@@ -28,12 +32,22 @@ export interface IMessageEventPublisher {
   publishMessageSent(payload: PublishMessageSentPayload): Promise<void>;
 
   /**
-   * Publishes a message with new status to a conversation. This method is used to publish
-   * a message status update to all connected clients that are subscribed to the conversation.
-   * @param message The message to update.
-   * @returns A Promise that resolves when the message status has been published.
+   * Publishes an update to the received status of a message in a conversation. This method is used to publish
+   * the update to all connected clients that are subscribed to the conversation.
+   * @param payload The payload containing the message ID, conversation ID, and participant ID.
+   * @returns A Promise that resolves when the message has been published.
    */
-  publishMessageStatusUpdated(
-    payload: PublishMessageStatusUpdatedPayload
+  publishLastReceivedMessageUpdated(
+    payload: PublishLastMessageReceivedPayload
+  ): Promise<void>;
+
+  /**
+   * Publishes an update to the seen status of a message in a conversation. This method is used to publish
+   * the update to all connected clients that are subscribed to the conversation.
+   * @param payload The payload containing the message ID, conversation ID, and participant ID.
+   * @returns A Promise that resolves when the message has been published.
+   */
+  publishLastSeenMessageUpdated(
+    payload: PublishLastMessageSeenPayload
   ): Promise<void>;
 }

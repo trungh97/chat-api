@@ -68,4 +68,28 @@ export interface IParticipantRepository {
     userId: string,
     type: string
   ): Promise<RepositoryResponse<Participant, Error>>;
+
+  /**
+   * Updates the last seen message ID for a participant in a conversation.
+   *
+   * @param messageId - The unique identifier of the message that was last seen by the participant.
+   * @param participantId - The unique identifier of the participant.
+   * @returns A promise resolving to a participant response or an error.
+   */
+  updateLastSeenMessage(
+    messageId: string,
+    participantId: string
+  ): Promise<RepositoryResponse<IDetailedParticipantDTO, Error>>;
+
+  /**
+   * Updates the last received message ID for a participant in a conversation.
+   *
+   * @param messageId - The unique identifier of the message that was last received by the participant.
+   * @param participantId - The unique identifier of the participant.
+   * @returns A promise resolving to a participant response or an error.
+   */
+  updateLastReceivedMessage(
+    messageId: string,
+    participantId: string
+  ): Promise<RepositoryResponse<IDetailedParticipantDTO, Error>>;
 }

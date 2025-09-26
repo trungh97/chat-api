@@ -1,7 +1,8 @@
 import {
   IMessageEventPublisher,
   PublishMessageSentPayload,
-  PublishMessageStatusUpdatedPayload,
+  PublishLastMessageReceivedPayload,
+  PublishLastMessageSeenPayload,
 } from "@domain/events";
 import { TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
@@ -30,13 +31,25 @@ export class RedisMessagePublisher implements IMessageEventPublisher {
     }
   }
 
-  async publishMessageStatusUpdated(
-    payload: PublishMessageStatusUpdatedPayload
+  async publishLastReceivedMessageUpdated(
+    payload: PublishLastMessageReceivedPayload
   ): Promise<void> {
     try {
-      await pubSub.publish(Topic.MESSAGE_STATUS_UPDATED, payload);
+      await pubSub.publish(Topic.UPDATE_LAST_RECEIVED_MESSAGE, payload);
     } catch (error) {
-      this.logger.error(`Error publishing message status update: ${error}`);
+      this.logger.error(
+        `Error publishing last received message update: ${error}`
+      );
+    }
+  }
+
+  async publishLastSeenMessageUpdated(
+    payload: PublishLastMessageSeenPayload
+  ): Promise<void> {
+    try {
+      await pubSub.publish(Topic.UPDATE_LAST_SEEN_MESSAGE, payload);
+    } catch (error) {
+      this.logger.error(`Error publishing last seen message update: ${error}`);
     }
   }
 }

@@ -209,6 +209,15 @@ export class ParticipantPrismaRepository implements IParticipantRepository {
       const updatedParticipant = await this.prisma.participant.update({
         where: { id: participantId },
         data: { lastSeenMessageId: messageId, lastSeenAt: new Date() },
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+              avatar: true,
+            },
+          },
+        },
       });
 
       return {
@@ -238,6 +247,15 @@ export class ParticipantPrismaRepository implements IParticipantRepository {
       const updatedParticipant = await this.prisma.participant.update({
         where: { id: participantId },
         data: { lastReceivedMessageId: messageId },
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+              avatar: true,
+            },
+          },
+        },
       });
 
       return {

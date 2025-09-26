@@ -2,13 +2,13 @@
 export const TYPES = {
   // REPOSITORIES
   PostPrismaRepository: Symbol.for("PostPrismaRepository"),
-  UserPrismaRepository: Symbol.for("UserPrismaRepository"),
+  UserRepository: Symbol.for("UserRepository"),
   UserRedisRepository: Symbol.for("UserRedisRepository"),
-  ConversationPrismaRepository: Symbol.for("ConversationPrismaRepository"),
-  ContactPrismaRepository: Symbol.for("ContactPrismaRepository"),
-  FriendRequestPrismaRepository: Symbol.for("FriendRequestPrismaRepository"),
-  MessagePrismaRepository: Symbol.for("MessagePrismaRepository"),
-  ParticipantPrismaRepository: Symbol.for("ParticipantPrismaRepository"),
+  ConversationRepository: Symbol.for("ConversationRepository"),
+  ContactRepository: Symbol.for("ContactRepository"),
+  FriendRequestRepository: Symbol.for("FriendRequestRepository"),
+  MessageRepository: Symbol.for("MessageRepository"),
+  ParticipantRepository: Symbol.for("ParticipantRepository"),
 
   // PUBLISHERS
   MessagePublisher: Symbol.for("MessagePublisher"),
@@ -61,6 +61,7 @@ export const TYPES = {
     "GetLastMessageByConversationIdUseCase"
   ),
   UpdateMessageUseCase: Symbol.for("UpdateMessageUseCase"),
+  UpdateMessageStatusUseCase: Symbol.for("UpdateMessageStatusUseCase"),
   DeleteMessageUseCase: Symbol.for("DeleteMessageUseCase"),
   GetMessagesByConversationIdUseCase: Symbol.for(
     "GetMessagesByConversationIdUseCase"
@@ -68,6 +69,16 @@ export const TYPES = {
 
   /* Participant */
   AddParticipantAndNotifyUseCase: Symbol.for("AddParticipantAndNotifyUseCase"),
+  GetParticipantsByConversationIdUseCase: Symbol.for(
+    "GetParticipantsByConversationIdUseCase"
+  ),
+
+  UpdateParticipantLastSeenMessageUseCase: Symbol.for(
+    "UpdateParticipantLastSeenMessageUseCase"
+  ),
+  UpdateParticipantLastReceivedMessageUseCase: Symbol.for(
+    "UpdateParticipantLastReceivedMessageUseCase"
+  ),
 
   /* USE CASES DEFINITION - END */
 
@@ -79,4 +90,6 @@ export const TYPES = {
   WinstonLogger: Symbol.for("WinstonLogger"),
   RedisClient: Symbol.for("RedisClient"),
   OAuth2Client: Symbol.for("OAuth2Client"),
+  MessageQueue: Symbol.for("MessageQueue"),
+  MessageQueueWorker: Symbol.for("MessageQueueWorker"),
 };
