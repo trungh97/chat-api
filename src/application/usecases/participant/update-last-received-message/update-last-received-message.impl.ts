@@ -1,4 +1,3 @@
-import { IGetMessageByIdUseCase } from "@application/usecases/message";
 import { IMessageEventPublisher } from "@domain/events";
 import { IParticipantRepository } from "@domain/repositories";
 import { TYPES } from "@infrastructure/external/di/inversify";
@@ -17,9 +16,6 @@ export class UpdateParticipantLastReceivedMessageUseCase
     @inject(TYPES.ParticipantRepository)
     private participantRepository: IParticipantRepository,
 
-    @inject(TYPES.GetMessageByIdUseCase)
-    private getMessageByIdUseCase: IGetMessageByIdUseCase,
-
     @inject(TYPES.GetParticipantsByConversationIdUseCase)
     private getParticipantsByConversationIdUseCase: IGetParticipantsByConversationIdUseCase,
 
@@ -34,26 +30,11 @@ export class UpdateParticipantLastReceivedMessageUseCase
     request: UpdateParticipantLastReceivedMessageRequest
   ): Promise<UpdateParticipantLastReceivedMessageResponse> {
     try {
-      const { participantId, messageId, userId } = request;
-
-      const { data: messageData, error: messageError } =
-        await this.getMessageByIdUseCase.execute({
-          id: messageId,
-          userId,
-        });
-
-      if (!messageData || messageError) {
-        this.logger.error(messageError);
-        return {
-          data: null,
-          error:
-            "User does not have permission to update status of this message or message does not exist.",
-        };
-      }
+      const { participantId, messageId, userId, conversationId } = request;
 
       const { data: participants, error: participantsError } =
         await this.getParticipantsByConversationIdUseCase.execute({
-          conversationId: messageData.conversationId,
+          conversationId,
           currentUserId: userId,
         });
 
@@ -92,7 +73,7 @@ export class UpdateParticipantLastReceivedMessageUseCase
       await this.messagePublisher.publishLastReceivedMessageUpdated({
         messageId,
         participantId,
-        conversationId: messageData.conversationId,
+        conversationId,
       });
 
       return { data: value };
