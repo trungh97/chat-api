@@ -79,6 +79,9 @@ export const TYPES = {
   UpdateParticipantLastReceivedMessageUseCase: Symbol.for(
     "UpdateParticipantLastReceivedMessageUseCase"
   ),
+  BatchUpdateLastReceivedMessagesUseCase: Symbol.for(
+    "BatchUpdateLastReceivedMessagesUseCase"
+  ),
 
   /* USE CASES DEFINITION - END */
 

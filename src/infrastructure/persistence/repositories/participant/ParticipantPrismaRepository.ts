@@ -276,4 +276,41 @@ export class ParticipantPrismaRepository implements IParticipantRepository {
       };
     }
   }
+
+  /**
+   * Batch update lastReceivedMessageId for multiple participants using a Prisma transaction.
+   * @param updates Array of { participantId, messageId }
+   * @returns Promise<boolean> true if all updates succeed, false otherwise
+   */
+  async batchUpdateLastReceivedMessages(
+    updates: { participantId: string; messageId: string }[]
+  ): Promise<RepositoryResponse<boolean, Error>> {
+    if (!updates || updates.length === 0) return { value: true, error: null };
+
+    try {
+      await this.prisma.$transaction(
+        updates.map(({ participantId, messageId }) =>
+          this.prisma.participant.update({
+            where: { id: participantId },
+            data: { lastReceivedMessageId: messageId },
+          })
+        )
+      );
+      
+      return {
+        value: true,
+        error: null,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error batch updating last received messages: ${error.message}`
+      );
+      return {
+        value: false,
+        error: new Error(
+          `Error batch updating last received messages: ${error.message}`
+        ),
+      };
+    }
+  }
 }

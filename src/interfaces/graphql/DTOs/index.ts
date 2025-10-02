@@ -1,16 +1,16 @@
 export { ContactDTO } from "./ContactDTO";
-export { ExtendConversationDTO, ConversationDTO } from "./ConversationDTO";
+export { ConversationDTO, ExtendConversationDTO } from "./ConversationDTO";
 export { FriendRequestDTO } from "./FriendRequestDTO";
 export {
   MessageDTO,
-  MessageWithSenderDTO,
   MessageWithConversationDTO,
+  MessageWithSenderDTO,
 } from "./MessageDTO";
+export {
+  DetailedParticipantDTO,
+  LastReceivedMessageUpdateBodyDTO,
+  LastSeenMessageUpdateBodyDTO,
+  ParticipantDTO,
+} from "./ParticipantDTO";
 export { PostDTO } from "./PostDTO";
 export { UserDTO } from "./UserDTO";
-export {
-  ParticipantDTO,
-  DetailedParticipantDTO,
-  LastSeenMessageUpdateBodyDTO,
-  LastReceivedMessageUpdateBodyDTO,
-} from "./ParticipantDTO";

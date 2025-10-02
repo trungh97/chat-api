@@ -92,4 +92,14 @@ export interface IParticipantRepository {
     messageId: string,
     participantId: string
   ): Promise<RepositoryResponse<IDetailedParticipantDTO, Error>>;
+
+  /**
+   * Batch updates the last received message ID for multiple participants using a Prisma transaction.
+   *
+   * @param updates Array of { participantId, messageId }
+   * @returns Promise<boolean> true if all updates succeed, false otherwise
+   */
+  batchUpdateLastReceivedMessages(
+    updates: { participantId: string; messageId: string }[]
+  ): Promise<RepositoryResponse<boolean, Error>>;
 }

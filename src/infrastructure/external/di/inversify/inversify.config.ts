@@ -57,13 +57,15 @@ import {
 } from "@application/usecases/message";
 import {
   AddParticipantAndNotifyUseCase,
+  BatchUpdateLastReceivedMessagesUseCase,
   GetParticipantsByConversationIdUseCase,
   IAddingParticipantAndNotifyUseCase,
+  IBatchUpdateLastReceivedMessagesUseCase,
   IGetParticipantsByConversationIdUseCase,
-  IUpdateParticipantLastSeenMessageUseCase,
-  UpdateParticipantLastSeenMessageUseCase,
   IUpdateParticipantLastReceivedMessageUseCase,
+  IUpdateParticipantLastSeenMessageUseCase,
   UpdateParticipantLastReceivedMessageUseCase,
+  UpdateParticipantLastSeenMessageUseCase,
 } from "@application/usecases/participant";
 import {
   GetUserByIdUsecase,
@@ -259,6 +261,11 @@ container
     TYPES.UpdateParticipantLastReceivedMessageUseCase
   )
   .to(UpdateParticipantLastReceivedMessageUseCase);
+container
+  .bind<IBatchUpdateLastReceivedMessagesUseCase>(
+    TYPES.BatchUpdateLastReceivedMessagesUseCase
+  )
+  .to(BatchUpdateLastReceivedMessagesUseCase);
 
 /** -------------- CONTACT REPOSITORIES --------------- */
 container
