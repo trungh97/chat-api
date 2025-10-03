@@ -1,3 +1,4 @@
-export interface BatchUpdateLastReceivedMessagesRequest {
-  updates: { participantId: string; messageId: string }[];
-}
+export type BatchUpdateLastReceivedMessagesRequest = {
+  participantId: string;
+  messageId: string;
+}[];

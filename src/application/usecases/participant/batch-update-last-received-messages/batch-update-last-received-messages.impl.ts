@@ -4,6 +4,7 @@ import { inject, injectable } from "inversify";
 import { BatchUpdateLastReceivedMessagesRequest } from "./batch-update-last-received-messages.request";
 import { BatchUpdateLastReceivedMessagesResponse } from "./batch-update-last-received-messages.response";
 import { IBatchUpdateLastReceivedMessagesUseCase } from "./batch-update-last-received-messages.usecase";
+import { IMessageEventPublisher } from "@domain/events";
 
 @injectable()
 export class BatchUpdateLastReceivedMessagesUseCase
@@ -11,7 +12,10 @@ export class BatchUpdateLastReceivedMessagesUseCase
 {
   constructor(
     @inject(TYPES.ParticipantRepository)
-    private readonly participantRepository: IParticipantRepository
+    private readonly participantRepository: IParticipantRepository,
+
+    @inject(TYPES.MessagePublisher)
+    private messagePublisher: IMessageEventPublisher
   ) {}
 
   async execute(
@@ -20,7 +24,7 @@ export class BatchUpdateLastReceivedMessagesUseCase
     try {
       const { value, error } =
         await this.participantRepository.batchUpdateLastReceivedMessages(
-          request.updates
+          request
         );
 
       if (error || !value) {
@@ -30,6 +34,8 @@ export class BatchUpdateLastReceivedMessagesUseCase
             error?.message || "Error batch updating last received messages",
         };
       }
+
+      await this.messagePublisher.publishLastReceivedMessageUpdated(request);
 
       return { data: value };
     } catch (error) {
