@@ -70,11 +70,12 @@ export class UpdateParticipantLastReceivedMessageUseCase
       }
 
       // Publish event to notify back to the client about the update
-      await this.messagePublisher.publishLastReceivedMessageUpdated({
-        messageId,
-        participantId,
-        conversationId,
-      });
+      await this.messagePublisher.publishLastReceivedMessageUpdated([
+        {
+          messageId,
+          participantId,
+        },
+      ]);
 
       return { data: value };
     } catch (error: any) {

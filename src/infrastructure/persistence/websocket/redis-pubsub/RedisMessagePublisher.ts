@@ -32,7 +32,7 @@ export class RedisMessagePublisher implements IMessageEventPublisher {
   }
 
   async publishLastReceivedMessageUpdated(
-    payload: PublishLastMessageReceivedPayload
+    payload: PublishLastMessageReceivedPayload[]
   ): Promise<void> {
     try {
       await pubSub.publish(Topic.UPDATE_LAST_RECEIVED_MESSAGE, payload);

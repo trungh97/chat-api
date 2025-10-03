@@ -46,9 +46,6 @@ export class LastReceivedMessageUpdateBodyDTO {
 
   @Field(() => String)
   messageId: string;
-
-  @Field(() => String)
-  conversationId: string;
 }
 
 @ObjectType()

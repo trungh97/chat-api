@@ -37,6 +37,6 @@ export class MessageWithConversation extends Message {
 
 export type PubSubProps = {
   [Topic.NEW_MESSAGE_SENT]: [MessageWithConversation];
-  [Topic.UPDATE_LAST_RECEIVED_MESSAGE]: [PublishLastMessageReceivedPayload];
+  [Topic.UPDATE_LAST_RECEIVED_MESSAGE]: [PublishLastMessageReceivedPayload[]];
   [Topic.UPDATE_LAST_SEEN_MESSAGE]: [PublishLastMessageSeenPayload];
 };

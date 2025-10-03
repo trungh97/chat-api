@@ -11,7 +11,6 @@ export type PublishMessageSentPayload = {
 
 export type PublishLastMessageReceivedPayload = {
   messageId: Message["id"];
-  conversationId: Conversation["id"];
   participantId: Participant["id"];
 };
 
@@ -38,7 +37,7 @@ export interface IMessageEventPublisher {
    * @returns A Promise that resolves when the message has been published.
    */
   publishLastReceivedMessageUpdated(
-    payload: PublishLastMessageReceivedPayload
+    payload: PublishLastMessageReceivedPayload[]
   ): Promise<void>;
 
   /**

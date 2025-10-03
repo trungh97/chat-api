@@ -201,13 +201,14 @@ export class ParticipantResolver {
   @Mutation(() => BatchUpdateResponse)
   @UseMiddleware(isAuth)
   async batchUpdateLastReceivedMessages(
-    @Arg("updates", () => [BatchUpdateLastReceivedMessageRequest])
-    updates: BatchUpdateLastReceivedMessagesRequest,
+    @Arg("request", () => [BatchUpdateLastReceivedMessageRequest])
+    request: BatchUpdateLastReceivedMessagesRequest,
     @Ctx() ctx: Context
-  ) {
+  ): Promise<BatchUpdateResponse> {
     try {
+      console.log(request);
       const result = await this.batchUpdateLastReceivedMessagesUseCase.execute(
-        updates
+        request
       );
 
       if (result.error || !result.data) {
@@ -236,12 +237,12 @@ export class ParticipantResolver {
       };
     }
   }
-  @Subscription(() => LastReceivedMessageUpdateBodyDTO, {
+  @Subscription(() => [LastReceivedMessageUpdateBodyDTO], {
     topics: Topic.UPDATE_LAST_RECEIVED_MESSAGE,
   })
   updateLastReceivedMessageSubscription(
-    @Root() payload: PublishLastMessageReceivedPayload
-  ): LastReceivedMessageUpdateBodyDTO {
+    @Root() payload: PublishLastMessageReceivedPayload[]
+  ): LastReceivedMessageUpdateBodyDTO[] {
     try {
       return payload;
     } catch (error) {
