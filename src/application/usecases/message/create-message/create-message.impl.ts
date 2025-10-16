@@ -123,6 +123,7 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
 
       // Update the field `lastMessage` in the conversation.
       currentConversation.lastMessageAt = response.value.createdAt;
+      currentConversation.lastMessageId = response.value.id;
 
       const { error: updateError } =
         await this.conversationRepository.updateConversation(

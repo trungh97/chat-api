@@ -6,3 +6,4 @@ export * from "./update-participant-type";
 export * from "./update-last-seen-message";
 export * from "./update-last-received-message";
 export * from "./batch-update-last-received-messages";
+export * from "./find-and-batch-update-last-received-message";

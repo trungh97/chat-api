@@ -21,6 +21,7 @@ export class ConversationUseCaseMapper {
       type: entity.type,
       groupAvatar: entity.groupAvatar,
       lastMessageAt: entity.lastMessageAt,
+      lastMessageId: entity.lastMessageId,
       defaultGroupAvatars,
     };
   }
