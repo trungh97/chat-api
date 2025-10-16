@@ -56,7 +56,18 @@ const main = async () => {
     path: "/graphql",
   });
 
-  const serverCleanUp = useServer({ schema }, webSocketServer);
+  const serverCleanUp = useServer(
+    {
+      schema,
+      onConnect: (ctx) => {
+        // console.log("Client connected for websocket: ", ctx);
+      },
+      onDisconnect(ctx) {
+        // console.log("Client disconnected from websocket: ", ctx);
+      },
+    },
+    webSocketServer
+  );
 
   const server = new ApolloServer<Context>({
     schema,
