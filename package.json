@@ -11,6 +11,7 @@
     "coverage": "jest --coverage",
     "dev": "tsx watch src/index.ts",
     "migrate:dev": "npx prisma migrate dev",
+    "sql-generate": "npx prisma generate --sql",
     "seed": "ts-node prisma/seed.ts",
     "prepare": "husky"
   },
