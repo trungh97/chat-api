@@ -44,15 +44,12 @@ export class FindAndBatchUpdateLastReceivedMessageUseCase
         };
       }
       const behindConversations = behindConversationsResp.value;
-      console.log(behindConversations)
 
       // Convert to batch update request format
-      const updates = behindConversations.map((conv: any) => ({
-        participantId: conv.id,
-        messageId: conv.last_message_id,
+      const updates = behindConversations.map((conv) => ({
+        participantId: conv.participantId,
+        messageId: conv.lastMessageId,
       }));
-
-      console.log("updates: ", updates)
 
       // Call batch update use-case
       const batchUpdateResp =

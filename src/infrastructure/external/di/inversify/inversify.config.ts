@@ -58,9 +58,11 @@ import {
 import {
   AddParticipantAndNotifyUseCase,
   BatchUpdateLastReceivedMessagesUseCase,
+  FindAndBatchUpdateLastReceivedMessageUseCase,
   GetParticipantsByConversationIdUseCase,
   IAddingParticipantAndNotifyUseCase,
   IBatchUpdateLastReceivedMessagesUseCase,
+  IFindAndBatchUpdateLastReceivedMessageUseCase,
   IGetParticipantsByConversationIdUseCase,
   IUpdateParticipantLastReceivedMessageUseCase,
   IUpdateParticipantLastSeenMessageUseCase,
@@ -266,6 +268,11 @@ container
     TYPES.BatchUpdateLastReceivedMessagesUseCase
   )
   .to(BatchUpdateLastReceivedMessagesUseCase);
+container
+  .bind<IFindAndBatchUpdateLastReceivedMessageUseCase>(
+    TYPES.FindAndBatchUpdateLastReceivedMessageUseCase
+  )
+  .to(FindAndBatchUpdateLastReceivedMessageUseCase);
 
 /** -------------- CONTACT REPOSITORIES --------------- */
 container
@@ -306,3 +313,4 @@ container
   .to(ConversationTitleService);
 
 export { container };
+

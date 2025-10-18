@@ -57,4 +57,15 @@ export interface IConversationRepository {
    * @returns A promise resolving to a boolean indicating success of the operation.
    */
   deleteConversation(id: string): Promise<RepositoryResponse<boolean, Error>>;
+
+  /**
+   * Fetches all conversations that a user has not received the latest message.
+   * @param userId - The unique identifier of the user.
+   * @returns A promise resolving to an array of conversations.
+   */
+  findBehindConversations(
+    userId: string
+  ): Promise<
+    RepositoryResponse<(Conversation & { participantId: string })[], Error>
+  >;
 }
