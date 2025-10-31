@@ -21,6 +21,11 @@ export type PublishMessageStatusErrorPayload = {
   status: Message["status"];
 };
 
+export type PublishPresenseUpdatePayload = {
+  userId: string;
+  isOnline: boolean;
+};
+
 export interface IMessageEventPublisher {
   /**
    * Publishes a new message with status `SENT` to a conversation. This method is used to publish
@@ -49,4 +54,6 @@ export interface IMessageEventPublisher {
   publishLastSeenMessageUpdated(
     payload: PublishLastMessageSeenPayload
   ): Promise<void>;
+
+  publishPresenseUpdate(payload: PublishPresenseUpdatePayload): Promise<void>;
 }

@@ -72,19 +72,15 @@ import {
 import {
   GetUserByIdUsecase,
   IGetUserByIdUsecase,
-} from "@application/usecases/user";
-import {
+  IUpdateUserPresenseUseCase,
+  UpdateUserPresenseUseCase,
   ILoginCredentialBasedUserUseCase,
   LoginCredentialBasedUserUseCase,
-} from "@application/usecases/user/credential-based/login-user";
-import {
   IRegisterCredentialBasedUserUseCase,
   RegisterCredentialBasedUserUseCase,
-} from "@application/usecases/user/credential-based/register-user";
-import {
   ILoginGoogleUserUseCase,
   LoginGoogleUserUseCase,
-} from "@application/usecases/user/federated-credential/login-google-user";
+} from "@application/usecases/user";
 import { IMessageEventPublisher } from "@domain/events";
 import { IMessageQueueProducer } from "@domain/queue";
 import {
@@ -118,12 +114,13 @@ import {
 } from "@infrastructure/persistence/repositories/user/UserRedisRepository";
 import { RedisMessagePublisher } from "@infrastructure/persistence/websocket/redis-pubsub";
 import { ILogger, WinstonLogger } from "@shared/logger";
+import type { RedisClientType } from "redis";
 
 const container = new Container();
 
 container.bind<PrismaClient>(TYPES.PrismaClient).toConstantValue(prismaClient);
 
-container.bind(TYPES.RedisClient).toConstantValue(redisClient);
+container.bind<RedisClientType>(TYPES.RedisClient).toConstantValue(redisClient);
 
 container.bind(TYPES.OAuth2Client).toConstantValue(googleOAuth2Client);
 
@@ -153,6 +150,9 @@ container
 container
   .bind<ILoginCredentialBasedUserUseCase>(TYPES.LoginCredentialBasedUserUseCase)
   .to(LoginCredentialBasedUserUseCase);
+container
+  .bind<IUpdateUserPresenseUseCase>(TYPES.UpdateUserPresenseUseCase)
+  .to(UpdateUserPresenseUseCase);
 
 /** -------------- CONVERSATION REPOSITORIES --------------- */
 container
@@ -313,4 +313,3 @@ container
   .to(ConversationTitleService);
 
 export { container };
-

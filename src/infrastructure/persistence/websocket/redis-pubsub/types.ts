@@ -2,6 +2,7 @@ import { Conversation, Message } from "@domain/entities";
 import {
   PublishLastMessageReceivedPayload,
   PublishLastMessageSeenPayload,
+  PublishPresenseUpdatePayload,
 } from "@domain/events";
 import { Topic } from "./topics";
 
@@ -39,4 +40,5 @@ export type PubSubProps = {
   [Topic.NEW_MESSAGE_SENT]: [MessageWithConversation];
   [Topic.UPDATE_LAST_RECEIVED_MESSAGE]: [PublishLastMessageReceivedPayload[]];
   [Topic.UPDATE_LAST_SEEN_MESSAGE]: [PublishLastMessageSeenPayload];
+  [Topic.PRESENSE_UPDATE]: [PublishPresenseUpdatePayload];
 };

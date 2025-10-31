@@ -25,6 +25,7 @@ export const TYPES = {
   GetUserByIdUseCase: Symbol.for("GetUserByIdUseCase"),
   LoginGoogleUserUseCase: Symbol.for("LoginGoogleUserUseCase"),
   LoginCredentialBasedUserUseCase: Symbol.for("LoginUserUseCase"),
+  UpdateUserPresenseUseCase: Symbol.for("UpdateUserPresenseUseCase"),
 
   /* Conversation */
   GetMyConversationsUseCase: Symbol.for("GetMyConversationsUseCase"),
