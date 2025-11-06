@@ -3,6 +3,7 @@ import "reflect-metadata";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import { IUpdateUserPresenseUseCase } from "@application/usecases/user";
 import config from "@config/config";
 import { container, TYPES } from "@infrastructure/external/di/inversify";
 import { redisClient } from "@infrastructure/persistence/databases/redis/connection";
@@ -51,19 +52,80 @@ const main = async () => {
     pubSub,
   });
 
+  // Initialize Redis Store
+  const redisStore = new RedisStore({
+    client: redisClient,
+    prefix: "chat:",
+  });
+
+  const sessionMiddleware = session({
+    name: COOKIE_NAME,
+    store: redisStore,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24 * 30,
+      httpOnly: true,
+      sameSite: "lax",
+      secure: __prod__,
+    },
+    saveUninitialized: false,
+    secret: config.cache.redis.secret,
+    resave: false,
+  });
+
+  // Initialize Session Storage
+  app.use(sessionMiddleware);
+
   const webSocketServer = new WebSocketServer({
-    server: httpServer,
+    noServer: true,
+    // server: httpServer,
     path: "/graphql",
   });
+
+  // when a client makes websocket handshake (upgrade)
+  httpServer.on("upgrade", (req, socket, head) => {
+    sessionMiddleware(req as any, {} as any, () => {
+      if (!req.headers.cookie.includes(COOKIE_NAME)) {
+        socket.destroy();
+        return;
+      }
+
+      webSocketServer.handleUpgrade(req, socket, head, (ws) => {
+        webSocketServer.emit("connection", ws, req);
+      });
+    });
+  });
+
+  const updateUserPresenseUseCase = container.get<IUpdateUserPresenseUseCase>(
+    TYPES.UpdateUserPresenseUseCase
+  );
 
   const serverCleanUp = useServer(
     {
       schema,
-      onConnect: (ctx) => {
-        // console.log("Client connected for websocket: ", ctx);
+      context: (ctx) => {
+        const req = ctx.extra.request as express.Request;
+        return { req };
+      },
+      onConnect: async (ctx) => {
+        console.log("✅ connected");
+        const req = ctx.extra.request as express.Request;
+        const { userId } = req.session;
+        if (userId && typeof userId === "string") {
+          await updateUserPresenseUseCase.execute({
+            userId,
+            isOnline: true,
+          });
+        }
       },
       onDisconnect(ctx) {
-        // console.log("Client disconnected from websocket: ", ctx);
+        console.log("🔴 disconnected");
+        const { userId } = ctx.connectionParams;
+        if (userId && typeof userId === "string") {
+          updateUserPresenseUseCase.execute({
+            userId,
+            isOnline: false,
+          });
+        }
       },
     },
     webSocketServer
@@ -87,29 +149,6 @@ const main = async () => {
   await server.start();
 
   await redisClient.connect().catch((error) => console.error(error));
-
-  // Initialize Redis Store
-  const redisStore = new RedisStore({
-    client: redisClient,
-    prefix: "chat:",
-  });
-
-  // Initialize Session Storage
-  app.use(
-    session({
-      name: COOKIE_NAME,
-      store: redisStore,
-      cookie: {
-        maxAge: 1000 * 60 * 60 * 24 * 30,
-        httpOnly: true,
-        sameSite: "lax",
-        secure: __prod__,
-      },
-      saveUninitialized: false,
-      secret: config.cache.redis.secret,
-      resave: false,
-    })
-  );
 
   app.use(
     "/graphql",
