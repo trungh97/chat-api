@@ -80,6 +80,8 @@ import {
   RegisterCredentialBasedUserUseCase,
   ILoginGoogleUserUseCase,
   LoginGoogleUserUseCase,
+  IHeartbeatUserPresenseUseCase,
+  HeartbeatUserPresenseUseCase,
 } from "@application/usecases/user";
 import { IMessageEventPublisher } from "@domain/events";
 import { IMessageQueueProducer } from "@domain/queue";
@@ -153,6 +155,9 @@ container
 container
   .bind<IUpdateUserPresenseUseCase>(TYPES.UpdateUserPresenseUseCase)
   .to(UpdateUserPresenseUseCase);
+container
+  .bind<IHeartbeatUserPresenseUseCase>(TYPES.HeartbeatUserPresenseUseCase)
+  .to(HeartbeatUserPresenseUseCase);
 
 /** -------------- CONVERSATION REPOSITORIES --------------- */
 container

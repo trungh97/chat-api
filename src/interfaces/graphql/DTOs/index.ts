@@ -13,4 +13,4 @@ export {
   ParticipantDTO,
 } from "./ParticipantDTO";
 export { PostDTO } from "./PostDTO";
-export { UserDTO } from "./UserDTO";
+export { UserDTO, UserPresenceDTO } from "./UserDTO";
