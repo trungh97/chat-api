@@ -29,14 +29,23 @@ export class HeartbeatUserPresenseUseCase
   ): Promise<HeartbeatUserPresenseResponse> {
     try {
       const { userId } = request;
-      await this.redisClient.hSet(`user-presence:${userId}`, {
-        userId,
-        isOnline: "true",
-        lastSeenAt: new Date().toISOString(),
-      });
+      const key = `user-presence:${userId}`;
+      const exists = await this.redisClient.exists(key);
+
+      if (!!exists) {
+        await this.redisClient.hSet(key, {
+          lastSeenAt: new Date().toISOString(),
+        });
+      } else {
+        await this.redisClient.hSet(key, {
+          userId,
+          isOnline: "true",
+          lastSeenAt: new Date().toISOString(),
+        });
+      }
 
       this.redisClient
-        .expire(`user-presence:${userId}`, DEFAULT_TTL)
+        .expire(key, DEFAULT_TTL)
         .then((isExpired) => {
           if (!isExpired) {
             this.messagePublisher.publishPresenseUpdate({

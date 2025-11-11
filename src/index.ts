@@ -119,7 +119,8 @@ const main = async () => {
       },
       onDisconnect(ctx) {
         console.log("🔴 disconnected");
-        const { userId } = ctx.connectionParams;
+        const req = ctx.extra.request as express.Request;
+        const { userId } = req.session;
         if (userId && typeof userId === "string") {
           updateUserPresenseUseCase.execute({
             userId,
