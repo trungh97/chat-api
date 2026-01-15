@@ -8,7 +8,7 @@ import { IDeleteFriendRequestUseCase } from "./delete-friend-request.usecase";
 @injectable()
 export class DeleteFriendRequestUseCase implements IDeleteFriendRequestUseCase {
   constructor(
-    @inject(TYPES.FriendRequestPrismaRepository)
+    @inject(TYPES.FriendRequestRepository)
     private friendRequestRepository: IFriendRequestRepository,
 
     @inject(TYPES.WinstonLogger)

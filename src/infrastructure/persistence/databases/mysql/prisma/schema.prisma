@@ -6,6 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["typedSql"]
 }
 
 datasource db {
@@ -52,6 +53,14 @@ enum FriendRequestStatus {
 enum ConversationType {
   PRIVATE
   GROUP
+}
+
+enum MessageStatus {
+  SENDING
+  SENT
+  DELIVERED
+  SEEN
+  ERROR
 }
 
 // Models
@@ -114,16 +123,17 @@ model CredentialBasedAuth {
 }
 
 model Message {
-  id               String       @id @default(uuid())
-  senderId         String?      @map("sender_id") @db.VarChar(255)
-  conversationId   String       @map("conversation_id")
-  messageType      MessageType? @map("message_type") // Enum for text, image, video, file
-  replyToMessageId String?      @map("reply_to_message_id")
-  content          String?      @db.LongText
+  id               String         @id @default(uuid())
+  senderId         String?        @map("sender_id") @db.VarChar(255)
+  conversationId   String         @map("conversation_id")
+  messageType      MessageType?   @map("message_type") // Enum for text, image, video, file
+  replyToMessageId String?        @map("reply_to_message_id")
+  content          String?        @db.LongText
   extra            Json?
-  createdAt        DateTime     @default(now()) @map("created_at")
-  updatedAt        DateTime     @updatedAt @map("updated_at")
-  deletedAt        DateTime?    @map("deleted_at")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+  deletedAt        DateTime?      @map("deleted_at")
+  status           MessageStatus? @map("status")
 
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender         User?        @relation("Sender", fields: [senderId], references: [id])
@@ -145,6 +155,7 @@ model Conversation {
   type          ConversationType @default(PRIVATE) @map("type")
   groupAvatar   String?          @map("group_avatar")
   lastMessageAt DateTime?        @map("last_message_at")
+  lastMessageId String?          @map("last_message_id")
 
   creator User @relation("Creator", fields: [creatorId], references: [id])
 
@@ -156,13 +167,16 @@ model Conversation {
 }
 
 model Participant {
-  id             String           @id @default(uuid())
-  conversationId String           @map("conversation_id")
-  userId         String           @map("user_id")
-  type           ParticipantType? // Enum for admin, member
-  customTitle    String?          @map("custom_title") // <--- Title visible to *this* participant only
-  createdAt      DateTime         @default(now()) @map("created_at")
-  updatedAt      DateTime         @updatedAt @map("updated_at")
+  id                    String           @id @default(uuid())
+  conversationId        String           @map("conversation_id")
+  userId                String           @map("user_id")
+  type                  ParticipantType? // Enum for admin, member
+  customTitle           String?          @map("custom_title") // <--- Title visible to *this* participant only
+  createdAt             DateTime         @default(now()) @map("created_at")
+  updatedAt             DateTime         @updatedAt @map("updated_at")
+  lastSeenAt            DateTime?        @map("last_seen_at")
+  lastSeenMessageId     String?          @map("last_seen_message_id")
+  lastReceivedMessageId String?          @map("last_received_message_id")
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   user         User         @relation(fields: [userId], references: [id])

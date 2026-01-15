@@ -11,6 +11,7 @@ describe("UpdateMessageUseCase", () => {
     messageRepository = {
       getMessageById: jest.fn(),
       updateMessage: jest.fn(),
+      updateMessageStatus: jest.fn(),
       deleteMessage: jest.fn(),
       createMessage: jest.fn(),
       getLastMessageByConversationId: jest.fn(),
@@ -19,12 +20,6 @@ describe("UpdateMessageUseCase", () => {
     logger = { error: jest.fn() };
     useCase = new UpdateMessageUseCase(messageRepository, logger);
   });
-
-  // it("returns error if id or content missing", async () => {
-  //   const result = await useCase.execute({ id: "", updates: {}, userId: "u1" });
-  //   expect(result.data).toBeNull();
-  //   expect(result.error).toMatch(/required/);
-  // });
 
   it("returns error if message not found", async () => {
     (messageRepository.getMessageById as jest.Mock).mockResolvedValue({

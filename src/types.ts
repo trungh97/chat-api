@@ -1,4 +1,3 @@
-import { User } from "@domain/entities";
 import { Request, Response } from "express";
 import session from "express-session";
 

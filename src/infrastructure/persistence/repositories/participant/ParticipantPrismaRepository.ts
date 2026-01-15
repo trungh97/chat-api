@@ -200,4 +200,117 @@ export class ParticipantPrismaRepository implements IParticipantRepository {
       };
     }
   }
+
+  async updateLastSeenMessage(
+    messageId: string,
+    participantId: string
+  ): Promise<RepositoryResponse<IDetailedParticipantDTO, Error>> {
+    try {
+      const updatedParticipant = await this.prisma.participant.update({
+        where: { id: participantId },
+        data: { lastSeenMessageId: messageId, lastSeenAt: new Date() },
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+              avatar: true,
+            },
+          },
+        },
+      });
+
+      return {
+        value:
+          ParticipantPrismaMapper.fromPrismaModelToDetailDTO(
+            updatedParticipant
+          ),
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error updating last seen message for participant ${participantId}: ${error.message}`
+      );
+      return {
+        value: null,
+        error: new Error(
+          `Error updating last seen message for participant ${participantId}: ${error.message}`
+        ),
+      };
+    }
+  }
+
+  async updateLastReceivedMessage(
+    messageId: string,
+    participantId: string
+  ): Promise<RepositoryResponse<IDetailedParticipantDTO, Error>> {
+    try {
+      const updatedParticipant = await this.prisma.participant.update({
+        where: { id: participantId },
+        data: { lastReceivedMessageId: messageId },
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+              avatar: true,
+            },
+          },
+        },
+      });
+
+      return {
+        value:
+          ParticipantPrismaMapper.fromPrismaModelToDetailDTO(
+            updatedParticipant
+          ),
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error updating last received message for participant ${participantId}: ${error.message}`
+      );
+      return {
+        value: null,
+        error: new Error(
+          `Error updating last received message for participant ${participantId}: ${error.message}`
+        ),
+      };
+    }
+  }
+
+  /**
+   * Batch update lastReceivedMessageId for multiple participants using a Prisma transaction.
+   * @param updates Array of { participantId, messageId }
+   * @returns Promise<boolean> true if all updates succeed, false otherwise
+   */
+  async batchUpdateLastReceivedMessages(
+    updates: { participantId: string; messageId: string }[]
+  ): Promise<RepositoryResponse<boolean, Error>> {
+    if (!updates || updates.length === 0) return { value: true, error: null };
+
+    try {
+      await this.prisma.$transaction(
+        updates.map(({ participantId, messageId }) =>
+          this.prisma.participant.update({
+            where: { id: participantId },
+            data: { lastReceivedMessageId: messageId },
+          })
+        )
+      );
+      
+      return {
+        value: true,
+        error: null,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error batch updating last received messages: ${error.message}`
+      );
+      return {
+        value: false,
+        error: new Error(
+          `Error batch updating last received messages: ${error.message}`
+        ),
+      };
+    }
+  }
 }

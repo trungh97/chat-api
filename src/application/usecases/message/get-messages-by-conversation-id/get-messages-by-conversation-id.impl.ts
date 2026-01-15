@@ -13,10 +13,10 @@ import { PAGE_LIMIT } from "@shared/constants";
 @injectable()
 export class GetMessagesByConversationIdUseCase {
   constructor(
-    @inject(TYPES.MessagePrismaRepository)
+    @inject(TYPES.MessageRepository)
     private messageRepository: IMessageRepository,
 
-    @inject(TYPES.ConversationPrismaRepository)
+    @inject(TYPES.ConversationRepository)
     private conversationRepository: IConversationRepository,
 
     @inject(TYPES.WinstonLogger) private logger: ILogger

@@ -3,7 +3,7 @@ import {
   IMessageWithSenderUseCaseDTO,
 } from "@application/usecases/message";
 import { Message } from "@domain/entities";
-import { MessageWithConversation } from "@infrastructure/persistence/websocket";
+import { MessageWithConversation } from "@infrastructure/persistence/websocket/redis-pubsub";
 import {
   MessageDTO,
   MessageWithConversationDTO,

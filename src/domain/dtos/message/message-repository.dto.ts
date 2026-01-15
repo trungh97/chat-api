@@ -1,4 +1,4 @@
-import { MessageType } from "@domain/enums";
+import { MessageStatus, MessageType } from "@domain/enums";
 
 export interface IDetailedMessageRepositoryDTO {
   id: string;
@@ -14,4 +14,5 @@ export interface IDetailedMessageRepositoryDTO {
   replyToMessageId?: string;
   createdAt: Date;
   conversationId: string;
+  status: keyof typeof MessageStatus;
 }

@@ -1,4 +1,4 @@
-import { Participant } from "@domain/entities";
+import { IDetailedParticipantDTO } from "@domain/dtos";
 import { UseCaseResponse } from "@shared/responses";
 
-export type AddParticipantAndNotifyResponse = UseCaseResponse<Participant>;
+export type AddParticipantAndNotifyResponse = UseCaseResponse<IDetailedParticipantDTO>;

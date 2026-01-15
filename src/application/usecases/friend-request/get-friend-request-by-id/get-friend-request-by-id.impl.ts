@@ -14,7 +14,7 @@ export class GetFriendRequestByIdUseCase
   implements IGetFriendRequestByIdUseCase
 {
   constructor(
-    @inject(TYPES.FriendRequestPrismaRepository)
+    @inject(TYPES.FriendRequestRepository)
     private friendRequestRepository: IFriendRequestRepository,
 
     @inject(TYPES.WinstonLogger)

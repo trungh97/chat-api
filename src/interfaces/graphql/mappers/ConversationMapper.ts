@@ -42,6 +42,7 @@ export class ConversationMapper {
       type,
       groupAvatar,
       lastMessageAt,
+      lastMessageId,
     } = conversationDTO;
     return new Conversation({
       id,
@@ -52,6 +53,7 @@ export class ConversationMapper {
       isArchived,
       type,
       lastMessageAt,
+      lastMessageId,
     });
   }
 }

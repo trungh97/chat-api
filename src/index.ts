@@ -4,9 +4,10 @@ import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import config from "@config/config";
+import { container, TYPES } from "@infrastructure/external/di/inversify";
 import { redisClient } from "@infrastructure/persistence/databases/redis/connection";
 import { setupAllSchedulers } from "@infrastructure/persistence/scheduler";
-import { pubSub } from "@infrastructure/persistence/websocket/connection";
+import { pubSub } from "@infrastructure/persistence/websocket/redis-pubsub/connection";
 import {
   ContactResolver,
   ConversationResolver,
@@ -55,7 +56,18 @@ const main = async () => {
     path: "/graphql",
   });
 
-  const serverCleanUp = useServer({ schema }, webSocketServer);
+  const serverCleanUp = useServer(
+    {
+      schema,
+      onConnect: (ctx) => {
+        // console.log("Client connected for websocket: ", ctx);
+      },
+      onDisconnect(ctx) {
+        // console.log("Client disconnected from websocket: ", ctx);
+      },
+    },
+    webSocketServer
+  );
 
   const server = new ApolloServer<Context>({
     schema,
@@ -113,6 +125,8 @@ const main = async () => {
 
   // Setup cron jobs (background jobs)
   setupAllSchedulers();
+
+  container.get(TYPES.MessageQueueWorker);
 
   await new Promise<void>(() =>
     httpServer.listen({ port }, () => {

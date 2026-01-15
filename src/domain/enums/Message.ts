@@ -10,3 +10,11 @@ export enum SystemMessageType {
   PARTICIPANT_JOINED = "PARTICIPANT_JOINED",
   PARTICIPANT_LEFT = "PARTICIPANT_LEFT",
 }
+
+export enum MessageStatus {
+  SENDING = "SENDING",
+  SENT = "SENT",
+  DELIVERED = "DELIVERED",
+  SEEN = "SEEN",
+  ERROR = "ERROR",
+}

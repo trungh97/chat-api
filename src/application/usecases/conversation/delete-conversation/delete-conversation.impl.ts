@@ -8,7 +8,7 @@ import { IDeleteConversationUsecase } from "./delete-conversation.usecase";
 @injectable()
 export class DeleteConversationUseCase implements IDeleteConversationUsecase {
   constructor(
-    @inject(TYPES.ConversationPrismaRepository)
+    @inject(TYPES.ConversationRepository)
     private conversationRepository: IConversationRepository,
     @inject(TYPES.WinstonLogger) private logger: ILogger
   ) {}
