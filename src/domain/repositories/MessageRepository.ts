@@ -1,5 +1,6 @@
 import { IDetailedMessageRepositoryDTO } from "@domain/dtos";
 import { Message } from "@domain/entities";
+import { MessageStatus } from "@domain/enums";
 import { ICursorBasedPaginationResponse } from "@domain/interfaces/pagination/CursorBasedPagination";
 import { RepositoryResponse } from "@shared/responses";
 
@@ -25,6 +26,18 @@ export interface IMessageRepository {
   ): Promise<RepositoryResponse<IDetailedMessageRepositoryDTO, Error>>;
 
   /**
+   * Retrieves a message by the id its sender's client generated for it.
+   *
+   * @param {string} senderId - The ID of the user who sent the message.
+   * @param {string} clientMessageId - The client-generated message ID.
+   * @returns {Promise<RepositoryResponse<IDetailedMessageRepositoryDTO | null, Error>>} The message, or `null` if none exists.
+   */
+  getMessageByClientMessageId(
+    senderId: string,
+    clientMessageId: string
+  ): Promise<RepositoryResponse<IDetailedMessageRepositoryDTO | null, Error>>;
+
+  /**
    * Updates an existing message.
    *
    * @param {string} id - The ID of the message to update.
@@ -34,6 +47,18 @@ export interface IMessageRepository {
   updateMessage(
     id: string,
     updates: Partial<Message>
+  ): Promise<RepositoryResponse<IDetailedMessageRepositoryDTO, Error>>;
+
+  /**
+   * Updates the status of a message.
+   *
+   * @param {string} id - The ID of the message to update.
+   * @param {MessageStatus} status - The new status of the message.
+   * @returns {Promise<RepositoryResponse<IDetailedMessageRepositoryDTO, Error>>} The response object.
+   */
+  updateMessageStatus(
+    id: string,
+    status: keyof typeof MessageStatus
   ): Promise<RepositoryResponse<IDetailedMessageRepositoryDTO, Error>>;
 
   /**

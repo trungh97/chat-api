@@ -10,7 +10,7 @@ import { IGetMessageByIdUseCase } from "./get-message-by-id.usecase";
 @injectable()
 export class GetMessageByIdUseCase implements IGetMessageByIdUseCase {
   constructor(
-    @inject(TYPES.MessagePrismaRepository)
+    @inject(TYPES.MessageRepository)
     private readonly messageRepository: IMessageRepository,
 
     @inject(TYPES.WinstonLogger)

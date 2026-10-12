@@ -8,7 +8,8 @@ import {
 import { IConversationRepository } from "@domain/repositories";
 import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { ConversationPrismaMapper } from "@infrastructure/persistence/mappers";
-import { PrismaClient } from "@prisma/client";
+import { ConversationType, PrismaClient } from "@prisma/client";
+import { findBehindConversations } from "@prisma/client/sql";
 import { PAGE_LIMIT } from "@shared/constants";
 import { ILogger } from "@shared/logger";
 import { RepositoryResponse } from "@shared/responses";
@@ -208,12 +209,13 @@ class ConversationPrismaRepository implements IConversationRepository {
     payload: Conversation
   ): Promise<RepositoryResponse<Conversation, Error>> {
     try {
-      const { title, lastMessageAt } = payload;
+      const { title, lastMessageAt, lastMessageId } = payload;
       const updatedConversation = await this.prisma.conversation.update({
         where: { id },
         data: {
           title,
           lastMessageAt,
+          lastMessageId,
         },
       });
 
@@ -249,6 +251,47 @@ class ConversationPrismaRepository implements IConversationRepository {
       );
       return {
         error: new Error(`Error deleting conversation with id ${id}`),
+        value: null,
+      };
+    }
+  }
+
+  async findBehindConversations(
+    userId: string
+  ): Promise<
+    RepositoryResponse<(Conversation & { participantId: string })[], Error>
+  > {
+    try {
+      const conversations = await this.prisma.$queryRawTyped(
+        findBehindConversations(userId)
+      );
+
+      return {
+        value: conversations.map((conversation) => {
+          const conversationEntity = new Conversation({
+            id: conversation.id,
+            title: conversation.title,
+            creatorId: conversation.creator_id,
+            deletedAt: conversation.deleted_at,
+            lastMessageAt: conversation.last_message_at,
+            lastMessageId: conversation.last_message_id,
+            isArchived: !!conversation.is_archived,
+            type: conversation.type as ConversationType,
+          });
+
+          return Object.assign(conversationEntity, {
+            participantId: conversation.participant_id,
+          }) as Conversation & { participantId: string };
+        }),
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error fetching behind conversations: ${error.message}`
+      );
+      return {
+        error: new Error(
+          `Error fetching behind conversations: ${error.message}`
+        ),
         value: null,
       };
     }

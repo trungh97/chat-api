@@ -25,4 +25,7 @@ export class MessageCreateMutationRequest {
 
   @Field(() => [String], { nullable: true })
   receivers?: string[];
+
+  @Field(() => String)
+  clientMessageId: string;
 }

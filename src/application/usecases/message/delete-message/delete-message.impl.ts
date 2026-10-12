@@ -9,7 +9,7 @@ import { ILogger } from "@shared/logger";
 @injectable()
 export class DeleteMessageUseCase implements IDeleteMessageUseCase {
   constructor(
-    @inject(TYPES.MessagePrismaRepository)
+    @inject(TYPES.MessageRepository)
     private readonly messageRepository: IMessageRepository,
 
     @inject(TYPES.WinstonLogger)

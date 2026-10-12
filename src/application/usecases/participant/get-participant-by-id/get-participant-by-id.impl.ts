@@ -9,7 +9,7 @@ import { GetParticipantByIdRequest } from "./get-participant-by-id.request";
 @injectable()
 export class GetParticipantByIdUseCase implements IGetParticipantByIdUseCase {
   constructor(
-    @inject(TYPES.ParticipantPrismaRepository)
+    @inject(TYPES.ParticipantRepository)
     private participantRepository: IParticipantRepository,
 
     @inject(TYPES.WinstonLogger)

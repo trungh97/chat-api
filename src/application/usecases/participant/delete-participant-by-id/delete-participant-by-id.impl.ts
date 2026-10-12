@@ -15,10 +15,10 @@ export class DeleteParticipantByIdUseCase
   implements IDeleteParticipantByIdUseCase
 {
   constructor(
-    @inject(TYPES.ParticipantPrismaRepository)
+    @inject(TYPES.ParticipantRepository)
     private participantRepository: IParticipantRepository,
 
-    @inject(TYPES.ConversationPrismaRepository)
+    @inject(TYPES.ConversationRepository)
     private conversationRepository: IConversationRepository,
 
     @inject(TYPES.WinstonLogger)

@@ -1,5 +1,5 @@
 import { ICreateMessageRequestDTO } from "@domain/dtos";
-import { MessageType } from "@domain/enums";
+import { MessageStatus, MessageType } from "@domain/enums";
 import sanitize from "sanitize-html";
 import { v4 as uuid } from "uuid";
 
@@ -12,6 +12,8 @@ export interface MessageProps {
   messageType: keyof typeof MessageType;
   replyToMessageId?: string;
   createdAt: Date;
+  status?: keyof typeof MessageStatus;
+  clientMessageId?: string | null;
 }
 
 export class Message {
@@ -23,6 +25,8 @@ export class Message {
   private _messageType: keyof typeof MessageType;
   private _replyToMessageId: string;
   private _createdAt: Date;
+  private _status: keyof typeof MessageStatus;
+  private _clientMessageId: string | null;
 
   constructor({
     id,
@@ -33,6 +37,8 @@ export class Message {
     messageType,
     replyToMessageId,
     createdAt,
+    status,
+    clientMessageId,
   }: MessageProps) {
     this._id = id;
     this._senderId = senderId;
@@ -42,6 +48,8 @@ export class Message {
     this._messageType = messageType;
     this._replyToMessageId = replyToMessageId;
     this._createdAt = createdAt;
+    this._status = status;
+    this._clientMessageId = clientMessageId ?? null;
   }
 
   get id(): string {
@@ -104,6 +112,18 @@ export class Message {
     this._createdAt = createdAt;
   }
 
+  get status(): keyof typeof MessageStatus {
+    return this._status;
+  }
+
+  set status(status: MessageStatus) {
+    this._status = status;
+  }
+
+  get clientMessageId(): string | null {
+    return this._clientMessageId;
+  }
+
   static async create(
     request: ICreateMessageRequestDTO,
     currentUserId: string
@@ -120,6 +140,8 @@ export class Message {
       messageType: request.messageType,
       replyToMessageId: request.replyToMessageId,
       createdAt: new Date(),
+      // Message status is derived from participants' last seen/received pointers, not stored per message.
+      clientMessageId: request.clientMessageId ?? null,
     };
 
     return new Message(newMessage);

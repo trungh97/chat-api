@@ -11,6 +11,7 @@ export interface ConversationProps {
   type: keyof typeof ConversationType;
   groupAvatar?: string;
   lastMessageAt?: Date;
+  lastMessageId?: string;
 }
 
 export class Conversation {
@@ -22,6 +23,7 @@ export class Conversation {
   private _type: keyof typeof ConversationType;
   private _groupAvatar?: string;
   private _lastMessageAt?: Date;
+  private _lastMessageId?: string;
 
   constructor(props: ConversationProps) {
     this._id = props.id;
@@ -32,6 +34,7 @@ export class Conversation {
     this._type = props.type;
     this._groupAvatar = props.groupAvatar;
     this._lastMessageAt = props.lastMessageAt;
+    this._lastMessageId = props.lastMessageId;
   }
 
   get id(): string {
@@ -94,6 +97,14 @@ export class Conversation {
 
   set lastMessageAt(lastMessageAt: Date | undefined) {
     this._lastMessageAt = lastMessageAt;
+  }
+
+  get lastMessageId(): string | undefined {
+    return this._lastMessageId;
+  }
+
+  set lastMessageId(lastMessageId: string | undefined) {
+    this._lastMessageId = lastMessageId;
   }
 
   static async create(

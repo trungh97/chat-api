@@ -13,7 +13,7 @@ import { ILoginGoogleUserUseCase } from "./login-google-user.usecase";
 @injectable()
 export class LoginGoogleUserUseCase implements ILoginGoogleUserUseCase {
   constructor(
-    @inject(TYPES.UserPrismaRepository) private userRepository: IUserRepository,
+    @inject(TYPES.UserRepository) private userRepository: IUserRepository,
     @inject(TYPES.UserRedisRepository)
     private userRedisRepository: IUserRedisRepository,
     @inject(TYPES.WinstonLogger) private logger: ILogger,

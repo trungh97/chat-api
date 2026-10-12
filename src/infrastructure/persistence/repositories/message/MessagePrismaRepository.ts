@@ -1,5 +1,6 @@
 import { IDetailedMessageRepositoryDTO } from "@domain/dtos";
 import { Message } from "@domain/entities";
+import { MessageStatus } from "@domain/enums";
 import { ICursorBasedPaginationResponse } from "@domain/interfaces/pagination/CursorBasedPagination";
 import { IMessageRepository } from "@domain/repositories";
 import { TYPES } from "@infrastructure/external/di/inversify/types";
@@ -29,6 +30,7 @@ export class MessagePrismaRepository implements IMessageRepository {
         conversationId,
         senderId,
         replyToMessageId,
+        clientMessageId,
       } = message;
       const createdMessage = await this.prisma.message.create({
         data: {
@@ -36,6 +38,7 @@ export class MessagePrismaRepository implements IMessageRepository {
           content,
           extra: JSON.stringify(extra),
           messageType,
+          clientMessageId,
           conversation: {
             connect: { id: conversationId },
           },
@@ -92,6 +95,36 @@ export class MessagePrismaRepository implements IMessageRepository {
     }
   }
 
+  async getMessageByClientMessageId(
+    senderId: string,
+    clientMessageId: string
+  ): Promise<RepositoryResponse<IDetailedMessageRepositoryDTO | null, Error>> {
+    try {
+      const message = await this.prisma.message.findUnique({
+        where: { senderId_clientMessageId: { senderId, clientMessageId } },
+        include: {
+          sender: true,
+        },
+      });
+
+      return {
+        value: message
+          ? MessagePrismaMapper.fromPrismaModelToDetailDTO(message)
+          : null,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error fetching message by client message id ${clientMessageId}: ${error.message}`
+      );
+      return {
+        value: null,
+        error: new Error(
+          `Error fetching message by client message id ${clientMessageId}: ${error.message}`
+        ),
+      };
+    }
+  }
+
   async updateMessage(
     id: string,
     updates: Partial<Message>
@@ -115,6 +148,34 @@ export class MessagePrismaRepository implements IMessageRepository {
         value: null,
         error: new Error(
           `Error updating message with id ${id}: ${error.message}`
+        ),
+      };
+    }
+  }
+
+  async updateMessageStatus(
+    id: string,
+    status: MessageStatus
+  ): Promise<RepositoryResponse<IDetailedMessageRepositoryDTO, Error>> {
+    try {
+      const updatedMessage = await this.prisma.message.update({
+        where: { id },
+        data: {
+          status,
+        },
+      });
+
+      return {
+        value: MessagePrismaMapper.fromPrismaModelToDetailDTO(updatedMessage),
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error updating message status with id ${id}: ${error.message}`
+      );
+      return {
+        value: null,
+        error: new Error(
+          `Error updating message status with id ${id}: ${error.message}`
         ),
       };
     }

@@ -11,6 +11,7 @@ export interface IDetailConversationUseCase {
   type: keyof typeof ConversationType;
   groupAvatar?: string;
   lastMessageAt?: Date;
+  lastMessageId?: string;
   defaultGroupAvatars?: string[];
 }
 

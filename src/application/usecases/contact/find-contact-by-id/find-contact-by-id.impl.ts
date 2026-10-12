@@ -8,7 +8,7 @@ import { IFindContactByIdUseCase } from "./find-contact-by-id.usecase";
 @injectable()
 export class FindContactByIdUseCase implements IFindContactByIdUseCase {
   constructor(
-    @inject(TYPES.ContactPrismaRepository)
+    @inject(TYPES.ContactRepository)
     private contactRepository: IContactRepository,
 
     @inject(TYPES.WinstonLogger)

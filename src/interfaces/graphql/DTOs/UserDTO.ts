@@ -46,3 +46,15 @@ export class UserDTO {
   @Field(() => String, { nullable: true })
   providerUserId?: string;
 }
+
+@ObjectType()
+export class UserPresenceDTO {
+  @Field(() => String)
+  userId!: string;
+
+  @Field(() => Boolean)
+  isOnline!: boolean;
+
+  @Field(() => Date)
+  lastSeenAt!: Date;
+}

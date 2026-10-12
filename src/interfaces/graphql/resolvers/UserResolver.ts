@@ -1,27 +1,50 @@
 import {
   ICreateUserRequestDTO,
   IGetUserByIdUsecase,
+  IHeartbeatUserPresenseUseCase,
   ILoginCredentialBasedUserUseCase,
   ILoginGoogleUserUseCase,
   IRegisterCredentialBasedUserUseCase,
+  IUpdateUserPresenseUseCase,
   LoginCredentialBasedUserRequest,
 } from "@application/usecases/user";
 import { container } from "@infrastructure/external/di/inversify/inversify.config";
 import { TYPES } from "@infrastructure/external/di/inversify/types";
-import { COOKIE_NAME } from "@shared/constants";
+import { Topic } from "@infrastructure/persistence/websocket/redis-pubsub";
+import { COOKIE_NAME, DEFAULT_TTL } from "@shared/constants";
 import { ILogger } from "@shared/logger";
+import { isAuth } from "@shared/middlewares";
 import { GlobalResponse } from "@shared/responses";
 import { StatusCodes } from "http-status-codes";
-import { Arg, Ctx, Mutation, ObjectType, Query, Resolver } from "type-graphql";
+import { RedisClientType } from "redis";
+import {
+  Arg,
+  Ctx,
+  Mutation,
+  ObjectType,
+  Query,
+  Resolver,
+  Root,
+  Subscription,
+  UseMiddleware,
+} from "type-graphql";
 import { Context } from "types";
-import { UserDTO } from "../dtos";
+import { UserDTO, UserPresenceDTO } from "../dtos";
 import { UserMapper } from "../mappers/UserMapper";
 import { UserCreateMutationRequest, UserLoginInput } from "../types/user";
 
 const UserResponse = GlobalResponse(UserDTO);
+const UserPresenseResponse = GlobalResponse(UserPresenceDTO);
+const HeartBeatUserPresenseResponse = GlobalResponse(Boolean);
 
 @ObjectType()
 class UserGlobalResponse extends UserResponse {}
+
+@ObjectType()
+class UserPresenseGlobalResponse extends UserPresenseResponse {}
+
+@ObjectType()
+class HeartBeatUserPresenseGlobalResponse extends HeartBeatUserPresenseResponse {}
 
 @Resolver()
 export class UserResolver {
@@ -30,6 +53,9 @@ export class UserResolver {
     private loginGoogleUserUseCase: ILoginGoogleUserUseCase,
     private loginCredentialBasedUserUseCase: ILoginCredentialBasedUserUseCase,
     private getUserByIdUseCase: IGetUserByIdUsecase,
+    private updateUserPresenceUseCase: IUpdateUserPresenseUseCase,
+    private heartbeatUserPresenseUseCase: IHeartbeatUserPresenseUseCase,
+    private redisClient: RedisClientType,
     private logger: ILogger
   ) {
     this.registerCredentialBasedUserUsecase =
@@ -49,6 +75,17 @@ export class UserResolver {
       container.get<ILoginCredentialBasedUserUseCase>(
         TYPES.LoginCredentialBasedUserUseCase
       );
+
+    this.updateUserPresenceUseCase = container.get<IUpdateUserPresenseUseCase>(
+      TYPES.UpdateUserPresenseUseCase
+    );
+
+    this.heartbeatUserPresenseUseCase =
+      container.get<IHeartbeatUserPresenseUseCase>(
+        TYPES.HeartbeatUserPresenseUseCase
+      );
+
+    this.redisClient = container.get<RedisClientType>(TYPES.RedisClient);
 
     this.logger = container.get<ILogger>(TYPES.WinstonLogger);
   }
@@ -178,15 +215,8 @@ export class UserResolver {
   }
 
   @Query(() => UserGlobalResponse)
+  @UseMiddleware(isAuth)
   async me(@Ctx() { req }: Context): Promise<UserGlobalResponse> {
-    if (!req.session.userId) {
-      return {
-        statusCode: StatusCodes.UNAUTHORIZED,
-        message: "User is not authenticated",
-        error: "User is not authenticated",
-      };
-    }
-
     const result = await this.getUserByIdUseCase.execute({
       id: req.session.userId,
     });
@@ -217,5 +247,119 @@ export class UserResolver {
         resolve(true);
       });
     });
+  }
+
+  @Query(() => UserPresenseGlobalResponse)
+  @UseMiddleware(isAuth)
+  async getUserPresence(
+    @Arg("userId", () => String) userId: string
+  ): Promise<UserPresenseGlobalResponse> {
+    try {
+      const data = await this.redisClient.hGetAll(`user-presence:${userId}`);
+
+      return {
+        statusCode: StatusCodes.OK,
+        message: "User presence fetched successfully",
+        data: {
+          userId: data.userId,
+          isOnline: data.isOnline === "true",
+          lastSeenAt: data.lastSeenAt ? new Date(data.lastSeenAt) : null,
+        },
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error fetching user presence for userId ${userId}: ${error.message}`
+      );
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        error: `Error fetching user presence for userId ${userId}: ${error.message}`,
+      };
+    }
+  }
+
+  @Mutation(() => UserPresenseGlobalResponse)
+  @UseMiddleware(isAuth)
+  async updateUserPresence(
+    @Arg("userId", () => String) userId: string,
+    @Arg("isOnline", () => Boolean) isOnline: boolean
+  ): Promise<UserPresenseGlobalResponse> {
+    try {
+      const result = await this.updateUserPresenceUseCase.execute({
+        userId,
+        isOnline,
+      });
+
+      if (!result.data || result.error) {
+        this.logger.error(
+          `Error updating user presence: ${result.error || "Unknown error"}`
+        );
+        return {
+          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+          error: `Error updating user presence: ${
+            result.error || "Unknown error"
+          }`,
+        };
+      }
+
+      return {
+        statusCode: StatusCodes.OK,
+        message: "User presence updated successfully",
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error updating user presence for userId ${userId}: ${error.message}`
+      );
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        error: `Error updating user presence for userId ${userId}: ${error.message}`,
+      };
+    }
+  }
+
+  @Mutation(() => HeartBeatUserPresenseGlobalResponse)
+  @UseMiddleware(isAuth)
+  async heartbeatUserPresence(
+    @Arg("userId", () => String) userId: string
+  ): Promise<HeartBeatUserPresenseGlobalResponse> {
+    try {
+      const result = await this.heartbeatUserPresenseUseCase.execute({
+        userId,
+      });
+
+      if (!result.data || result.error) {
+        this.logger.error(
+          `Error updating user presence heartbeat: ${
+            result.error || "Unknown error"
+          }`
+        );
+        return {
+          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+          error: `Error updating user presence heartbeat: ${
+            result.error || "Unknown error"
+          }`,
+        };
+      }
+
+      return {
+        statusCode: StatusCodes.OK,
+        message: "User presence heartbeat updated successfully",
+        data: true,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error updating user presence for userId ${userId}: ${error.message}`
+      );
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        error: `Error updating user presence for userId ${userId}: ${error.message}`,
+      };
+    }
+  }
+
+  @Subscription(() => UserPresenseGlobalResponse, {
+    topics: Topic.PRESENSE_UPDATE,
+  })
+  userPresence(@Root() payload: UserPresenseGlobalResponse) {
+    return payload;
   }
 }

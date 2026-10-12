@@ -1,4 +1,7 @@
-import { IDetailedParticipantDTO } from "@domain/dtos";
+import {
+  IDetailedParticipantDTO,
+  IParticipantPointerUpdateDTO,
+} from "@domain/dtos";
 import { Participant } from "@domain/entities";
 import { RepositoryResponse } from "@shared/responses";
 
@@ -68,4 +71,36 @@ export interface IParticipantRepository {
     userId: string,
     type: string
   ): Promise<RepositoryResponse<Participant, Error>>;
+
+  /**
+   * Moves a participant's last seen message pointer forward. The pointer never moves back: the
+   * update is skipped when the participant has already seen a message at or after this one.
+   *
+   * @param update - The participant and the message they have seen.
+   * @returns A promise resolving to `true` if the pointer moved, `false` if it was already ahead.
+   */
+  updateLastSeenMessage(
+    update: IParticipantPointerUpdateDTO
+  ): Promise<RepositoryResponse<boolean, Error>>;
+
+  /**
+   * Moves a participant's last received message pointer forward. The pointer never moves back.
+   *
+   * @param update - The participant and the message they have received.
+   * @returns A promise resolving to `true` if the pointer moved, `false` if it was already ahead.
+   */
+  updateLastReceivedMessage(
+    update: IParticipantPointerUpdateDTO
+  ): Promise<RepositoryResponse<boolean, Error>>;
+
+  /**
+   * Moves the last received message pointer forward for multiple participants in one transaction.
+   * Each pointer only moves forward.
+   *
+   * @param updates - The participants and the messages they have received.
+   * @returns A promise resolving to the ids of the participants whose pointer moved.
+   */
+  batchUpdateLastReceivedMessages(
+    updates: IParticipantPointerUpdateDTO[]
+  ): Promise<RepositoryResponse<string[], Error>>;
 }

@@ -1,4 +1,7 @@
-import { IDetailedParticipantDTO } from "@domain/dtos";
+import {
+  IDetailedParticipantDTO,
+  IParticipantPointerUpdateDTO,
+} from "@domain/dtos";
 import { Participant } from "@domain/entities";
 import { ParticipantType } from "@domain/enums";
 import { IParticipantRepository } from "@domain/repositories";
@@ -199,5 +202,121 @@ export class ParticipantPrismaRepository implements IParticipantRepository {
         error: new Error(`Error fetching participants: ${error.message}`),
       };
     }
+  }
+
+  async updateLastSeenMessage({
+    participantId,
+    messageId,
+    messageCreatedAt,
+  }: IParticipantPointerUpdateDTO): Promise<RepositoryResponse<boolean, Error>> {
+    try {
+      const { count } = await this.prisma.participant.updateMany({
+        where: {
+          id: participantId,
+          OR: [
+            { lastSeenMessageAt: null },
+            { lastSeenMessageAt: { lt: messageCreatedAt } },
+            {
+              lastSeenMessageAt: messageCreatedAt,
+              lastSeenMessageId: { lt: messageId },
+            },
+          ],
+        },
+        data: {
+          lastSeenMessageId: messageId,
+          lastSeenMessageAt: messageCreatedAt,
+          lastSeenAt: new Date(),
+        },
+      });
+
+      return { value: count > 0 };
+    } catch (error) {
+      this.logger.error(
+        `Error updating last seen message for participant ${participantId}: ${error.message}`
+      );
+      return {
+        value: null,
+        error: new Error(
+          `Error updating last seen message for participant ${participantId}: ${error.message}`
+        ),
+      };
+    }
+  }
+
+  async updateLastReceivedMessage(
+    update: IParticipantPointerUpdateDTO
+  ): Promise<RepositoryResponse<boolean, Error>> {
+    try {
+      const { count } = await this.updateLastReceivedMessageQuery(update);
+
+      return { value: count > 0 };
+    } catch (error) {
+      this.logger.error(
+        `Error updating last received message for participant ${update.participantId}: ${error.message}`
+      );
+      return {
+        value: null,
+        error: new Error(
+          `Error updating last received message for participant ${update.participantId}: ${error.message}`
+        ),
+      };
+    }
+  }
+
+  async batchUpdateLastReceivedMessages(
+    updates: IParticipantPointerUpdateDTO[]
+  ): Promise<RepositoryResponse<string[], Error>> {
+    if (!updates || updates.length === 0) return { value: [], error: null };
+
+    try {
+      const results = await this.prisma.$transaction(
+        updates.map((update) => this.updateLastReceivedMessageQuery(update))
+      );
+
+      return {
+        value: updates
+          .filter((_, index) => results[index].count > 0)
+          .map(({ participantId }) => participantId),
+        error: null,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error batch updating last received messages: ${error.message}`
+      );
+      return {
+        value: null,
+        error: new Error(
+          `Error batch updating last received messages: ${error.message}`
+        ),
+      };
+    }
+  }
+
+  /**
+   * Moves the last received pointer only if the message is after the current one,
+   * comparing `(createdAt, id)`.
+   */
+  private updateLastReceivedMessageQuery({
+    participantId,
+    messageId,
+    messageCreatedAt,
+  }: IParticipantPointerUpdateDTO) {
+    return this.prisma.participant.updateMany({
+      where: {
+        id: participantId,
+        OR: [
+          { lastReceivedMessageAt: null },
+          { lastReceivedMessageAt: { lt: messageCreatedAt } },
+          {
+            lastReceivedMessageAt: messageCreatedAt,
+            lastReceivedMessageId: { lt: messageId },
+          },
+        ],
+      },
+      data: {
+        lastReceivedMessageId: messageId,
+        lastReceivedMessageAt: messageCreatedAt,
+      },
+    });
   }
 }

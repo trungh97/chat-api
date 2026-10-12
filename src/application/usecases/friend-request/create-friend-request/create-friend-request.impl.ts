@@ -10,7 +10,7 @@ import { ICreateFriendRequestUseCase } from "./create-friend-request.usecase";
 @injectable()
 export class CreateFriendRequestUseCase implements ICreateFriendRequestUseCase {
   constructor(
-    @inject(TYPES.FriendRequestPrismaRepository)
+    @inject(TYPES.FriendRequestRepository)
     private friendRequestRepository: IFriendRequestRepository,
 
     @inject(TYPES.WinstonLogger)

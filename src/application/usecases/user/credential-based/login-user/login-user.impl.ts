@@ -13,7 +13,7 @@ export class LoginCredentialBasedUserUseCase
   implements ILoginCredentialBasedUserUseCase
 {
   constructor(
-    @inject(TYPES.UserPrismaRepository) private userRepository: IUserRepository,
+    @inject(TYPES.UserRepository) private userRepository: IUserRepository,
     @inject(TYPES.UserRedisRepository)
     private userRedisRepository: IUserRedisRepository,
     @inject(TYPES.WinstonLogger) private logger: ILogger

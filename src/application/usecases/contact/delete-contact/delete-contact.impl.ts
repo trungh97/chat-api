@@ -8,7 +8,7 @@ import { IDeleteContactUseCase } from "./delete-contact.usecase";
 @injectable()
 export class DeleteContactUseCase implements IDeleteContactUseCase {
   constructor(
-    @inject(TYPES.ContactPrismaRepository)
+    @inject(TYPES.ContactRepository)
     private contactRepository: IContactRepository,
 
     @inject(TYPES.WinstonLogger)

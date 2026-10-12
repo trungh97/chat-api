@@ -1,5 +1,5 @@
 import { Conversation } from "@domain/entities";
-import { MessageType } from "@domain/enums";
+import { MessageStatus, MessageType } from "@domain/enums";
 
 export interface IMessageWithSenderUseCaseDTO {
   id: string;
@@ -12,6 +12,8 @@ export interface IMessageWithSenderUseCaseDTO {
   extra?: string;
   senderName: string;
   senderAvatar: string | null;
+  status: keyof typeof MessageStatus
+  clientMessageId?: string | null;
 }
 
 export interface IMessageWithConversationUseCaseDTO
