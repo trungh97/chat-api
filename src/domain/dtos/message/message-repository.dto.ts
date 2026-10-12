@@ -15,4 +15,5 @@ export interface IDetailedMessageRepositoryDTO {
   createdAt: Date;
   conversationId: string;
   status: keyof typeof MessageStatus;
+  clientMessageId?: string | null;
 }

@@ -18,6 +18,7 @@ export interface IUser {
   provider?: keyof typeof UserProvider;
   providerUserId?: string;
   status: keyof typeof UserStatus;
+  lastSeenAt?: Date;
 }
 
 export class User {
@@ -33,6 +34,7 @@ export class User {
   private _provider?: keyof typeof UserProvider;
   private _providerUserId?: string;
   private _status: keyof typeof UserStatus;
+  private _lastSeenAt?: Date;
 
   constructor(props: IUser) {
     this._id = props.id;
@@ -47,6 +49,7 @@ export class User {
     this._providerUserId = props.providerUserId;
     this._isActive = props.isActive;
     this._status = props.status;
+    this._lastSeenAt = props.lastSeenAt;
   }
 
   /**
@@ -288,6 +291,24 @@ export class User {
     this._status = status;
   }
 
+  /**
+   * Gets the date and time when the user was last seen.
+   *
+   * @returns {Date | undefined} The date and time when the user was last seen, or undefined if no last seen at time is available.
+   */
+  get lastSeenAt(): Date | undefined {
+    return this._lastSeenAt;
+  }
+
+  /**
+   * Sets the date and time when the user was last seen.
+   *
+   * @param {Date | undefined} lastSeenAt - The date and time when the user was last seen, or undefined if no last seen at time is available.
+   */
+  set lastSeenAt(lastSeenAt: Date | undefined) {
+    this._lastSeenAt = lastSeenAt;
+  }
+
   static async create(request: ICreateUserRequestDTO): Promise<User> {
     const email = new Email({ address: request.email });
 
@@ -308,6 +329,7 @@ export class User {
       providerUserId: request.providerUserId,
       isActive: true,
       status: UserStatus.ONLINE,
+      lastSeenAt: undefined,
     };
 
     return new User(newUser);

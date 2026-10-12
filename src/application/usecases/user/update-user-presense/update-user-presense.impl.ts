@@ -40,6 +40,10 @@ export class UpdateUserPresenseUseCase implements IUpdateUserPresenseUseCase {
       }
 
       await this.redisClient.expire(key, DEFAULT_TTL);
+
+      if (!isOnline) {
+      }
+
       await this.publisher.publishPresenseUpdate({ userId, isOnline });
 
       return { data: true };

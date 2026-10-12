@@ -1,9 +1,15 @@
 import { IMessageEventPublisher } from "@domain/events";
-import { IParticipantRepository } from "@domain/repositories";
-import { TYPES } from "@infrastructure/external/di/inversify";
+import {
+  IMessageRepository,
+  IParticipantRepository,
+} from "@domain/repositories";
+import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
-import { IGetParticipantsByConversationIdUseCase } from "../get-participants-by-conversation-id";
+import {
+  getConversationRecipientUserIds,
+  resolvePointerTarget,
+} from "../pointer-target";
 import { UpdateParticipantLastReceivedMessageRequest } from "./update-last-received-message.request";
 import { UpdateParticipantLastReceivedMessageResponse } from "./update-last-received-message.response";
 import { IUpdateParticipantLastReceivedMessageUseCase } from "./update-last-received-message.usecase";
@@ -16,8 +22,8 @@ export class UpdateParticipantLastReceivedMessageUseCase
     @inject(TYPES.ParticipantRepository)
     private participantRepository: IParticipantRepository,
 
-    @inject(TYPES.GetParticipantsByConversationIdUseCase)
-    private getParticipantsByConversationIdUseCase: IGetParticipantsByConversationIdUseCase,
+    @inject(TYPES.MessageRepository)
+    private messageRepository: IMessageRepository,
 
     @inject(TYPES.MessagePublisher)
     private messagePublisher: IMessageEventPublisher,
@@ -30,55 +36,67 @@ export class UpdateParticipantLastReceivedMessageUseCase
     request: UpdateParticipantLastReceivedMessageRequest
   ): Promise<UpdateParticipantLastReceivedMessageResponse> {
     try {
-      const { participantId, messageId, userId, conversationId } = request;
+      const { conversationId, messageId } = request;
 
-      const { data: participants, error: participantsError } =
-        await this.getParticipantsByConversationIdUseCase.execute({
-          conversationId,
-          currentUserId: userId,
-        });
-
-      if (participantsError || !participants) {
-        this.logger.error(participantsError);
-        return {
-          data: null,
-          error: "Error fetching participants or no participants found.",
-        };
-      }
-
-      const isValidPartcipant = participants.find(
-        (participant) => participant.id === participantId
+      const { data: target, error: targetError } = await resolvePointerTarget(
+        this.participantRepository,
+        this.messageRepository,
+        request
       );
 
-      if (!isValidPartcipant) {
-        this.logger.error("Participant does not exist.");
-        return {
-          data: null,
-          error: "Participant does not exist.",
-        };
+      if (targetError || !target) {
+        this.logger.error(
+          `[UpdateParticipantLastReceivedMessageUseCase]: ${targetError}`
+        );
+        return { data: null, error: targetError };
       }
 
-      const { value, error } =
-        await this.participantRepository.updateLastReceivedMessage(
+      const { participant, messageCreatedAt } = target;
+
+      const { value: moved, error } =
+        await this.participantRepository.updateLastReceivedMessage({
+          participantId: participant.id,
           messageId,
-          participantId
-        );
+          messageCreatedAt,
+        });
 
       if (error) {
         this.logger.error(error.message);
         return { data: null, error: error.message };
       }
 
-      // Publish event to notify back to the client about the update
-      await this.messagePublisher.publishLastReceivedMessageUpdated([
-        {
-          messageId,
-          participantId,
-        },
-      ]);
+      // The participant had already received this message or a later one.
+      if (!moved) return { data: false };
 
-      return { data: value };
-    } catch (error: any) {
+      const { data: recipientUserIds, error: recipientsError } =
+        await getConversationRecipientUserIds(
+          this.participantRepository,
+          conversationId
+        );
+
+      if (recipientsError) {
+        // The pointer is saved; clients catch up the next time they fetch the conversation.
+        this.logger.error(
+          `[UpdateParticipantLastReceivedMessageUseCase]: Received update saved but not published: ${recipientsError}`
+        );
+        return { data: true };
+      }
+
+      // Publish event to notify back to the client about the update
+      await this.messagePublisher.publishLastReceivedMessageUpdated({
+        recipientUserIds,
+        updates: [
+          {
+            conversationId,
+            participantId: participant.id,
+            messageId,
+            messageCreatedAt,
+          },
+        ],
+      });
+
+      return { data: true };
+    } catch (error) {
       this.logger.error(
         `[UpdateParticipantLastReceivedMessageUseCase]: Error executing update last received message use case: ${error.message}`
       );

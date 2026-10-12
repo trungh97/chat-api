@@ -1,5 +1,4 @@
-import { IDetailedParticipantDTO } from "@domain/dtos";
 import { UseCaseResponse } from "@shared/responses";
 
-export type UpdateParticipantLastSeenMessageResponse =
-  UseCaseResponse<IDetailedParticipantDTO>;
+/** `true` if the pointer moved, `false` if the user had already seen a later message. */
+export type UpdateParticipantLastSeenMessageResponse = UseCaseResponse<boolean>;

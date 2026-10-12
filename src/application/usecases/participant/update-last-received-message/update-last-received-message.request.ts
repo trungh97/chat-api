@@ -1,6 +1,6 @@
 export type UpdateParticipantLastReceivedMessageRequest = {
-  messageId: string;
-  participantId: string;
+  /** The acting user, taken from the session. */
   userId: string;
   conversationId: string;
+  messageId: string;
 };

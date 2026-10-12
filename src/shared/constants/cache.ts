@@ -1,1 +1,1 @@
-export const DEFAULT_TTL = 30;
+export const DEFAULT_TTL = 200;

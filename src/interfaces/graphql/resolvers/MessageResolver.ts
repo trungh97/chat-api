@@ -5,7 +5,7 @@ import {
   IGetMessageByIdUseCase,
   IGetMessagesByConversationIdUseCase,
   IUpdateMessageRequestDTO,
-  IUpdateMessageUseCase
+  IUpdateMessageUseCase,
 } from "@application/usecases/message";
 import { Conversation } from "@domain/entities";
 import { ICursorBasedPaginationParams } from "@domain/interfaces/pagination/CursorBasedPagination";
@@ -14,6 +14,7 @@ import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { MessageWithConversation } from "@infrastructure/persistence/websocket/redis-pubsub";
 import { Topic } from "@infrastructure/persistence/websocket/redis-pubsub/topics";
 import { ILogger } from "@shared/logger";
+import { isAuth } from "@shared/middlewares";
 import {
   CursorBasedPaginationDTO,
   GlobalResponse,
@@ -29,6 +30,7 @@ import {
   Resolver,
   Root,
   Subscription,
+  UseMiddleware,
 } from "type-graphql";
 import { Context } from "types";
 import {
@@ -42,6 +44,7 @@ import {
   MessageUpdateMutationRequest,
 } from "../types/message";
 import { CursorBasedPaginationParams } from "../types/pagination";
+import { isRecipient } from "../subscriptionFilters";
 
 const MessageResponseObjectType = GlobalResponse(MessageDTO);
 
@@ -57,6 +60,9 @@ class PaginatedMessageListResponse extends CursorBasedPaginationDTO(
 class MessageListGlobalResponse extends GlobalResponse(
   PaginatedMessageListResponse
 ) {}
+
+@ObjectType()
+class MessageWithSenderResponse extends GlobalResponse(MessageWithSenderDTO) {}
 
 @Resolver()
 export class MessageResolver {
@@ -221,7 +227,8 @@ export class MessageResolver {
     }
   }
 
-  @Mutation(() => MessageResponse)
+  @Mutation(() => MessageWithSenderResponse)
+  @UseMiddleware(isAuth)
   async createMessage(
     @Arg("request", () => MessageCreateMutationRequest)
     request: ICreateMessageRequestDTO,
@@ -231,10 +238,8 @@ export class MessageResolver {
         session: { userId },
       },
     }: Context
-  ): Promise<MessageResponse> {
+  ): Promise<MessageWithSenderResponse> {
     try {
-      if (!userId) return UnauthorizedResponse;
-
       const { data, error } = await this.createMessageUseCase.execute({
         ...request,
         currentUserId: userId,
@@ -250,12 +255,10 @@ export class MessageResolver {
         };
       }
 
-      const result = MessageMapper.toDTOWithSender(data);
-
       return {
         statusCode: StatusCodes.CREATED,
         message: "Message created successfully",
-        data: result,
+        data: MessageMapper.toDTOWithSender(data),
       };
     } catch (error) {
       this.logger.error(`Error creating message: ${error.message}`);
@@ -314,6 +317,7 @@ export class MessageResolver {
 
   @Subscription(() => MessageWithConversationDTO, {
     topics: Topic.NEW_MESSAGE_SENT,
+    filter: isRecipient,
   })
   newMessageAdded(
     @Root() message: MessageWithConversation

@@ -34,6 +34,7 @@ export class MessageUseCaseMapper {
       createdAt: repoDto.createdAt,
       status: repoDto.status,
       extra: repoDto.extra,
+      clientMessageId: repoDto.clientMessageId,
     });
   }
 }

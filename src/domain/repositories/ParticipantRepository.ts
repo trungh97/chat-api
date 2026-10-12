@@ -1,4 +1,7 @@
-import { IDetailedParticipantDTO } from "@domain/dtos";
+import {
+  IDetailedParticipantDTO,
+  IParticipantPointerUpdateDTO,
+} from "@domain/dtos";
 import { Participant } from "@domain/entities";
 import { RepositoryResponse } from "@shared/responses";
 
@@ -70,36 +73,34 @@ export interface IParticipantRepository {
   ): Promise<RepositoryResponse<Participant, Error>>;
 
   /**
-   * Updates the last seen message ID for a participant in a conversation.
+   * Moves a participant's last seen message pointer forward. The pointer never moves back: the
+   * update is skipped when the participant has already seen a message at or after this one.
    *
-   * @param messageId - The unique identifier of the message that was last seen by the participant.
-   * @param participantId - The unique identifier of the participant.
-   * @returns A promise resolving to a participant response or an error.
+   * @param update - The participant and the message they have seen.
+   * @returns A promise resolving to `true` if the pointer moved, `false` if it was already ahead.
    */
   updateLastSeenMessage(
-    messageId: string,
-    participantId: string
-  ): Promise<RepositoryResponse<IDetailedParticipantDTO, Error>>;
+    update: IParticipantPointerUpdateDTO
+  ): Promise<RepositoryResponse<boolean, Error>>;
 
   /**
-   * Updates the last received message ID for a participant in a conversation.
+   * Moves a participant's last received message pointer forward. The pointer never moves back.
    *
-   * @param messageId - The unique identifier of the message that was last received by the participant.
-   * @param participantId - The unique identifier of the participant.
-   * @returns A promise resolving to a participant response or an error.
+   * @param update - The participant and the message they have received.
+   * @returns A promise resolving to `true` if the pointer moved, `false` if it was already ahead.
    */
   updateLastReceivedMessage(
-    messageId: string,
-    participantId: string
-  ): Promise<RepositoryResponse<IDetailedParticipantDTO, Error>>;
+    update: IParticipantPointerUpdateDTO
+  ): Promise<RepositoryResponse<boolean, Error>>;
 
   /**
-   * Batch updates the last received message ID for multiple participants using a Prisma transaction.
+   * Moves the last received message pointer forward for multiple participants in one transaction.
+   * Each pointer only moves forward.
    *
-   * @param updates Array of { participantId, messageId }
-   * @returns Promise<boolean> true if all updates succeed, false otherwise
+   * @param updates - The participants and the messages they have received.
+   * @returns A promise resolving to the ids of the participants whose pointer moved.
    */
   batchUpdateLastReceivedMessages(
-    updates: { participantId: string; messageId: string }[]
-  ): Promise<RepositoryResponse<boolean, Error>>;
+    updates: IParticipantPointerUpdateDTO[]
+  ): Promise<RepositoryResponse<string[], Error>>;
 }

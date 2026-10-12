@@ -1,6 +1,8 @@
-import { Message } from "@domain/entities";
 import { MessageStatus } from "@domain/enums";
-import { IMessageQueueProducer } from "@domain/queue";
+import {
+  EnqueueMessageSeenUpdateRequest,
+  IMessageQueueProducer,
+} from "@domain/queue";
 import { Queue } from "bullmq";
 import { injectable } from "inversify";
 import { bullConnection } from "./connection";
@@ -11,20 +13,32 @@ export class MessageQueueProducer implements IMessageQueueProducer {
     connection: bullConnection,
   });
 
-  async enqueuePersistMessage(message: Message): Promise<void> {
-    await this.queue.add("persist-message", message, {
-      attempts: 3,
-      backoff: { type: "exponential", delay: 500 },
+  async enqueueMessageSeenUpdate(
+    request: EnqueueMessageSeenUpdateRequest
+  ): Promise<void> {
+    await this.queue.add("message-seen-update", request, {
+      removeOnComplete: true,
     });
   }
 
   async enqueueMessageStatusUpdate(
     messageId: string,
-    status: keyof typeof MessageStatus
+    status: keyof typeof MessageStatus,
+    currentUserId: string
   ): Promise<void> {
     await this.queue.add(
       "message-status-update",
-      { messageId, status },
+      { messageId, status, currentUserId },
+      { removeOnComplete: true }
+    );
+  }
+
+  async enqueueFindAndBatchUpdateLastReceivedMessages(
+    userId: string
+  ): Promise<void> {
+    await this.queue.add(
+      "batch-update-last-received-message",
+      { userId },
       { removeOnComplete: true }
     );
   }

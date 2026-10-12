@@ -7,15 +7,30 @@ export type PublishMessageSentPayload = {
     avatar: string;
   };
   conversation: Conversation;
+  /** User ids of the conversation's participants; only they receive the event. */
+  recipientUserIds: string[];
 };
 
 export type PublishLastMessageReceivedPayload = {
+  conversationId: string;
   messageId: Message["id"];
+  messageCreatedAt: Date;
   participantId: Participant["id"];
 };
 
+/** Last received updates for a single conversation. */
+export type PublishLastMessageReceivedEvent = {
+  /** User ids of the conversation's participants; only they receive the event. */
+  recipientUserIds: string[];
+  updates: PublishLastMessageReceivedPayload[];
+};
+
 export type PublishLastMessageSeenPayload =
-  PublishLastMessageReceivedPayload & { lastSeenAt: Date };
+  PublishLastMessageReceivedPayload & {
+    lastSeenAt: Date;
+    /** User ids of the conversation's participants; only they receive the event. */
+    recipientUserIds: string[];
+  };
 
 export type PublishMessageStatusErrorPayload = {
   status: Message["status"];
@@ -36,13 +51,13 @@ export interface IMessageEventPublisher {
   publishMessageSent(payload: PublishMessageSentPayload): Promise<void>;
 
   /**
-   * Publishes an update to the received status of a message in a conversation. This method is used to publish
-   * the update to all connected clients that are subscribed to the conversation.
-   * @param payload The payload containing the message ID, conversation ID, and participant ID.
+   * Publishes updates to the received status of messages in a single conversation. Only the
+   * conversation's participants (`recipientUserIds`) receive the event.
+   * @param event The recipients and the participant pointer updates for one conversation.
    * @returns A Promise that resolves when the message has been published.
    */
   publishLastReceivedMessageUpdated(
-    payload: PublishLastMessageReceivedPayload[]
+    event: PublishLastMessageReceivedEvent
   ): Promise<void>;
 
   /**

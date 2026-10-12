@@ -11,7 +11,7 @@ export async function cleanupExpiredPresence() {
 
   const keys = await redisClient.keys("user-presense:*");
 
-  if (!keys.length) return;
+  if (keys.length === 0) return;
 
   for (const key of keys) {
     const data = await redisClient.hGetAll(key);
@@ -20,7 +20,7 @@ export async function cleanupExpiredPresence() {
     const lastSeen = new Date(data.lastSeenAt).getTime();
     const diff = now - lastSeen;
 
-    if (diff > 30_000) {
+    if (diff > 3 * 60 * 1_000) {
       // mark offline
       const userId = key.split(":")[1];
 

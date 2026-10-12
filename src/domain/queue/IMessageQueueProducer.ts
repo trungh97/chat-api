@@ -1,24 +1,20 @@
-import { ICreateMessageRequestDTO } from "@domain/dtos";
 import { MessageStatus } from "@domain/enums";
 
-export type EnqueuePersistMessageRequest = ICreateMessageRequestDTO & {
-  currentUserId: string;
+export type EnqueueMessageSeenUpdateRequest = {
+  userId: string;
+  conversationId: string;
+  messageId: string;
 };
 
 export interface IMessageQueueProducer {
-  enqueuePersistMessage(message: EnqueuePersistMessageRequest): Promise<void>;
   /**
-   * Enqueues a message to update the last seen message ID for a participant in a conversation.
+   * Enqueues an update of the acting user's last seen message in a conversation.
    *
-   * @param messageId - The unique identifier of the message that was last seen by the participant.
-   * @param participantId - The unique identifier of the participant.
-   * @param userId - The unique identifier of the user that requested the message update.
+   * @param request - The acting user (from the session), the conversation and the seen message.
    * @returns A promise resolving to void.
    */
   enqueueMessageSeenUpdate(
-    messageId: string,
-    participantId: string,
-    userId: string
+    request: EnqueueMessageSeenUpdateRequest
   ): Promise<void>;
   enqueueMessageStatusUpdate(
     messageId: string,

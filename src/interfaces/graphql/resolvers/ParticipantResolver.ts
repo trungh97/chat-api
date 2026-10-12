@@ -1,15 +1,11 @@
 import {
-  BatchUpdateLastReceivedMessagesRequest,
   IAddingParticipantAndNotifyUseCase,
   IBatchUpdateLastReceivedMessagesUseCase,
   ICreateParticipantRequestDTO,
 } from "@application/usecases/participant";
+import { IUpdateParticipantLastReceivedMessageUseCase } from "@application/usecases/participant/update-last-received-message";
 import {
-  IUpdateParticipantLastReceivedMessageUseCase,
-  UpdateParticipantLastReceivedMessageRequest,
-} from "@application/usecases/participant/update-last-received-message";
-import {
-  PublishLastMessageReceivedPayload,
+  PublishLastMessageReceivedEvent,
   PublishLastMessageSeenPayload,
 } from "@domain/events";
 import { container } from "@infrastructure/external/di/inversify/inversify.config";
@@ -41,6 +37,7 @@ import {
   BatchUpdateLastReceivedMessageRequest,
   ParticipantCreateMutationRequest,
 } from "../types/participant";
+import { isRecipient } from "../subscriptionFilters";
 
 const ParticipantResponseObjectType = GlobalResponse(ParticipantDTO);
 const DetailedParticipantResponseObjectType = GlobalResponse(
@@ -56,6 +53,10 @@ class DetailedParticipantResponse extends DetailedParticipantResponseObjectType 
 
 @ObjectType()
 class BatchUpdateResponse extends BatchUpdateResponseObjectType {}
+
+/** `data` is `true` if the pointer moved, `false` if it was already at or after the message. */
+@ObjectType()
+class PointerUpdateResponse extends BatchUpdateResponseObjectType {}
 
 @Resolver()
 export class ParticipantResolver {
@@ -85,23 +86,24 @@ export class ParticipantResolver {
     );
   }
 
-  @Mutation(() => DetailedParticipantResponse)
+  @Mutation(() => PointerUpdateResponse)
   @UseMiddleware(isAuth)
   async updateLastSeenMessage(
+    @Arg("conversationId", () => String) conversationId: string,
     @Arg("messageId", () => String) messageId: string,
-    @Arg("participantId", () => String) participantId: string,
     @Ctx() ctx: Context
-  ): Promise<DetailedParticipantResponse> {
+  ): Promise<PointerUpdateResponse> {
     try {
       const userId = ctx.req.session.userId;
-      await this.messageQueueProducer.enqueueMessageSeenUpdate(
+      await this.messageQueueProducer.enqueueMessageSeenUpdate({
+        userId,
+        conversationId,
         messageId,
-        participantId,
-        userId
-      );
+      });
       return {
-        statusCode: StatusCodes.OK,
+        statusCode: StatusCodes.ACCEPTED,
         message: "Enqueued update last seen message.",
+        data: true,
       };
     } catch (error) {
       this.logger.error(
@@ -114,25 +116,22 @@ export class ParticipantResolver {
     }
   }
 
-  @Mutation(() => DetailedParticipantResponse)
+  @Mutation(() => PointerUpdateResponse)
   @UseMiddleware(isAuth)
   async updateLastReceivedMessage(
-    @Arg("messageId", () => String) messageId: string,
-    @Arg("participantId", () => String) participantId: string,
     @Arg("conversationId", () => String) conversationId: string,
+    @Arg("messageId", () => String) messageId: string,
     @Ctx() ctx: Context
-  ): Promise<DetailedParticipantResponse> {
+  ): Promise<PointerUpdateResponse> {
     try {
       const userId = ctx.req.session.userId;
-      const req: UpdateParticipantLastReceivedMessageRequest = {
-        messageId,
-        participantId,
+      const result = await this.updateLastReceivedMessageUseCase.execute({
         userId,
         conversationId,
-      };
-      const result = await this.updateLastReceivedMessageUseCase.execute(req);
+        messageId,
+      });
 
-      if (result.error || !result.data) {
+      if (result.error) {
         this.logger.error(
           `Error updating last received message: ${result.error}`
         );
@@ -202,13 +201,18 @@ export class ParticipantResolver {
   @UseMiddleware(isAuth)
   async batchUpdateLastReceivedMessages(
     @Arg("request", () => [BatchUpdateLastReceivedMessageRequest])
-    request: BatchUpdateLastReceivedMessagesRequest,
+    request: BatchUpdateLastReceivedMessageRequest[],
     @Ctx() ctx: Context
   ): Promise<BatchUpdateResponse> {
     try {
-      console.log(request);
       const result = await this.batchUpdateLastReceivedMessagesUseCase.execute(
-        request
+        {
+          userId: ctx.req.session.userId,
+          items: request.map(({ conversationId, messageId }) => ({
+            conversationId,
+            messageId,
+          })),
+        }
       );
 
       if (result.error || !result.data) {
@@ -237,14 +241,41 @@ export class ParticipantResolver {
       };
     }
   }
+
+  @Mutation(() => BatchUpdateResponse)
+  @UseMiddleware(isAuth)
+  async batchUpdateAllBehindConversations(@Ctx() ctx: Context) {
+    try {
+      const userId = ctx.req.session.userId;
+      await this.messageQueueProducer.enqueueFindAndBatchUpdateLastReceivedMessages(
+        userId
+      );
+
+      return {
+        statusCode: StatusCodes.ACCEPTED,
+        message: "Message queued for batching update",
+        data: true,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error batch updating all behind conversations: ${error.message}`
+      );
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      };
+    }
+  }
+
   @Subscription(() => [LastReceivedMessageUpdateBodyDTO], {
     topics: Topic.UPDATE_LAST_RECEIVED_MESSAGE,
+    filter: isRecipient,
   })
   updateLastReceivedMessageSubscription(
-    @Root() payload: PublishLastMessageReceivedPayload[]
+    @Root() payload: PublishLastMessageReceivedEvent
   ): LastReceivedMessageUpdateBodyDTO[] {
     try {
-      return payload;
+      return payload.updates;
     } catch (error) {
       this.logger.error(
         `Error in subscription updateLastReceivedMessage: ${error.message}`
@@ -255,6 +286,7 @@ export class ParticipantResolver {
 
   @Subscription(() => LastSeenMessageUpdateBodyDTO, {
     topics: Topic.UPDATE_LAST_SEEN_MESSAGE,
+    filter: isRecipient,
   })
   updateLastSeenMessageSubscription(
     @Root() payload: PublishLastMessageSeenPayload

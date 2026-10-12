@@ -10,6 +10,7 @@ describe("UpdateMessageUseCase", () => {
   beforeEach(() => {
     messageRepository = {
       getMessageById: jest.fn(),
+      getMessageByClientMessageId: jest.fn(),
       updateMessage: jest.fn(),
       updateMessageStatus: jest.fn(),
       deleteMessage: jest.fn(),

@@ -30,6 +30,7 @@ export class MessagePrismaRepository implements IMessageRepository {
         conversationId,
         senderId,
         replyToMessageId,
+        clientMessageId,
       } = message;
       const createdMessage = await this.prisma.message.create({
         data: {
@@ -37,6 +38,7 @@ export class MessagePrismaRepository implements IMessageRepository {
           content,
           extra: JSON.stringify(extra),
           messageType,
+          clientMessageId,
           conversation: {
             connect: { id: conversationId },
           },
@@ -88,6 +90,36 @@ export class MessagePrismaRepository implements IMessageRepository {
         value: null,
         error: new Error(
           `Error fetching message by id ${id}: ${error.message}`
+        ),
+      };
+    }
+  }
+
+  async getMessageByClientMessageId(
+    senderId: string,
+    clientMessageId: string
+  ): Promise<RepositoryResponse<IDetailedMessageRepositoryDTO | null, Error>> {
+    try {
+      const message = await this.prisma.message.findUnique({
+        where: { senderId_clientMessageId: { senderId, clientMessageId } },
+        include: {
+          sender: true,
+        },
+      });
+
+      return {
+        value: message
+          ? MessagePrismaMapper.fromPrismaModelToDetailDTO(message)
+          : null,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error fetching message by client message id ${clientMessageId}: ${error.message}`
+      );
+      return {
+        value: null,
+        error: new Error(
+          `Error fetching message by client message id ${clientMessageId}: ${error.message}`
         ),
       };
     }

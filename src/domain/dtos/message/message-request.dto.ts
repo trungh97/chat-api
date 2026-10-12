@@ -7,4 +7,5 @@ export interface ICreateMessageRequestDTO {
   messageType: keyof typeof MessageType;
   replyToMessageId?: string;
   receivers?: string[];
+  clientMessageId?: string;
 }

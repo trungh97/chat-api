@@ -1,8 +1,9 @@
 import {
   IMessageEventPublisher,
   PublishMessageSentPayload,
-  PublishLastMessageReceivedPayload,
+  PublishLastMessageReceivedEvent,
   PublishLastMessageSeenPayload,
+  PublishPresenseUpdatePayload,
 } from "@domain/events";
 import { TYPES } from "@infrastructure/external/di/inversify";
 import { ILogger } from "@shared/logger";
@@ -17,12 +18,13 @@ export class RedisMessagePublisher implements IMessageEventPublisher {
 
   async publishMessageSent(payload: PublishMessageSentPayload): Promise<void> {
     try {
-      const { message, sender, conversation } = payload;
+      const { message, sender, conversation, recipientUserIds } = payload;
       const data = new MessageWithConversation(
         message,
         conversation,
         sender.name,
-        sender.avatar
+        sender.avatar,
+        recipientUserIds
       );
 
       await pubSub.publish(Topic.NEW_MESSAGE_SENT, data);
@@ -32,10 +34,10 @@ export class RedisMessagePublisher implements IMessageEventPublisher {
   }
 
   async publishLastReceivedMessageUpdated(
-    payload: PublishLastMessageReceivedPayload[]
+    event: PublishLastMessageReceivedEvent
   ): Promise<void> {
     try {
-      await pubSub.publish(Topic.UPDATE_LAST_RECEIVED_MESSAGE, payload);
+      await pubSub.publish(Topic.UPDATE_LAST_RECEIVED_MESSAGE, event);
     } catch (error) {
       this.logger.error(
         `Error publishing last received message update: ${error}`
@@ -50,6 +52,16 @@ export class RedisMessagePublisher implements IMessageEventPublisher {
       await pubSub.publish(Topic.UPDATE_LAST_SEEN_MESSAGE, payload);
     } catch (error) {
       this.logger.error(`Error publishing last seen message update: ${error}`);
+    }
+  }
+
+  async publishPresenseUpdate(
+    payload: PublishPresenseUpdatePayload
+  ): Promise<void> {
+    try {
+      await pubSub.publish(Topic.PRESENSE_UPDATE, payload);
+    } catch (error) {
+      this.logger.error(`Error publishing presense update: ${error}`);
     }
   }
 }

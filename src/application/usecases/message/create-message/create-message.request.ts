@@ -7,6 +7,7 @@ export interface ICreateMessageRequestDTO {
   messageType: MessageType;
   replyToMessageId?: string;
   receivers?: string[];
+  clientMessageId?: string;
 }
 
 export type CreateMessageRequest = ICreateMessageRequestDTO & {

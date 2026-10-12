@@ -1,4 +1,3 @@
-import { IMessageEventPublisher } from "@domain/events";
 import { IConversationRepository } from "@domain/repositories";
 import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { ILogger } from "@shared/logger";
@@ -18,9 +17,6 @@ export class FindAndBatchUpdateLastReceivedMessageUseCase
 
     @inject(TYPES.BatchUpdateLastReceivedMessagesUseCase)
     private readonly batchUpdateLastReceivedMessagesUseCase: IBatchUpdateLastReceivedMessagesUseCase,
-
-    @inject(TYPES.MessagePublisher)
-    private readonly messagePublisher: IMessageEventPublisher,
 
     @inject(TYPES.WinstonLogger) private readonly logger: ILogger
   ) {}
@@ -43,33 +39,38 @@ export class FindAndBatchUpdateLastReceivedMessageUseCase
             "Failed to fetch behind conversations",
         };
       }
-      const behindConversations = behindConversationsResp.value;
 
-      // Convert to batch update request format
-      const updates = behindConversations.map((conv) => ({
-        participantId: conv.participantId,
-        messageId: conv.lastMessageId,
-      }));
+      const items = behindConversationsResp.value
+        .filter((conversation) => conversation.lastMessageId)
+        .map((conversation) => ({
+          conversationId: conversation.id,
+          messageId: conversation.lastMessageId,
+        }));
 
-      // Call batch update use-case
+      // The batch use case checks ownership, updates the pointers and publishes the events.
       const batchUpdateResp =
-        await this.batchUpdateLastReceivedMessagesUseCase.execute(updates);
+        await this.batchUpdateLastReceivedMessagesUseCase.execute({
+          userId: request.userId,
+          items,
+        });
 
       if (batchUpdateResp.error || !batchUpdateResp.data) {
+        this.logger.error(
+          `[FindAndBatchUpdateLastReceivedMessageUseCase]: ${batchUpdateResp.error}`
+        );
         return {
           data: null,
           error: batchUpdateResp.error || "Failed to batch update",
         };
       }
 
-      // Publish events if needed (omitted for brevity)
-      await this.messagePublisher.publishLastReceivedMessageUpdated(updates);
-
       return { data: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         data: null,
-        error: error.message || "Error in find and batch update",
+        error:
+          (error instanceof Error && error.message) ||
+          "Error in find and batch update",
       };
     }
   }

@@ -32,6 +32,7 @@ export class MessageMapper {
       replyToMessageId: message.replyToMessageId,
       createdAt: message.createdAt,
       extra: message.extra ? JSON.stringify(message.extra) : null,
+      clientMessageId: message.clientMessageId ?? null,
     };
   }
 
@@ -85,6 +86,7 @@ export class MessageMapper {
       senderAvatar: data.senderAvatar,
       senderName: data.senderName,
       extra: typeof data.extra === "object" ? JSON.stringify(data.extra) : null,
+      clientMessageId: data.clientMessageId ?? null,
     };
   }
 }

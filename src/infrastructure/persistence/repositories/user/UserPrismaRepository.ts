@@ -402,4 +402,39 @@ export class UserPrismaRepository implements IUserRepository {
       };
     }
   }
+
+  async updateUserLastSeenAt(
+    userId: string,
+    lastSeenAt: Date
+  ): Promise<RepositoryResponse<boolean, Error>> {
+    try {
+      const result = await this.prisma.user.update({
+        where: { id: userId },
+        data: { lastSeenAt },
+      });
+
+      if (!result) {
+        return {
+          value: false,
+          error: new Error(
+            `Failed to update last seen at for user with id ${userId}`
+          ),
+        };
+      }
+
+      return {
+        value: true,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error updating last seen at for user with id ${userId}: ${error.message}`
+      );
+      return {
+        value: false,
+        error: new Error(
+          `Error updating last seen at for user with id ${userId}: ${error.message}`
+        ),
+      };
+    }
+  }
 }

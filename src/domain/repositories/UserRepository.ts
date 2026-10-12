@@ -80,4 +80,16 @@ export interface IUserRepository {
       Error
     >
   >;
+
+  /**
+   * Updates the last seen at time for a user.
+   *
+   * @param userId - The unique identifier of the user.
+   * @param lastSeenAt - The date and time when the user was last seen.
+   * @returns A promise resolving to a boolean indicating if the update was successful.
+   */
+  updateUserLastSeenAt(
+    userId: string,
+    lastSeenAt: Date
+  ): Promise<RepositoryResponse<boolean, Error>>;
 }

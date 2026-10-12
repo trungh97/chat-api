@@ -10,9 +10,13 @@ import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
 import isNil from "lodash/isNil";
+import uniq from "lodash/uniq";
 import { CreateMessageRequest } from "./create-message.request";
 import { CreateMessageResponse } from "./create-message.response";
 import { ICreateMessageUseCase } from "./create-message.usecase";
+
+/** Matches the `message.client_message_id` column size. */
+const MAX_CLIENT_MESSAGE_ID_LENGTH = 64;
 
 @injectable()
 export class CreateMessageUseCase implements ICreateMessageUseCase {
@@ -42,6 +46,7 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
         messageType,
         replyToMessageId,
         currentUserId,
+        clientMessageId,
       } = request;
       let conversationId = request.conversationId;
 
@@ -52,7 +57,47 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
         };
       }
 
+      if (
+        clientMessageId !== undefined &&
+        (!clientMessageId.trim() ||
+          clientMessageId.length > MAX_CLIENT_MESSAGE_ID_LENGTH)
+      ) {
+        return {
+          data: null,
+          error: `Client message id must be 1-${MAX_CLIENT_MESSAGE_ID_LENGTH} characters`,
+        };
+      }
+
+      // A retry of a message that was already saved: return it instead of creating a duplicate.
+      if (clientMessageId) {
+        const { value: existingMessage, error: existingMessageError } =
+          await this.messageRepository.getMessageByClientMessageId(
+            currentUserId,
+            clientMessageId
+          );
+
+        if (existingMessageError) {
+          return { data: null, error: existingMessageError.message };
+        }
+
+        if (existingMessage) {
+          if (
+            conversationId &&
+            existingMessage.conversationId !== conversationId
+          ) {
+            return {
+              data: null,
+              error:
+                "Client message id was already used in another conversation",
+            };
+          }
+
+          return { data: MessageUseCaseMapper.toUseCaseDTO(existingMessage) };
+        }
+      }
+
       let currentConversation: Conversation = null;
+      let recipientUserIds: string[] = [];
 
       if (isNil(conversationId)) {
         // Create a new conversation in case this is the first message.
@@ -70,6 +115,7 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
         }
 
         currentConversation = newConversation;
+        recipientUserIds = uniq([currentUserId, ...(receivers ?? [])]);
 
         conversationId = newConversation.id;
       } else {
@@ -100,6 +146,10 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
             error: `User ${currentUserId} is not a participant in the conversation.`,
           };
         }
+
+        recipientUserIds = participants.map(
+          (participant) => participant.userId
+        );
       }
 
       const messageData = await Message.create(
@@ -110,6 +160,7 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
           extra,
           messageType,
           replyToMessageId,
+          clientMessageId,
         },
         currentUserId
       );
@@ -148,6 +199,7 @@ export class CreateMessageUseCase implements ICreateMessageUseCase {
           avatar: data.senderAvatar,
         },
         conversation: currentConversation,
+        recipientUserIds,
       });
 
       return { data };

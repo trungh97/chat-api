@@ -13,6 +13,7 @@ export interface IMessageWithSenderUseCaseDTO {
   senderName: string;
   senderAvatar: string | null;
   status: keyof typeof MessageStatus
+  clientMessageId?: string | null;
 }
 
 export interface IMessageWithConversationUseCaseDTO

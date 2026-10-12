@@ -28,6 +28,12 @@ export class ParticipantDTO {
 
   @Field(() => String, { nullable: true })
   lastReceivedMessageId?: string;
+
+  @Field(() => Date, { nullable: true })
+  lastSeenMessageAt?: Date;
+
+  @Field(() => Date, { nullable: true })
+  lastReceivedMessageAt?: Date;
 }
 
 @ObjectType()
@@ -42,10 +48,16 @@ export class DetailedParticipantDTO extends ParticipantDTO {
 @ObjectType()
 export class LastReceivedMessageUpdateBodyDTO {
   @Field(() => String)
+  conversationId: string;
+
+  @Field(() => String)
   participantId: string;
 
   @Field(() => String)
   messageId: string;
+
+  @Field(() => Date)
+  messageCreatedAt: Date;
 }
 
 @ObjectType()

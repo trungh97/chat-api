@@ -33,6 +33,9 @@ export class MessageDTO {
 
   @Field(() => Date)
   createdAt: Date;
+
+  @Field(() => String, { nullable: true })
+  clientMessageId?: string | null;
 }
 
 @ObjectType()

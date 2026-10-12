@@ -84,7 +84,7 @@ const main = async () => {
   // when a client makes websocket handshake (upgrade)
   httpServer.on("upgrade", (req, socket, head) => {
     sessionMiddleware(req as any, {} as any, () => {
-      if (!req.headers.cookie.includes(COOKIE_NAME)) {
+      if (!req.headers.cookie?.includes(COOKIE_NAME)) {
         socket.destroy();
         return;
       }

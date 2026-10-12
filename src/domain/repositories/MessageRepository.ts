@@ -26,6 +26,18 @@ export interface IMessageRepository {
   ): Promise<RepositoryResponse<IDetailedMessageRepositoryDTO, Error>>;
 
   /**
+   * Retrieves a message by the id its sender's client generated for it.
+   *
+   * @param {string} senderId - The ID of the user who sent the message.
+   * @param {string} clientMessageId - The client-generated message ID.
+   * @returns {Promise<RepositoryResponse<IDetailedMessageRepositoryDTO | null, Error>>} The message, or `null` if none exists.
+   */
+  getMessageByClientMessageId(
+    senderId: string,
+    clientMessageId: string
+  ): Promise<RepositoryResponse<IDetailedMessageRepositoryDTO | null, Error>>;
+
+  /**
    * Updates an existing message.
    *
    * @param {string} id - The ID of the message to update.

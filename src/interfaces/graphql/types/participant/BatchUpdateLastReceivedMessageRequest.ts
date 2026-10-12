@@ -3,7 +3,7 @@ import { Field, InputType } from "type-graphql";
 @InputType()
 export class BatchUpdateLastReceivedMessageRequest {
   @Field(() => String)
-  participantId: string;
+  conversationId: string;
 
   @Field(() => String)
   messageId: string;

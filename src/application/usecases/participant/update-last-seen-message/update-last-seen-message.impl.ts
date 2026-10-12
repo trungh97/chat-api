@@ -1,9 +1,15 @@
-import { IGetMessageByIdUseCase } from "@application/usecases/message";
-import { IParticipantRepository } from "@domain/repositories";
-import { TYPES } from "@infrastructure/external/di/inversify";
+import { IMessageEventPublisher } from "@domain/events";
+import {
+  IMessageRepository,
+  IParticipantRepository,
+} from "@domain/repositories";
+import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
-import { IGetParticipantsByConversationIdUseCase } from "../get-participants-by-conversation-id";
+import {
+  getConversationRecipientUserIds,
+  resolvePointerTarget,
+} from "../pointer-target";
 import { UpdateParticipantLastSeenMessageRequest } from "./update-last-seen-message.request";
 import { UpdateParticipantLastSeenMessageResponse } from "./update-last-seen-message.response";
 import { IUpdateParticipantLastSeenMessageUseCase } from "./update-last-seen-message.usecase";
@@ -16,11 +22,11 @@ export class UpdateParticipantLastSeenMessageUseCase
     @inject(TYPES.ParticipantRepository)
     private participantRepository: IParticipantRepository,
 
-    @inject(TYPES.GetMessageByIdUseCase)
-    private getMessageByIdUseCase: IGetMessageByIdUseCase,
+    @inject(TYPES.MessageRepository)
+    private messageRepository: IMessageRepository,
 
-    @inject(TYPES.GetParticipantsByConversationIdUseCase)
-    private getParticipantsByConversationIdUseCase: IGetParticipantsByConversationIdUseCase,
+    @inject(TYPES.MessagePublisher)
+    private messagePublisher: IMessageEventPublisher,
 
     @inject(TYPES.WinstonLogger)
     private logger: ILogger
@@ -30,61 +36,62 @@ export class UpdateParticipantLastSeenMessageUseCase
     request: UpdateParticipantLastSeenMessageRequest
   ): Promise<UpdateParticipantLastSeenMessageResponse> {
     try {
-      const { participantId, messageId, userId } = request;
+      const { conversationId, messageId } = request;
 
-      const { data: messageData, error: messageError } =
-        await this.getMessageByIdUseCase.execute({
-          id: messageId,
-          userId,
-        });
-
-      if (!messageData || messageError) {
-        this.logger.error(messageError);
-        return {
-          data: null,
-          error:
-            "User does not have permission to update status of this message or message does not exist.",
-        };
-      }
-
-      const { data: participants, error: participantsError } =
-        await this.getParticipantsByConversationIdUseCase.execute({
-          conversationId: messageData.conversationId,
-          currentUserId: userId,
-        });
-
-      if (participantsError || !participants) {
-        this.logger.error(participantsError);
-        return {
-          data: null,
-          error: "Error fetching participants or no participants found.",
-        };
-      }
-
-      const isValidParticipant = participants.find(
-        (participant) => participant.id === participantId
+      const { data: target, error: targetError } = await resolvePointerTarget(
+        this.participantRepository,
+        this.messageRepository,
+        request
       );
 
-      if (!isValidParticipant) {
-        this.logger.error("Participant does not exist.");
-        return {
-          data: null,
-          error: "Participant does not exist.",
-        };
+      if (targetError || !target) {
+        this.logger.error(
+          `[UpdateParticipantLastSeenMessageUseCase]: ${targetError}`
+        );
+        return { data: null, error: targetError };
       }
 
-      const { value, error } =
-        await this.participantRepository.updateLastSeenMessage(
+      const { participant, messageCreatedAt } = target;
+
+      const { value: moved, error } =
+        await this.participantRepository.updateLastSeenMessage({
+          participantId: participant.id,
           messageId,
-          participantId
-        );
+          messageCreatedAt,
+        });
 
       if (error) {
         this.logger.error(error.message);
         return { data: null, error: error.message };
       }
 
-      return { data: value };
+      // The participant had already seen this message or a later one.
+      if (!moved) return { data: false };
+
+      const { data: recipientUserIds, error: recipientsError } =
+        await getConversationRecipientUserIds(
+          this.participantRepository,
+          conversationId
+        );
+
+      if (recipientsError) {
+        // The pointer is saved; clients catch up the next time they fetch the conversation.
+        this.logger.error(
+          `[UpdateParticipantLastSeenMessageUseCase]: Seen update saved but not published: ${recipientsError}`
+        );
+        return { data: true };
+      }
+
+      await this.messagePublisher.publishLastSeenMessageUpdated({
+        conversationId,
+        participantId: participant.id,
+        messageId,
+        messageCreatedAt,
+        lastSeenAt: new Date(),
+        recipientUserIds,
+      });
+
+      return { data: true };
     } catch (error) {
       this.logger.error(
         `[UpdateParticipantLastSeenMessageUseCase]: Error executing update last seen message use case: ${error.message}`
