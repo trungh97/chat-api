@@ -1,4 +1,8 @@
 import { User } from "@domain/entities";
+import {
+  ICursorBasedPaginationParams,
+  ICursorBasedPaginationResponse,
+} from "@domain/interfaces/pagination/CursorBasedPagination";
 import { IUserRepository } from "@domain/repositories";
 import { TYPES } from "@infrastructure/external/di/inversify/types";
 import {
@@ -7,6 +11,7 @@ import {
   PrismaClient,
   User as UserPrismaModel,
 } from "@prisma/client";
+import { PAGE_LIMIT } from "@shared/constants";
 import { ILogger } from "@shared/logger";
 import { RepositoryResponse } from "@shared/responses";
 import { inject, injectable } from "inversify";
@@ -434,6 +439,57 @@ export class UserPrismaRepository implements IUserRepository {
         error: new Error(
           `Error updating last seen at for user with id ${userId}: ${error.message}`
         ),
+      };
+    }
+  }
+
+  async searchUsers({
+    excludeUserId,
+    search,
+    pagination,
+  }: {
+    excludeUserId: string;
+    search?: string;
+    pagination: ICursorBasedPaginationParams;
+  }): Promise<RepositoryResponse<ICursorBasedPaginationResponse<User>, Error>> {
+    try {
+      const { cursor, limit = PAGE_LIMIT } = pagination;
+      const term = search?.trim();
+
+      // MySQL's default collation compares case-insensitively, so `contains` matches any case.
+      const users = await this.prisma.user.findMany({
+        where: {
+          id: { not: excludeUserId },
+          isActive: true,
+          ...(term && {
+            OR: [
+              { firstName: { contains: term } },
+              { lastName: { contains: term } },
+              { email: { contains: term } },
+            ],
+          }),
+        },
+        orderBy: [{ firstName: "asc" }, { lastName: "asc" }, { id: "asc" }],
+        take: limit + 1,
+        ...(cursor && { cursor: { id: cursor }, skip: 1 }),
+      });
+
+      const page = users.slice(0, limit);
+
+      return {
+        value: {
+          data: page.map((user) => this.toDomainFromPersistence(user)),
+          nextCursor:
+            users.length > limit ? page[page.length - 1].id : undefined,
+        },
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      this.logger.error(`Error searching users: ${errorMessage}`);
+      return {
+        error: new Error(`Error searching users: ${errorMessage}`),
+        value: { data: [], nextCursor: undefined },
       };
     }
   }
