@@ -280,9 +280,22 @@ export class UserResolver {
   @Mutation(() => UserPresenseGlobalResponse)
   @UseMiddleware(isAuth)
   async updateUserPresence(
-    @Arg("userId", () => String) userId: string,
-    @Arg("isOnline", () => Boolean) isOnline: boolean
+    // Ignored: the user always comes from the session. Kept so older clients keep working.
+    @Arg("userId", () => String, {
+      nullable: true,
+      deprecationReason: "Ignored. The user is taken from the session.",
+    })
+    _userId: string | undefined,
+    @Arg("isOnline", () => Boolean) isOnline: boolean,
+    @Ctx() { req }: Context
   ): Promise<UserPresenseGlobalResponse> {
+    const userId = req.session.userId;
+    if (!userId) {
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        error: "User is not authenticated",
+      };
+    }
     try {
       const result = await this.updateUserPresenceUseCase.execute({
         userId,
@@ -319,8 +332,21 @@ export class UserResolver {
   @Mutation(() => HeartBeatUserPresenseGlobalResponse)
   @UseMiddleware(isAuth)
   async heartbeatUserPresence(
-    @Arg("userId", () => String) userId: string
+    // Ignored: the user always comes from the session. Kept so older clients keep working.
+    @Arg("userId", () => String, {
+      nullable: true,
+      deprecationReason: "Ignored. The user is taken from the session.",
+    })
+    _userId: string | undefined,
+    @Ctx() { req }: Context
   ): Promise<HeartBeatUserPresenseGlobalResponse> {
+    const userId = req.session.userId;
+    if (!userId) {
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        error: "User is not authenticated",
+      };
+    }
     try {
       const result = await this.heartbeatUserPresenseUseCase.execute({
         userId,
