@@ -2,3 +2,4 @@ export * from "./guessConversationType";
 export * from "./generateSystemMessageInGroupConversation";
 export * from "./conversationAvatar";
 export * from "./avatarColor";
+export * from "./resolveUserNames";

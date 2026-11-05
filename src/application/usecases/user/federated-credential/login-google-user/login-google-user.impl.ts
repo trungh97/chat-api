@@ -1,3 +1,4 @@
+import { resolveUserNames } from "@application/utils";
 import { User } from "@domain/entities";
 import { IUserRepository } from "@domain/repositories";
 import { verifyIdTokenAndGetPayload } from "@infrastructure/external/auth/google";
@@ -36,17 +37,25 @@ export class LoginGoogleUserUseCase implements ILoginGoogleUserUseCase {
       };
     }
 
-    const { email, family_name, given_name, picture, userId } = tokenPayload;
+    const { email = '', family_name, given_name, name, picture, userId } =
+      tokenPayload;
 
     // Check if the email is existed in the database
     const foundUser = await this.userRepository.findUserByEmail(email);
 
     // If the user does not exist, create new federated credential user.
     if (!foundUser.value) {
+      const names = resolveUserNames({
+        givenName: given_name,
+        familyName: family_name,
+        fullName: name,
+        email,
+      });
+
       const user = await User.create({
         email,
-        firstName: family_name,
-        lastName: given_name,
+        firstName: names.firstName,
+        lastName: names.lastName,
         avatar: picture,
         provider: "GOOGLE",
         providerUserId: userId,
