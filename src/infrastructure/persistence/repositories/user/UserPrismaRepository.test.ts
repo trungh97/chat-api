@@ -1,4 +1,6 @@
-import { PrismaClient, User as UserPrismaModel } from "@prisma/client";
+import { PrismaClientProvider } from "@infrastructure/persistence/databases/mysql/PrismaClientProvider";
+import { User as UserPrismaModel } from "@prisma/client";
+import { lockUserPairForUpdate } from "@prisma/client/sql";
 import { ILogger } from "@shared/logger";
 import { UserPrismaRepository } from "./UserPrismaRepository";
 
@@ -16,6 +18,54 @@ const userRow = (id: string, firstName: string): UserPrismaModel => ({
   status: null,
 });
 
+describe("UserPrismaRepository.lockUsersForUpdate", () => {
+  let $queryRawTyped: jest.Mock;
+  let provider: { client: unknown; inTransaction: boolean };
+  let repo: UserPrismaRepository;
+
+  beforeEach(() => {
+    $queryRawTyped = jest.fn();
+    provider = { client: { $queryRawTyped }, inTransaction: true };
+    repo = new UserPrismaRepository(
+      provider as unknown as PrismaClientProvider,
+      { error: jest.fn() } as unknown as ILogger
+    );
+  });
+
+  it("runs the lock query with both ids and returns the ids it locked", async () => {
+    $queryRawTyped.mockResolvedValue([{ id: "u1" }, { id: "u2" }]);
+
+    const result = await repo.lockUsersForUpdate("u2", "u1");
+
+    expect($queryRawTyped).toHaveBeenCalledTimes(1);
+    expect($queryRawTyped).toHaveBeenCalledWith(
+      lockUserPairForUpdate("u2", "u1")
+    );
+    expect(result).toEqual({ value: ["u1", "u2"] });
+  });
+
+  it("refuses to run outside a transaction", async () => {
+    provider.inTransaction = false;
+
+    const result = await repo.lockUsersForUpdate("u1", "u2");
+
+    expect($queryRawTyped).not.toHaveBeenCalled();
+    expect(result.value).toEqual([]);
+    expect(result.error?.message).toBe(
+      "Locking users requires an open transaction"
+    );
+  });
+
+  it("returns the error when the lock fails", async () => {
+    $queryRawTyped.mockRejectedValue(new Error("lock wait timeout"));
+
+    const result = await repo.lockUsersForUpdate("u1", "u2");
+
+    expect(result.value).toEqual([]);
+    expect(result.error?.message).toBe("Error locking users: lock wait timeout");
+  });
+});
+
 describe("UserPrismaRepository.searchUsers", () => {
   let findMany: jest.Mock;
   let logger: jest.Mocked<Pick<ILogger, "error">>;
@@ -25,7 +75,7 @@ describe("UserPrismaRepository.searchUsers", () => {
     findMany = jest.fn();
     logger = { error: jest.fn() };
     repo = new UserPrismaRepository(
-      { user: { findMany } } as unknown as PrismaClient,
+      { client: { user: { findMany } } } as unknown as PrismaClientProvider,
       logger as unknown as ILogger
     );
   });

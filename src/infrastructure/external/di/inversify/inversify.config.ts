@@ -17,10 +17,12 @@ import {
   CreateConversationUseCase,
   DeleteConversationUseCase,
   FindConversationByIdUseCase,
+  GetDirectConversationUseCase,
   GetMyConversationsUseCase,
   ICreateConversationUsecase,
   IDeleteConversationUsecase,
   IFindConversationByIdUseCase,
+  IGetDirectConversationUseCase,
   IGetMyConversationsUsecase,
 } from "@application/usecases/conversation";
 import {
@@ -99,9 +101,12 @@ import {
 import {
   ConversationTitleService,
   IConversationTitleService,
+  ITransactionManager,
 } from "@domain/services";
 import { googleOAuth2Client } from "@infrastructure/external/auth/google";
 import { prismaClient } from "@infrastructure/persistence/databases/mysql/connection";
+import { PrismaClientProvider } from "@infrastructure/persistence/databases/mysql/PrismaClientProvider";
+import { PrismaTransactionManager } from "@infrastructure/persistence/databases/mysql/PrismaTransactionManager";
 import { redisClient } from "@infrastructure/persistence/databases/redis/connection";
 import {
   MessageQueueProducer,
@@ -127,6 +132,14 @@ import type { RedisClientType } from "redis";
 const container = new Container();
 
 container.bind<PrismaClient>(TYPES.PrismaClient).toConstantValue(prismaClient);
+container
+  .bind<PrismaClientProvider>(TYPES.PrismaClientProvider)
+  .to(PrismaClientProvider)
+  .inSingletonScope();
+container
+  .bind<ITransactionManager>(TYPES.TransactionManager)
+  .to(PrismaTransactionManager)
+  .inSingletonScope();
 
 container.bind<RedisClientType>(TYPES.RedisClient).toConstantValue(redisClient);
 
@@ -189,6 +202,9 @@ container
 container
   .bind<IFindConversationByIdUseCase>(TYPES.FindConversationByIdUseCase)
   .to(FindConversationByIdUseCase);
+container
+  .bind<IGetDirectConversationUseCase>(TYPES.GetDirectConversationUseCase)
+  .to(GetDirectConversationUseCase);
 
 /** -------------- FRIEND REQUEST REPOSITORIES --------------- */
 container

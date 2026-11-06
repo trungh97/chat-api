@@ -35,6 +35,7 @@ export const TYPES = {
   CreateConversationUseCase: Symbol.for("CreateConversationUseCase"),
   DeleteConversationUseCase: Symbol.for("DeleteConversationUseCase"),
   FindConversationByIdUseCase: Symbol.for("FindConversationByIdUseCase"),
+  GetDirectConversationUseCase: Symbol.for("GetDirectConversationUseCase"),
 
   /* Friend Request */
   CreateFriendRequestUseCase: Symbol.for("CreateFriendRequestUseCase"),
@@ -97,6 +98,8 @@ export const TYPES = {
 
   // OTHERS
   PrismaClient: Symbol.for("PrismaClient"),
+  PrismaClientProvider: Symbol.for("PrismaClientProvider"),
+  TransactionManager: Symbol.for("TransactionManager"),
   WinstonLogger: Symbol.for("WinstonLogger"),
   RedisClient: Symbol.for("RedisClient"),
   OAuth2Client: Symbol.for("OAuth2Client"),

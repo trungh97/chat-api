@@ -41,6 +41,16 @@ export interface IConversationRepository {
   ): Promise<RepositoryResponse<Conversation, Error>>;
 
   /**
+   * Finds the 1:1 conversation between two different users: type PRIVATE, not deleted,
+   * with both users as participants.
+   * @returns A promise resolving to the conversation, or null if there is none.
+   */
+  findPrivateBetween(
+    firstUserId: string,
+    secondUserId: string
+  ): Promise<RepositoryResponse<Conversation | null, Error>>;
+
+  /**
    * Updates an existing conversation.
    * @param id - The unique identifier of the conversation to update.
    * @param conversation - The conversation entity with updated fields.

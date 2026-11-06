@@ -98,6 +98,18 @@ export interface IUserRepository {
   ): Promise<RepositoryResponse<boolean, Error>>;
 
   /**
+   * Locks two user rows until the current transaction ends (`SELECT ... FOR UPDATE`), in
+   * id order. Call it inside `ITransactionManager.run` to serialize work on a user pair;
+   * outside a transaction it returns an error instead of locking.
+   *
+   * @returns The ids of the users that exist (an unknown id is not returned).
+   */
+  lockUsersForUpdate(
+    firstUserId: string,
+    secondUserId: string
+  ): Promise<RepositoryResponse<string[], Error>>;
+
+  /**
    * Searches active users by first name, last name or email, excluding one user.
    * Results are ordered by first name, last name, then id. The cursor is the id of
    * the last user on the previous page.
