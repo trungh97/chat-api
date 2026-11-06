@@ -97,6 +97,8 @@ export const TYPES = {
 
   // OTHERS
   PrismaClient: Symbol.for("PrismaClient"),
+  PrismaClientProvider: Symbol.for("PrismaClientProvider"),
+  TransactionManager: Symbol.for("TransactionManager"),
   WinstonLogger: Symbol.for("WinstonLogger"),
   RedisClient: Symbol.for("RedisClient"),
   OAuth2Client: Symbol.for("OAuth2Client"),

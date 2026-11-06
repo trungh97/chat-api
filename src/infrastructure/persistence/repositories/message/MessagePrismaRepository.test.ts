@@ -1,3 +1,4 @@
+import { PrismaClientProvider } from "@infrastructure/persistence/databases/mysql/PrismaClientProvider";
 import { PrismaClient } from "@prisma/client";
 import { ILogger } from "@shared/logger";
 import { MessagePrismaRepository } from "./MessagePrismaRepository";
@@ -21,7 +22,10 @@ describe("MessagePrismaRepository", () => {
       },
     } as any;
     logger = { error: jest.fn() } as any;
-    repo = new MessagePrismaRepository(prisma, logger);
+    repo = new MessagePrismaRepository(
+      { client: prisma } as unknown as PrismaClientProvider,
+      logger
+    );
   });
 
   it("createMessage: should create and return a message DTO", async () => {
