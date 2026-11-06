@@ -72,6 +72,19 @@ describe("LoginGoogleUserUseCase", () => {
     expect(createdUser().lastName).toBe("trung");
   });
 
+  it("rejects a token without an email", async () => {
+    mockedVerify.mockResolvedValue({
+      given_name: "Trung",
+      userId: "google-1",
+    } as TokenPayload);
+
+    const result = await useCase.execute({ code: "code" });
+
+    expect(result).toEqual({ data: null, error: "Failed to login" });
+    expect(userRepository.findUserByEmail).not.toHaveBeenCalled();
+    expect(userRepository.createFederatedCredentialUser).not.toHaveBeenCalled();
+  });
+
   it("returns the existing user without creating one", async () => {
     const existing = { id: "u1" } as User;
     userRepository.findUserByEmail.mockResolvedValue({ value: existing });

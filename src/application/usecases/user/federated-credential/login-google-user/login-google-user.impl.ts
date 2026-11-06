@@ -37,8 +37,17 @@ export class LoginGoogleUserUseCase implements ILoginGoogleUserUseCase {
       };
     }
 
-    const { email = '', family_name, given_name, name, picture, userId } =
+    const { email, family_name, given_name, name, picture, userId } =
       tokenPayload;
+
+    // Users are identified by email, and it is the last fallback for required names.
+    if (!email?.trim()) {
+      this.logger.error("Google id token has no email");
+      return {
+        error: "Failed to login",
+        data: null,
+      };
+    }
 
     // Check if the email is existed in the database
     const foundUser = await this.userRepository.findUserByEmail(email);

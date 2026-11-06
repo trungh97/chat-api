@@ -17,7 +17,7 @@ const clean = (value?: string | null): string => value?.trim() ?? "";
  *
  * Uses the given and family names when present. A missing part is taken from the
  * full name (first word, or the remaining words), and then from the part of the
- * email before the @.
+ * email before the @. The caller must pass a non-empty email, or both names can be empty.
  */
 export const resolveUserNames = ({
   givenName,
