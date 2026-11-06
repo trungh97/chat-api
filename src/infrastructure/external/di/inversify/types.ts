@@ -4,6 +4,7 @@ export const TYPES = {
   PostPrismaRepository: Symbol.for("PostPrismaRepository"),
   UserRepository: Symbol.for("UserRepository"),
   UserRedisRepository: Symbol.for("UserRedisRepository"),
+  UserPresenceReader: Symbol.for("UserPresenceReader"),
   ConversationRepository: Symbol.for("ConversationRepository"),
   ContactRepository: Symbol.for("ContactRepository"),
   FriendRequestRepository: Symbol.for("FriendRequestRepository"),
@@ -27,6 +28,7 @@ export const TYPES = {
   LoginCredentialBasedUserUseCase: Symbol.for("LoginUserUseCase"),
   UpdateUserPresenseUseCase: Symbol.for("UpdateUserPresenseUseCase"),
   HeartbeatUserPresenseUseCase: Symbol.for("HeartbeatUserPresenseUseCase"),
+  SearchUsersUseCase: Symbol.for("SearchUsersUseCase"),
 
   /* Conversation */
   GetMyConversationsUseCase: Symbol.for("GetMyConversationsUseCase"),

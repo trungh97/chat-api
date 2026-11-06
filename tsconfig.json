@@ -2,6 +2,7 @@
   "compilerOptions": {
     "baseUrl": "./src",
     "rootDirs": ["src"],
+    "rootDir": "./src",
     "outDir": "./dist",
     "lib": ["es2021"],
     "target": "ES2022",
@@ -22,7 +23,8 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": false,
-    "ignoreDeprecations": "6.0"
+    "ignoreDeprecations": "6.0",
+    "strict": false
   },
   "include": ["src/**/*.ts", "node_modules/@prisma/client/**/*.d.ts"],
   "exclude": ["node_modules"]

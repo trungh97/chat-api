@@ -82,7 +82,10 @@ import {
   LoginGoogleUserUseCase,
   IHeartbeatUserPresenseUseCase,
   HeartbeatUserPresenseUseCase,
+  ISearchUsersUseCase,
+  SearchUsersUseCase,
 } from "@application/usecases/user";
+import { IUserPresenceReader } from "@domain/cache";
 import { IMessageEventPublisher } from "@domain/events";
 import { IMessageQueueProducer } from "@domain/queue";
 import {
@@ -109,7 +112,10 @@ import { ConversationPrismaRepository } from "@infrastructure/persistence/reposi
 import { FriendRequestPrismaRepository } from "@infrastructure/persistence/repositories/friendRequest";
 import { MessagePrismaRepository } from "@infrastructure/persistence/repositories/message";
 import { ParticipantPrismaRepository } from "@infrastructure/persistence/repositories/participant";
-import { UserPrismaRepository } from "@infrastructure/persistence/repositories/user";
+import {
+  UserPresenceRedisRepository,
+  UserPrismaRepository,
+} from "@infrastructure/persistence/repositories/user";
 import {
   IUserRedisRepository,
   UserRedisRepository,
@@ -136,6 +142,9 @@ container.bind<IUserRepository>(TYPES.UserRepository).to(UserPrismaRepository);
 container
   .bind<IUserRedisRepository>(TYPES.UserRedisRepository)
   .to(UserRedisRepository);
+container
+  .bind<IUserPresenceReader>(TYPES.UserPresenceReader)
+  .to(UserPresenceRedisRepository);
 
 /** -------------- USER USECASES --------------- */
 container
@@ -158,6 +167,9 @@ container
 container
   .bind<IHeartbeatUserPresenseUseCase>(TYPES.HeartbeatUserPresenseUseCase)
   .to(HeartbeatUserPresenseUseCase);
+container
+  .bind<ISearchUsersUseCase>(TYPES.SearchUsersUseCase)
+  .to(SearchUsersUseCase);
 
 /** -------------- CONVERSATION REPOSITORIES --------------- */
 container

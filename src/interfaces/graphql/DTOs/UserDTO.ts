@@ -58,3 +58,25 @@ export class UserPresenceDTO {
   @Field(() => Date)
   lastSeenAt!: Date;
 }
+
+/** A user as shown in the contact list: public profile fields plus online status. */
+@ObjectType()
+export class UserContactDTO {
+  @Field(() => ID)
+  id!: string;
+
+  @Field(() => String)
+  email!: string;
+
+  @Field(() => String)
+  firstName!: string;
+
+  @Field(() => String)
+  lastName!: string;
+
+  @Field(() => String, { nullable: true })
+  avatar?: string | null;
+
+  @Field(() => Boolean)
+  isOnline!: boolean;
+}
