@@ -16,15 +16,17 @@ const user = (id: string, firstName: string, avatar?: string) =>
 describe("SearchUsersUseCase", () => {
   let userRepository: jest.Mocked<Pick<IUserRepository, "searchUsers">>;
   let presenceReader: jest.Mocked<IUserPresenceReader>;
+  let logger: jest.Mocked<Pick<ILogger, "error">>;
   let useCase: SearchUsersUseCase;
 
   beforeEach(() => {
     userRepository = { searchUsers: jest.fn() };
     presenceReader = { getOnlineStatusByUserIds: jest.fn() };
+    logger = { error: jest.fn() };
     useCase = new SearchUsersUseCase(
       userRepository as unknown as IUserRepository,
       presenceReader,
-      { error: jest.fn() } as unknown as ILogger
+      logger as unknown as ILogger
     );
   });
 
@@ -99,6 +101,28 @@ describe("SearchUsersUseCase", () => {
       ],
       nextCursor: "u2",
     });
+  });
+
+  it("shows everyone as offline when online status can't be read", async () => {
+    userRepository.searchUsers.mockResolvedValue({
+      value: { data: [user("u1", "Ann")], nextCursor: undefined },
+    });
+    presenceReader.getOnlineStatusByUserIds.mockRejectedValue(
+      new Error("redis down")
+    );
+
+    const result = await useCase.execute({
+      userId: "me",
+      pagination: { limit: 20 },
+    });
+
+    expect(result.error).toBeUndefined();
+    expect(result.data?.data).toEqual([
+      expect.objectContaining({ id: "u1", isOnline: false }),
+    ]);
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.stringContaining("redis down")
+    );
   });
 
   it("returns the repository error", async () => {

@@ -33,14 +33,10 @@ export class UserPresenceRedisRepository implements IUserPresenceReader {
 }
 
 /**
- * Reads one field of an HGETALL reply. node-redis types pipeline replies as raw, so
- * accept both the parsed object form and the flat `[field, value, ...]` form.
+ * Reads one field of an HGETALL reply. `execAsPipeline` already turns each reply into
+ * an object, but node-redis types pipeline replies loosely, so check the shape.
  */
 const readField = (reply: unknown, field: string): string | undefined => {
-  if (Array.isArray(reply)) {
-    const index = reply.findIndex((item, i) => i % 2 === 0 && item === field);
-    return index === -1 ? undefined : String(reply[index + 1]);
-  }
   if (reply && typeof reply === "object") {
     const value = (reply as Record<string, unknown>)[field];
     return value === undefined ? undefined : String(value);

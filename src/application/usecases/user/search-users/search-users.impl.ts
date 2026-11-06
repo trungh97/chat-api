@@ -44,10 +44,9 @@ export class SearchUsersUseCase implements ISearchUsersUseCase {
         return { data: null, error: error.message };
       }
 
-      const onlineStatuses =
-        await this.userPresenceReader.getOnlineStatusByUserIds(
-          value.data.map((user) => user.id)
-        );
+      const onlineStatuses = await this.getOnlineStatuses(
+        value.data.map((user) => user.id)
+      );
 
       return {
         data: {
@@ -66,6 +65,22 @@ export class SearchUsersUseCase implements ISearchUsersUseCase {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`Error searching users: ${message}`);
       return { data: null, error: "Failed to search users." };
+    }
+  }
+
+  /**
+   * Online status is a nice-to-have snapshot, so a Redis failure shows everyone as
+   * offline instead of failing the search.
+   */
+  private async getOnlineStatuses(
+    userIds: string[]
+  ): Promise<Record<string, boolean>> {
+    try {
+      return await this.userPresenceReader.getOnlineStatusByUserIds(userIds);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Error reading online status: ${message}`);
+      return {};
     }
   }
 }
