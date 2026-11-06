@@ -17,10 +17,12 @@ import {
   CreateConversationUseCase,
   DeleteConversationUseCase,
   FindConversationByIdUseCase,
+  GetDirectConversationUseCase,
   GetMyConversationsUseCase,
   ICreateConversationUsecase,
   IDeleteConversationUsecase,
   IFindConversationByIdUseCase,
+  IGetDirectConversationUseCase,
   IGetMyConversationsUsecase,
 } from "@application/usecases/conversation";
 import {
@@ -200,6 +202,9 @@ container
 container
   .bind<IFindConversationByIdUseCase>(TYPES.FindConversationByIdUseCase)
   .to(FindConversationByIdUseCase);
+container
+  .bind<IGetDirectConversationUseCase>(TYPES.GetDirectConversationUseCase)
+  .to(GetDirectConversationUseCase);
 
 /** -------------- FRIEND REQUEST REPOSITORIES --------------- */
 container

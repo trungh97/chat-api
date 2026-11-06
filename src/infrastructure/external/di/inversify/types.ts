@@ -35,6 +35,7 @@ export const TYPES = {
   CreateConversationUseCase: Symbol.for("CreateConversationUseCase"),
   DeleteConversationUseCase: Symbol.for("DeleteConversationUseCase"),
   FindConversationByIdUseCase: Symbol.for("FindConversationByIdUseCase"),
+  GetDirectConversationUseCase: Symbol.for("GetDirectConversationUseCase"),
 
   /* Friend Request */
   CreateFriendRequestUseCase: Symbol.for("CreateFriendRequestUseCase"),
