@@ -288,12 +288,6 @@ export class ConversationResolver {
     @Ctx() { req }: Context
   ): Promise<ExtendConversationGlobalResponse> {
     const userId = req.session.userId;
-    if (!userId) {
-      return {
-        statusCode: StatusCodes.UNAUTHORIZED,
-        error: "User is not authenticated",
-      };
-    }
 
     try {
       const { data, error } = await this.getDirectConversationUseCase.execute({

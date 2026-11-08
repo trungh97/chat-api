@@ -274,12 +274,6 @@ export class UserResolver {
     @Ctx() { req }: Context
   ): Promise<UserContactListGlobalResponse> {
     const userId = req.session.userId;
-    if (!userId) {
-      return {
-        statusCode: StatusCodes.UNAUTHORIZED,
-        error: "User is not authenticated",
-      };
-    }
 
     try {
       const { data, error } = await this.searchUsersUseCase.execute({
@@ -356,12 +350,6 @@ export class UserResolver {
     @Ctx() { req }: Context
   ): Promise<UserPresenseGlobalResponse> {
     const userId = req.session.userId;
-    if (!userId) {
-      return {
-        statusCode: StatusCodes.UNAUTHORIZED,
-        error: "User is not authenticated",
-      };
-    }
     try {
       const result = await this.updateUserPresenceUseCase.execute({
         userId,
@@ -407,12 +395,6 @@ export class UserResolver {
     @Ctx() { req }: Context
   ): Promise<HeartBeatUserPresenseGlobalResponse> {
     const userId = req.session.userId;
-    if (!userId) {
-      return {
-        statusCode: StatusCodes.UNAUTHORIZED,
-        error: "User is not authenticated",
-      };
-    }
     try {
       const result = await this.heartbeatUserPresenseUseCase.execute({
         userId,

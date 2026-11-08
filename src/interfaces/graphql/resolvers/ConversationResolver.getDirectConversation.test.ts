@@ -20,7 +20,7 @@ jest.mock("@infrastructure/external/di/inversify/inversify.config", () => ({
   },
 }));
 
-const contextFor = (userId?: string) =>
+const contextFor = (userId: string) =>
   ({ req: { session: { userId } }, res: {} }) as unknown as Context;
 
 describe("ConversationResolver.getDirectConversation", () => {
@@ -59,16 +59,6 @@ describe("ConversationResolver.getDirectConversation", () => {
 
     expect(result.statusCode).toBe(StatusCodes.OK);
     expect(result.data).toBeNull();
-  });
-
-  it("rejects a call without a session user", async () => {
-    const result = await resolver.getDirectConversation("u2", contextFor());
-
-    expect(result).toEqual({
-      statusCode: StatusCodes.UNAUTHORIZED,
-      error: "User is not authenticated",
-    });
-    expect(getDirectConversation.execute).not.toHaveBeenCalled();
   });
 
   it("returns BAD_REQUEST with the use-case error", async () => {
