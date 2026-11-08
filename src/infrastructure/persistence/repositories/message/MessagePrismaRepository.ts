@@ -5,7 +5,7 @@ import { ICursorBasedPaginationResponse } from "@domain/interfaces/pagination/Cu
 import { IMessageRepository } from "@domain/repositories";
 import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { MessagePrismaMapper } from "@infrastructure/persistence/mappers";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClientProvider } from "@infrastructure/persistence/databases/mysql/PrismaClientProvider";
 import { PAGE_LIMIT } from "@shared/constants";
 import { ILogger } from "@shared/logger";
 import { RepositoryResponse } from "@shared/responses";
@@ -14,9 +14,15 @@ import { inject, injectable } from "inversify";
 @injectable()
 export class MessagePrismaRepository implements IMessageRepository {
   constructor(
-    @inject(TYPES.PrismaClient) private prisma: PrismaClient,
+    @inject(TYPES.PrismaClientProvider)
+    private clientProvider: PrismaClientProvider,
     @inject(TYPES.WinstonLogger) private logger: ILogger
   ) {}
+
+  /** The open transaction, if any, otherwise the root client. */
+  private get prisma() {
+    return this.clientProvider.client;
+  }
 
   async createMessage(
     message: Message
