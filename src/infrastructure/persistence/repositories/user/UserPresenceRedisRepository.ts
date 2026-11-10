@@ -1,5 +1,6 @@
 import { IUserPresenceReader } from "@domain/cache";
 import { TYPES } from "@infrastructure/external/di/inversify/types";
+import { userPresenceKey } from "@shared/constants";
 import { inject, injectable } from "inversify";
 import { RedisClientType } from "redis";
 
@@ -10,7 +11,7 @@ export class UserPresenceRedisRepository implements IUserPresenceReader {
   ) {}
 
   static createKey(userId: string): string {
-    return `user-presence:${userId}`;
+    return userPresenceKey(userId);
   }
 
   async getOnlineStatusByUserIds(

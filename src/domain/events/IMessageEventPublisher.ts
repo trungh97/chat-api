@@ -39,6 +39,8 @@ export type PublishMessageStatusErrorPayload = {
 export type PublishPresenseUpdatePayload = {
   userId: string;
   isOnline: boolean;
+  /** When the presence changed. Subscribers receive it as an ISO string after the Redis round trip. */
+  lastSeenAt: Date;
 };
 
 export interface IMessageEventPublisher {

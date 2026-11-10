@@ -12,9 +12,14 @@ import {
 import { container } from "@infrastructure/external/di/inversify/inversify.config";
 import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { Topic } from "@infrastructure/persistence/websocket/redis-pubsub";
-import { COOKIE_NAME, DEFAULT_TTL } from "@shared/constants";
+import {
+  COOKIE_NAME,
+  DEFAULT_TTL,
+  userPresenceKey,
+} from "@shared/constants";
 import { ILogger } from "@shared/logger";
 import { isAuth } from "@shared/middlewares";
+import { PublishPresenseUpdatePayload } from "@domain/events";
 import { ICursorBasedPaginationParams } from "@domain/interfaces/pagination/CursorBasedPagination";
 import { CursorBasedPaginationDTO, GlobalResponse } from "@shared/responses";
 import { StatusCodes } from "http-status-codes";
@@ -315,7 +320,7 @@ export class UserResolver {
     @Arg("userId", () => String) userId: string
   ): Promise<UserPresenseGlobalResponse> {
     try {
-      const data = await this.redisClient.hGetAll(`user-presence:${userId}`);
+      const data = await this.redisClient.hGetAll(userPresenceKey(userId));
 
       return {
         statusCode: StatusCodes.OK,
@@ -433,7 +438,19 @@ export class UserResolver {
   @Subscription(() => UserPresenseGlobalResponse, {
     topics: Topic.PRESENSE_UPDATE,
   })
-  userPresence(@Root() payload: UserPresenseGlobalResponse) {
-    return payload;
+  userPresence(
+    @Root() payload: PublishPresenseUpdatePayload
+  ): UserPresenseGlobalResponse {
+    // The topic carries the raw presence event; wrap it in the response shape this field declares.
+    return {
+      statusCode: StatusCodes.OK,
+      message: "User presence updated",
+      data: {
+        userId: payload.userId,
+        isOnline: payload.isOnline,
+        // Redis pub/sub delivers the Date as an ISO string.
+        lastSeenAt: new Date(payload.lastSeenAt),
+      },
+    };
   }
 }

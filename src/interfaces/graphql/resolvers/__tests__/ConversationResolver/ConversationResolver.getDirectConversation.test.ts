@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import { StatusCodes } from "http-status-codes";
 import { Context } from "types";
-import { ConversationResolver } from "./ConversationResolver";
+import { ConversationResolver } from "../../ConversationResolver";
 
 const getDirectConversation = { execute: jest.fn() };
 
