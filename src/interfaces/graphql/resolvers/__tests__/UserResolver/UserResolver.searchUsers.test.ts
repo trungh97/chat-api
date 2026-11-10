@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import { StatusCodes } from "http-status-codes";
 import { Context } from "types";
-import { UserResolver } from "./UserResolver";
+import { UserResolver } from "../../UserResolver";
 
 const searchUsers = { execute: jest.fn() };
 

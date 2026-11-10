@@ -1,6 +1,6 @@
 import { IMessageEventPublisher } from "@domain/events";
 import { TYPES } from "@infrastructure/external/di/inversify/types";
-import { DEFAULT_TTL } from "@shared/constants";
+import { DEFAULT_TTL, userPresenceKey } from "@shared/constants";
 import { inject, injectable } from "inversify";
 import { RedisClientType } from "redis";
 import { UpdateUserPresenseRequest } from "./update-user-presense.request";
@@ -23,7 +23,7 @@ export class UpdateUserPresenseUseCase implements IUpdateUserPresenseUseCase {
     try {
       const { userId, isOnline, lastSeenAt } = request;
       const now = lastSeenAt || new Date().toISOString();
-      const key = `user-presence:${userId}`;
+      const key = userPresenceKey(userId);
       const exists = await this.redisClient.exists(key);
 
       if (!!exists) {
@@ -44,7 +44,11 @@ export class UpdateUserPresenseUseCase implements IUpdateUserPresenseUseCase {
       if (!isOnline) {
       }
 
-      await this.publisher.publishPresenseUpdate({ userId, isOnline });
+      await this.publisher.publishPresenseUpdate({
+        userId,
+        isOnline,
+        lastSeenAt: new Date(now),
+      });
 
       return { data: true };
     } catch (error: any) {

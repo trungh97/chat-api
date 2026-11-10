@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { Context } from "types";
-import { UserResolver } from "./UserResolver";
+import { UserResolver } from "../../UserResolver";
 
 const updateUserPresence = { execute: jest.fn() };
 const heartbeatUserPresence = { execute: jest.fn() };
@@ -55,5 +55,28 @@ describe("UserResolver presence mutations", () => {
     expect(heartbeatUserPresence.execute).toHaveBeenCalledWith({
       userId: "me",
     });
+  });
+});
+
+describe("UserResolver userPresence subscription", () => {
+  it("wraps the raw presence event in the response shape", () => {
+    const resolver = new (UserResolver as unknown as new () => UserResolver)();
+    // After the Redis round trip the Date arrives as an ISO string.
+    const payload = {
+      userId: "u1",
+      isOnline: true,
+      lastSeenAt: "2026-11-10T10:00:00.000Z" as unknown as Date,
+    };
+
+    const response = resolver.userPresence(payload);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.error).toBeUndefined();
+    expect(response.data).toEqual({
+      userId: "u1",
+      isOnline: true,
+      lastSeenAt: new Date("2026-11-10T10:00:00.000Z"),
+    });
+    expect(response.data?.lastSeenAt).toBeInstanceOf(Date);
   });
 });
