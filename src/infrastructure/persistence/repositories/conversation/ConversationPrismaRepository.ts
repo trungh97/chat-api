@@ -8,7 +8,8 @@ import {
 import { IConversationRepository } from "@domain/repositories";
 import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { ConversationPrismaMapper } from "@infrastructure/persistence/mappers";
-import { ConversationType, PrismaClient } from "@prisma/client";
+import { PrismaClientProvider } from "@infrastructure/persistence/databases/mysql/PrismaClientProvider";
+import { ConversationType } from "@prisma/client";
 import { findBehindConversations } from "@prisma/client/sql";
 import { PAGE_LIMIT } from "@shared/constants";
 import { ILogger } from "@shared/logger";
@@ -18,9 +19,15 @@ import { inject, injectable } from "inversify";
 @injectable()
 class ConversationPrismaRepository implements IConversationRepository {
   constructor(
-    @inject(TYPES.PrismaClient) private prisma: PrismaClient,
+    @inject(TYPES.PrismaClientProvider)
+    private clientProvider: PrismaClientProvider,
     @inject(TYPES.WinstonLogger) private logger: ILogger
   ) {}
+
+  /** The open transaction, if any, otherwise the root client. */
+  private get prisma() {
+    return this.clientProvider.client;
+  }
 
   async getMyConversations(
     userId: string,
@@ -63,10 +70,12 @@ class ConversationPrismaRepository implements IConversationRepository {
         orderBy: [{ lastMessageAt: "desc" }, { id: "desc" }],
       });
 
-      const nextCursor =
-        conversations.length > limit
-          ? conversations[limit].lastMessageAt.toISOString()
-          : undefined;
+      const cursorConversation = conversations[limit];
+      const nextCursor = cursorConversation
+        ? (
+            cursorConversation.lastMessageAt ?? cursorConversation.createdAt
+          ).toISOString()
+        : undefined;
 
       return {
         value: {
@@ -148,25 +157,17 @@ class ConversationPrismaRepository implements IConversationRepository {
     try {
       const { id, title, creatorId, isArchived, deletedAt, type } = payload;
       if (participants.length === 2) {
-        const existingConversation = await this.prisma.conversation.findFirst({
-          where: {
-            conversationParticipants: {
-              every: {
-                userId: {
-                  in: participants.map((participant) => participant.id),
-                },
-              },
-            },
-          },
-        });
+        // Reuse the pair's 1:1 conversation. The strict lookup avoids matching a group
+        // or a conversation that has only one of the two users.
+        const { value: existingConversation, error: existingError } =
+          await this.findPrivateBetween(participants[0].id, participants[1].id);
+
+        if (existingError) {
+          return { error: existingError, value: null };
+        }
 
         if (existingConversation) {
-          return {
-            value:
-              ConversationPrismaMapper.fromPrismaModelToEntity(
-                existingConversation
-              ),
-          };
+          return { value: existingConversation };
         }
       }
 
@@ -199,6 +200,38 @@ class ConversationPrismaRepository implements IConversationRepository {
       this.logger.error(`Error creating conversation: ${error.message}`);
       return {
         error: new Error(`Error creating conversation: ${error.message}`),
+        value: null,
+      };
+    }
+  }
+
+  async findPrivateBetween(
+    firstUserId: string,
+    secondUserId: string
+  ): Promise<RepositoryResponse<Conversation | null, Error>> {
+    try {
+      const conversation = await this.prisma.conversation.findFirst({
+        where: {
+          type: ConversationType.PRIVATE,
+          deletedAt: null,
+          AND: [
+            { conversationParticipants: { some: { userId: firstUserId } } },
+            { conversationParticipants: { some: { userId: secondUserId } } },
+          ],
+        },
+      });
+
+      return {
+        value: conversation
+          ? ConversationPrismaMapper.fromPrismaModelToEntity(conversation)
+          : null,
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      this.logger.error(`Error finding private conversation: ${errorMessage}`);
+      return {
+        error: new Error(`Error finding private conversation: ${errorMessage}`),
         value: null,
       };
     }

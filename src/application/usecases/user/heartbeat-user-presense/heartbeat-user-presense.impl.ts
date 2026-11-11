@@ -1,5 +1,5 @@
 import { TYPES } from "@infrastructure/external/di/inversify/types";
-import { DEFAULT_TTL } from "@shared/constants";
+import { DEFAULT_TTL, userPresenceKey } from "@shared/constants";
 import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
 import { RedisClientType } from "redis";
@@ -29,7 +29,7 @@ export class HeartbeatUserPresenseUseCase
   ): Promise<HeartbeatUserPresenseResponse> {
     try {
       const { userId } = request;
-      const key = `user-presence:${userId}`;
+      const key = userPresenceKey(userId);
       const exists = await this.redisClient.exists(key);
 
       if (!!exists) {
@@ -51,6 +51,7 @@ export class HeartbeatUserPresenseUseCase
             this.messagePublisher.publishPresenseUpdate({
               userId,
               isOnline: false,
+              lastSeenAt: new Date(),
             });
           }
         });

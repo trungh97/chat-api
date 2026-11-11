@@ -23,17 +23,19 @@ export async function cleanupExpiredPresence() {
     if (diff > 3 * 60 * 1_000) {
       // mark offline
       const userId = key.split(":")[1];
+      const markedOfflineAt = new Date();
 
       await redisClient.hSet(key, {
         userId,
         isOnline: "false",
-        lastSeenAt: new Date().toISOString(),
+        lastSeenAt: markedOfflineAt.toISOString(),
       });
 
       // publish event
       await publisher.publishPresenseUpdate({
         userId,
         isOnline: false,
+        lastSeenAt: markedOfflineAt,
       });
     }
   }

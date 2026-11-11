@@ -1,4 +1,4 @@
-import { getAvatarColors } from "@application/utils";
+import { getAvatarColors, hasRequiredNames } from "@application/utils";
 import { User } from "@domain/entities";
 import { IUserRepository } from "@domain/repositories";
 import { TYPES } from "@infrastructure/external/di/inversify/types";
@@ -21,7 +21,18 @@ export class RegisterCredentialBasedUserUseCase
   async execute(
     request: RegisterCredentialBasedUserRequest
   ): Promise<RegisterCredentialBasedUserResponse> {
-    const user = await User.create(request);
+    if (!hasRequiredNames(request)) {
+      return {
+        data: null,
+        error: "First name and last name are required",
+      };
+    }
+
+    const user = await User.create({
+      ...request,
+      firstName: request.firstName.trim(),
+      lastName: request.lastName.trim(),
+    });
 
     if (!request.avatar) {
       const name = `${user.firstName} ${user.lastName}`;

@@ -1,4 +1,8 @@
 import { User } from "@domain/entities";
+import {
+  ICursorBasedPaginationParams,
+  ICursorBasedPaginationResponse,
+} from "@domain/interfaces/pagination/CursorBasedPagination";
 import { RepositoryResponse } from "@shared/responses";
 
 export interface IUserRepository {
@@ -92,4 +96,31 @@ export interface IUserRepository {
     userId: string,
     lastSeenAt: Date
   ): Promise<RepositoryResponse<boolean, Error>>;
+
+  /**
+   * Locks two user rows until the current transaction ends (`SELECT ... FOR UPDATE`), in
+   * id order. Call it inside `ITransactionManager.run` to serialize work on a user pair;
+   * outside a transaction it returns an error instead of locking.
+   *
+   * @returns The ids of the users that exist (an unknown id is not returned).
+   */
+  lockUsersForUpdate(
+    firstUserId: string,
+    secondUserId: string
+  ): Promise<RepositoryResponse<string[], Error>>;
+
+  /**
+   * Searches active users by first name, last name or email, excluding one user.
+   * Results are ordered by first name, last name, then id. The cursor is the id of
+   * the last user on the previous page.
+   *
+   * @param params.excludeUserId - The user to leave out (usually the caller).
+   * @param params.search - Optional text matched against first name, last name and email.
+   * @param params.pagination - The page size and the cursor.
+   */
+  searchUsers(params: {
+    excludeUserId: string;
+    search?: string;
+    pagination: ICursorBasedPaginationParams;
+  }): Promise<RepositoryResponse<ICursorBasedPaginationResponse<User>, Error>>;
 }

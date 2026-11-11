@@ -17,10 +17,12 @@ import {
   CreateConversationUseCase,
   DeleteConversationUseCase,
   FindConversationByIdUseCase,
+  GetDirectConversationUseCase,
   GetMyConversationsUseCase,
   ICreateConversationUsecase,
   IDeleteConversationUsecase,
   IFindConversationByIdUseCase,
+  IGetDirectConversationUseCase,
   IGetMyConversationsUsecase,
 } from "@application/usecases/conversation";
 import {
@@ -82,7 +84,10 @@ import {
   LoginGoogleUserUseCase,
   IHeartbeatUserPresenseUseCase,
   HeartbeatUserPresenseUseCase,
+  ISearchUsersUseCase,
+  SearchUsersUseCase,
 } from "@application/usecases/user";
+import { IUserPresenceReader } from "@domain/cache";
 import { IMessageEventPublisher } from "@domain/events";
 import { IMessageQueueProducer } from "@domain/queue";
 import {
@@ -96,9 +101,12 @@ import {
 import {
   ConversationTitleService,
   IConversationTitleService,
+  ITransactionManager,
 } from "@domain/services";
 import { googleOAuth2Client } from "@infrastructure/external/auth/google";
 import { prismaClient } from "@infrastructure/persistence/databases/mysql/connection";
+import { PrismaClientProvider } from "@infrastructure/persistence/databases/mysql/PrismaClientProvider";
+import { PrismaTransactionManager } from "@infrastructure/persistence/databases/mysql/PrismaTransactionManager";
 import { redisClient } from "@infrastructure/persistence/databases/redis/connection";
 import {
   MessageQueueProducer,
@@ -109,7 +117,10 @@ import { ConversationPrismaRepository } from "@infrastructure/persistence/reposi
 import { FriendRequestPrismaRepository } from "@infrastructure/persistence/repositories/friendRequest";
 import { MessagePrismaRepository } from "@infrastructure/persistence/repositories/message";
 import { ParticipantPrismaRepository } from "@infrastructure/persistence/repositories/participant";
-import { UserPrismaRepository } from "@infrastructure/persistence/repositories/user";
+import {
+  UserPresenceRedisRepository,
+  UserPrismaRepository,
+} from "@infrastructure/persistence/repositories/user";
 import {
   IUserRedisRepository,
   UserRedisRepository,
@@ -121,6 +132,14 @@ import type { RedisClientType } from "redis";
 const container = new Container();
 
 container.bind<PrismaClient>(TYPES.PrismaClient).toConstantValue(prismaClient);
+container
+  .bind<PrismaClientProvider>(TYPES.PrismaClientProvider)
+  .to(PrismaClientProvider)
+  .inSingletonScope();
+container
+  .bind<ITransactionManager>(TYPES.TransactionManager)
+  .to(PrismaTransactionManager)
+  .inSingletonScope();
 
 container.bind<RedisClientType>(TYPES.RedisClient).toConstantValue(redisClient);
 
@@ -136,6 +155,9 @@ container.bind<IUserRepository>(TYPES.UserRepository).to(UserPrismaRepository);
 container
   .bind<IUserRedisRepository>(TYPES.UserRedisRepository)
   .to(UserRedisRepository);
+container
+  .bind<IUserPresenceReader>(TYPES.UserPresenceReader)
+  .to(UserPresenceRedisRepository);
 
 /** -------------- USER USECASES --------------- */
 container
@@ -158,6 +180,9 @@ container
 container
   .bind<IHeartbeatUserPresenseUseCase>(TYPES.HeartbeatUserPresenseUseCase)
   .to(HeartbeatUserPresenseUseCase);
+container
+  .bind<ISearchUsersUseCase>(TYPES.SearchUsersUseCase)
+  .to(SearchUsersUseCase);
 
 /** -------------- CONVERSATION REPOSITORIES --------------- */
 container
@@ -177,6 +202,9 @@ container
 container
   .bind<IFindConversationByIdUseCase>(TYPES.FindConversationByIdUseCase)
   .to(FindConversationByIdUseCase);
+container
+  .bind<IGetDirectConversationUseCase>(TYPES.GetDirectConversationUseCase)
+  .to(GetDirectConversationUseCase);
 
 /** -------------- FRIEND REQUEST REPOSITORIES --------------- */
 container

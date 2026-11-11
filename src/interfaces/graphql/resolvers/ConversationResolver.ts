@@ -3,15 +3,25 @@ import {
   ICreateConversationUsecase,
   IDeleteConversationUsecase,
   IFindConversationByIdUseCase,
+  IGetDirectConversationUseCase,
   IGetMyConversationsUsecase,
 } from "@application/usecases/conversation";
 import { ICursorBasedPaginationParams } from "@domain/interfaces/pagination/CursorBasedPagination";
 import { container } from "@infrastructure/external/di/inversify/inversify.config";
 import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { ILogger } from "@shared/logger";
+import { isAuth } from "@shared/middlewares";
 import { CursorBasedPaginationDTO, GlobalResponse } from "@shared/responses";
 import { StatusCodes } from "http-status-codes";
-import { Arg, Ctx, Mutation, ObjectType, Query, Resolver } from "type-graphql";
+import {
+  Arg,
+  Ctx,
+  Mutation,
+  ObjectType,
+  Query,
+  Resolver,
+  UseMiddleware,
+} from "type-graphql";
 import { Context } from "types";
 import { ConversationDTO, ExtendConversationDTO } from "../dtos";
 import { ConversationMapper } from "../mappers";
@@ -48,6 +58,7 @@ export class ConversationResolver {
     private createConversationUseCase: ICreateConversationUsecase,
     private deleteConverationUseCase: IDeleteConversationUsecase,
     private findConversationByIdUseCase: IFindConversationByIdUseCase,
+    private getDirectConversationUseCase: IGetDirectConversationUseCase,
     private logger: ILogger
   ) {
     this.getMyConversationsUseCase = container.get<IGetMyConversationsUsecase>(
@@ -62,6 +73,10 @@ export class ConversationResolver {
     this.findConversationByIdUseCase =
       container.get<IFindConversationByIdUseCase>(
         TYPES.FindConversationByIdUseCase
+      );
+    this.getDirectConversationUseCase =
+      container.get<IGetDirectConversationUseCase>(
+        TYPES.GetDirectConversationUseCase
       );
     this.logger = container.get<ILogger>(TYPES.WinstonLogger);
   }
@@ -258,6 +273,49 @@ export class ConversationResolver {
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         error: error.message,
+      };
+    }
+  }
+
+  /**
+   * The caller's 1:1 conversation with another user. `data` is null when they have
+   * none yet, for example before the first message of a draft.
+   */
+  @Query(() => ExtendConversationGlobalResponse)
+  @UseMiddleware(isAuth)
+  async getDirectConversation(
+    @Arg("userId", () => String) otherUserId: string,
+    @Ctx() { req }: Context
+  ): Promise<ExtendConversationGlobalResponse> {
+    const userId = req.session.userId;
+
+    try {
+      const { data, error } = await this.getDirectConversationUseCase.execute({
+        userId,
+        otherUserId,
+      });
+
+      if (error) {
+        this.logger.error(`Error getting direct conversation: ${error}`);
+        return {
+          statusCode: StatusCodes.BAD_REQUEST,
+          error,
+        };
+      }
+
+      return {
+        statusCode: StatusCodes.OK,
+        message: data
+          ? "Get direct conversation successfully!"
+          : "No direct conversation yet",
+        data: data ? ConversationMapper.toFullConversationDTO(data) : null,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Error getting direct conversation: ${message}`);
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        error: message,
       };
     }
   }

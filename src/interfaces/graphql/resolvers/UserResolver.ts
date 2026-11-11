@@ -5,16 +5,23 @@ import {
   ILoginCredentialBasedUserUseCase,
   ILoginGoogleUserUseCase,
   IRegisterCredentialBasedUserUseCase,
+  ISearchUsersUseCase,
   IUpdateUserPresenseUseCase,
   LoginCredentialBasedUserRequest,
 } from "@application/usecases/user";
 import { container } from "@infrastructure/external/di/inversify/inversify.config";
 import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { Topic } from "@infrastructure/persistence/websocket/redis-pubsub";
-import { COOKIE_NAME, DEFAULT_TTL } from "@shared/constants";
+import {
+  COOKIE_NAME,
+  DEFAULT_TTL,
+  userPresenceKey,
+} from "@shared/constants";
 import { ILogger } from "@shared/logger";
 import { isAuth } from "@shared/middlewares";
-import { GlobalResponse } from "@shared/responses";
+import { PublishPresenseUpdatePayload } from "@domain/events";
+import { ICursorBasedPaginationParams } from "@domain/interfaces/pagination/CursorBasedPagination";
+import { CursorBasedPaginationDTO, GlobalResponse } from "@shared/responses";
 import { StatusCodes } from "http-status-codes";
 import { RedisClientType } from "redis";
 import {
@@ -29,8 +36,9 @@ import {
   UseMiddleware,
 } from "type-graphql";
 import { Context } from "types";
-import { UserDTO, UserPresenceDTO } from "../dtos";
+import { UserContactDTO, UserDTO, UserPresenceDTO } from "../dtos";
 import { UserMapper } from "../mappers/UserMapper";
+import { CursorBasedPaginationParams } from "../types/pagination";
 import { UserCreateMutationRequest, UserLoginInput } from "../types/user";
 
 const UserResponse = GlobalResponse(UserDTO);
@@ -46,6 +54,14 @@ class UserPresenseGlobalResponse extends UserPresenseResponse {}
 @ObjectType()
 class HeartBeatUserPresenseGlobalResponse extends HeartBeatUserPresenseResponse {}
 
+@ObjectType()
+class UserContactListResponse extends CursorBasedPaginationDTO(UserContactDTO) {}
+
+@ObjectType()
+class UserContactListGlobalResponse extends GlobalResponse(
+  UserContactListResponse
+) {}
+
 @Resolver()
 export class UserResolver {
   constructor(
@@ -55,6 +71,7 @@ export class UserResolver {
     private getUserByIdUseCase: IGetUserByIdUsecase,
     private updateUserPresenceUseCase: IUpdateUserPresenseUseCase,
     private heartbeatUserPresenseUseCase: IHeartbeatUserPresenseUseCase,
+    private searchUsersUseCase: ISearchUsersUseCase,
     private redisClient: RedisClientType,
     private logger: ILogger
   ) {
@@ -84,6 +101,10 @@ export class UserResolver {
       container.get<IHeartbeatUserPresenseUseCase>(
         TYPES.HeartbeatUserPresenseUseCase
       );
+
+    this.searchUsersUseCase = container.get<ISearchUsersUseCase>(
+      TYPES.SearchUsersUseCase
+    );
 
     this.redisClient = container.get<RedisClientType>(TYPES.RedisClient);
 
@@ -249,13 +270,57 @@ export class UserResolver {
     });
   }
 
+  @Query(() => UserContactListGlobalResponse)
+  @UseMiddleware(isAuth)
+  async searchUsers(
+    @Arg("search", () => String, { nullable: true }) search: string | undefined,
+    @Arg("options", () => CursorBasedPaginationParams)
+    options: ICursorBasedPaginationParams,
+    @Ctx() { req }: Context
+  ): Promise<UserContactListGlobalResponse> {
+    const userId = req.session.userId;
+
+    try {
+      const { data, error } = await this.searchUsersUseCase.execute({
+        userId,
+        search,
+        pagination: options,
+      });
+
+      if (error || !data) {
+        const message = error ?? "Failed to search users.";
+        this.logger.error(`Error searching users: ${message}`);
+        return {
+          statusCode: StatusCodes.BAD_REQUEST,
+          error: message,
+        };
+      }
+
+      return {
+        statusCode: StatusCodes.OK,
+        message: "Users fetched successfully",
+        data: {
+          items: data.data,
+          nextCursor: data.nextCursor,
+        },
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Error searching users: ${message}`);
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        error: message,
+      };
+    }
+  }
+
   @Query(() => UserPresenseGlobalResponse)
   @UseMiddleware(isAuth)
   async getUserPresence(
     @Arg("userId", () => String) userId: string
   ): Promise<UserPresenseGlobalResponse> {
     try {
-      const data = await this.redisClient.hGetAll(`user-presence:${userId}`);
+      const data = await this.redisClient.hGetAll(userPresenceKey(userId));
 
       return {
         statusCode: StatusCodes.OK,
@@ -280,9 +345,16 @@ export class UserResolver {
   @Mutation(() => UserPresenseGlobalResponse)
   @UseMiddleware(isAuth)
   async updateUserPresence(
-    @Arg("userId", () => String) userId: string,
-    @Arg("isOnline", () => Boolean) isOnline: boolean
+    // Ignored: the user always comes from the session. Kept so older clients keep working.
+    @Arg("userId", () => String, {
+      nullable: true,
+      deprecationReason: "Ignored. The user is taken from the session.",
+    })
+    _userId: string | undefined,
+    @Arg("isOnline", () => Boolean) isOnline: boolean,
+    @Ctx() { req }: Context
   ): Promise<UserPresenseGlobalResponse> {
+    const userId = req.session.userId;
     try {
       const result = await this.updateUserPresenceUseCase.execute({
         userId,
@@ -319,8 +391,15 @@ export class UserResolver {
   @Mutation(() => HeartBeatUserPresenseGlobalResponse)
   @UseMiddleware(isAuth)
   async heartbeatUserPresence(
-    @Arg("userId", () => String) userId: string
+    // Ignored: the user always comes from the session. Kept so older clients keep working.
+    @Arg("userId", () => String, {
+      nullable: true,
+      deprecationReason: "Ignored. The user is taken from the session.",
+    })
+    _userId: string | undefined,
+    @Ctx() { req }: Context
   ): Promise<HeartBeatUserPresenseGlobalResponse> {
+    const userId = req.session.userId;
     try {
       const result = await this.heartbeatUserPresenseUseCase.execute({
         userId,
@@ -359,7 +438,19 @@ export class UserResolver {
   @Subscription(() => UserPresenseGlobalResponse, {
     topics: Topic.PRESENSE_UPDATE,
   })
-  userPresence(@Root() payload: UserPresenseGlobalResponse) {
-    return payload;
+  userPresence(
+    @Root() payload: PublishPresenseUpdatePayload
+  ): UserPresenseGlobalResponse {
+    // The topic carries the raw presence event; wrap it in the response shape this field declares.
+    return {
+      statusCode: StatusCodes.OK,
+      message: "User presence updated",
+      data: {
+        userId: payload.userId,
+        isOnline: payload.isOnline,
+        // Redis pub/sub delivers the Date as an ISO string.
+        lastSeenAt: new Date(payload.lastSeenAt),
+      },
+    };
   }
 }

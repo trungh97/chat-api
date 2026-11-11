@@ -4,6 +4,7 @@ export const TYPES = {
   PostPrismaRepository: Symbol.for("PostPrismaRepository"),
   UserRepository: Symbol.for("UserRepository"),
   UserRedisRepository: Symbol.for("UserRedisRepository"),
+  UserPresenceReader: Symbol.for("UserPresenceReader"),
   ConversationRepository: Symbol.for("ConversationRepository"),
   ContactRepository: Symbol.for("ContactRepository"),
   FriendRequestRepository: Symbol.for("FriendRequestRepository"),
@@ -27,12 +28,14 @@ export const TYPES = {
   LoginCredentialBasedUserUseCase: Symbol.for("LoginUserUseCase"),
   UpdateUserPresenseUseCase: Symbol.for("UpdateUserPresenseUseCase"),
   HeartbeatUserPresenseUseCase: Symbol.for("HeartbeatUserPresenseUseCase"),
+  SearchUsersUseCase: Symbol.for("SearchUsersUseCase"),
 
   /* Conversation */
   GetMyConversationsUseCase: Symbol.for("GetMyConversationsUseCase"),
   CreateConversationUseCase: Symbol.for("CreateConversationUseCase"),
   DeleteConversationUseCase: Symbol.for("DeleteConversationUseCase"),
   FindConversationByIdUseCase: Symbol.for("FindConversationByIdUseCase"),
+  GetDirectConversationUseCase: Symbol.for("GetDirectConversationUseCase"),
 
   /* Friend Request */
   CreateFriendRequestUseCase: Symbol.for("CreateFriendRequestUseCase"),
@@ -95,6 +98,8 @@ export const TYPES = {
 
   // OTHERS
   PrismaClient: Symbol.for("PrismaClient"),
+  PrismaClientProvider: Symbol.for("PrismaClientProvider"),
+  TransactionManager: Symbol.for("TransactionManager"),
   WinstonLogger: Symbol.for("WinstonLogger"),
   RedisClient: Symbol.for("RedisClient"),
   OAuth2Client: Symbol.for("OAuth2Client"),
