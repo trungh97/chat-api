@@ -5,6 +5,7 @@ export const TYPES = {
   UserRepository: Symbol.for("UserRepository"),
   UserRedisRepository: Symbol.for("UserRedisRepository"),
   UserPresenceReader: Symbol.for("UserPresenceReader"),
+  UserPresenceStore: Symbol.for("UserPresenceStore"),
   ConversationRepository: Symbol.for("ConversationRepository"),
   ContactRepository: Symbol.for("ContactRepository"),
   FriendRequestRepository: Symbol.for("FriendRequestRepository"),
@@ -28,6 +29,7 @@ export const TYPES = {
   LoginCredentialBasedUserUseCase: Symbol.for("LoginUserUseCase"),
   UpdateUserPresenseUseCase: Symbol.for("UpdateUserPresenseUseCase"),
   HeartbeatUserPresenseUseCase: Symbol.for("HeartbeatUserPresenseUseCase"),
+  MarkStaleUsersOfflineUseCase: Symbol.for("MarkStaleUsersOfflineUseCase"),
   SearchUsersUseCase: Symbol.for("SearchUsersUseCase"),
 
   /* Conversation */

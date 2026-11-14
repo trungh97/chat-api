@@ -17,4 +17,8 @@ describe("presence timing constants", () => {
       PRESENCE_OFFLINE_THRESHOLD_SECONDS + PRESENCE_CLEANUP_INTERVAL_SECONDS
     ).toBeLessThan(PRESENCE_TTL_SECONDS);
   });
+
+  it("uses a cleanup interval the job's cron expression can run evenly", () => {
+    expect(60 % PRESENCE_CLEANUP_INTERVAL_SECONDS).toBe(0);
+  });
 });
