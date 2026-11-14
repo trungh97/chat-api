@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import { IMessageEventPublisher } from "@domain/events";
+import { PRESENCE_TTL_SECONDS } from "@shared/constants";
 import { RedisClientType } from "redis";
 import { UpdateUserPresenseUseCase } from "./update-user-presense.impl";
 
@@ -34,6 +35,10 @@ describe("UpdateUserPresenseUseCase", () => {
       isOnline: "false",
       lastSeenAt,
     });
+    expect(redisClient.expire).toHaveBeenCalledWith(
+      "user-presence:u1",
+      PRESENCE_TTL_SECONDS
+    );
     expect(publisher.publishPresenseUpdate).toHaveBeenCalledWith({
       userId: "u1",
       isOnline: false,

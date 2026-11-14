@@ -1,6 +1,6 @@
 import { IMessageEventPublisher } from "@domain/events";
 import { TYPES } from "@infrastructure/external/di/inversify/types";
-import { DEFAULT_TTL, userPresenceKey } from "@shared/constants";
+import { PRESENCE_TTL_SECONDS, userPresenceKey } from "@shared/constants";
 import { inject, injectable } from "inversify";
 import { RedisClientType } from "redis";
 import { UpdateUserPresenseRequest } from "./update-user-presense.request";
@@ -39,7 +39,7 @@ export class UpdateUserPresenseUseCase implements IUpdateUserPresenseUseCase {
         });
       }
 
-      await this.redisClient.expire(key, DEFAULT_TTL);
+      await this.redisClient.expire(key, PRESENCE_TTL_SECONDS);
 
       if (!isOnline) {
       }

@@ -84,10 +84,12 @@ import {
   LoginGoogleUserUseCase,
   IHeartbeatUserPresenseUseCase,
   HeartbeatUserPresenseUseCase,
+  IMarkStaleUsersOfflineUseCase,
+  MarkStaleUsersOfflineUseCase,
   ISearchUsersUseCase,
   SearchUsersUseCase,
 } from "@application/usecases/user";
-import { IUserPresenceReader } from "@domain/cache";
+import { IUserPresenceReader, IUserPresenceStore } from "@domain/cache";
 import { IMessageEventPublisher } from "@domain/events";
 import { IMessageQueueProducer } from "@domain/queue";
 import {
@@ -158,6 +160,9 @@ container
 container
   .bind<IUserPresenceReader>(TYPES.UserPresenceReader)
   .to(UserPresenceRedisRepository);
+container
+  .bind<IUserPresenceStore>(TYPES.UserPresenceStore)
+  .to(UserPresenceRedisRepository);
 
 /** -------------- USER USECASES --------------- */
 container
@@ -180,6 +185,9 @@ container
 container
   .bind<IHeartbeatUserPresenseUseCase>(TYPES.HeartbeatUserPresenseUseCase)
   .to(HeartbeatUserPresenseUseCase);
+container
+  .bind<IMarkStaleUsersOfflineUseCase>(TYPES.MarkStaleUsersOfflineUseCase)
+  .to(MarkStaleUsersOfflineUseCase);
 container
   .bind<ISearchUsersUseCase>(TYPES.SearchUsersUseCase)
   .to(SearchUsersUseCase);
