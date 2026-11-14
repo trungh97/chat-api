@@ -4,3 +4,4 @@ export * from "./federated-credential";
 export * from "./update-user-presense";
 export * from "./heartbeat-user-presense";
 export * from "./search-users";
+export * from "./mark-stale-users-offline";
