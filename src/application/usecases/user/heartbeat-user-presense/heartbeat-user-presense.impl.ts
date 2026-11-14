@@ -30,40 +30,44 @@ export class HeartbeatUserPresenseUseCase
     try {
       const { userId } = request;
       const key = userPresenceKey(userId);
-      const exists = await this.redisClient.exists(key);
+      const now = new Date();
+      const wasOnline =
+        (await this.redisClient.hGet(key, "isOnline")) === "true";
 
-      if (!!exists) {
-        await this.redisClient.hSet(key, {
-          lastSeenAt: new Date().toISOString(),
-        });
+      if (wasOnline) {
+        await this.redisClient.hSet(key, { lastSeenAt: now.toISOString() });
       } else {
         await this.redisClient.hSet(key, {
           userId,
           isOnline: "true",
-          lastSeenAt: new Date().toISOString(),
+          lastSeenAt: now.toISOString(),
         });
       }
 
-      this.redisClient
-        .expire(key, PRESENCE_TTL_SECONDS)
-        .then((isExpired) => {
-          if (!isExpired) {
-            this.messagePublisher.publishPresenseUpdate({
-              userId,
-              isOnline: false,
-              lastSeenAt: new Date(),
-            });
-          }
+      await this.redisClient.expire(key, PRESENCE_TTL_SECONDS);
+
+      if (!wasOnline) {
+        // The key was missing, or the user was marked offline while still here (a late
+        // heartbeat, or another tab disconnecting). Tell subscribers they are back.
+        await this.messagePublisher.publishPresenseUpdate({
+          userId,
+          isOnline: true,
+          lastSeenAt: now,
         });
+      }
 
       return {
         data: true,
       };
     } catch (error) {
-      this.logger.error(error.message);
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : "Failed to update user presence heartbeat";
+      this.logger.error(message);
       return {
         data: null,
-        error: error.message || "Failed to update user presence heartbeat",
+        error: message,
       };
     }
   }
