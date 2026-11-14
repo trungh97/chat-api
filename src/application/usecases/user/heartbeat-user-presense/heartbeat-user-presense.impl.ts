@@ -1,5 +1,5 @@
 import { TYPES } from "@infrastructure/external/di/inversify/types";
-import { DEFAULT_TTL, userPresenceKey } from "@shared/constants";
+import { PRESENCE_TTL_SECONDS, userPresenceKey } from "@shared/constants";
 import { ILogger } from "@shared/logger";
 import { inject, injectable } from "inversify";
 import { RedisClientType } from "redis";
@@ -45,7 +45,7 @@ export class HeartbeatUserPresenseUseCase
       }
 
       this.redisClient
-        .expire(key, DEFAULT_TTL)
+        .expire(key, PRESENCE_TTL_SECONDS)
         .then((isExpired) => {
           if (!isExpired) {
             this.messagePublisher.publishPresenseUpdate({

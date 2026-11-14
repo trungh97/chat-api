@@ -12,11 +12,7 @@ import {
 import { container } from "@infrastructure/external/di/inversify/inversify.config";
 import { TYPES } from "@infrastructure/external/di/inversify/types";
 import { Topic } from "@infrastructure/persistence/websocket/redis-pubsub";
-import {
-  COOKIE_NAME,
-  DEFAULT_TTL,
-  userPresenceKey,
-} from "@shared/constants";
+import { COOKIE_NAME, userPresenceKey } from "@shared/constants";
 import { ILogger } from "@shared/logger";
 import { isAuth } from "@shared/middlewares";
 import { PublishPresenseUpdatePayload } from "@domain/events";
